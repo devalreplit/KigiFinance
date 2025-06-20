@@ -1,0 +1,450 @@
+---
+
+# 📘 Documento Unificado – Desenvolvimento Frontend
+
+## 🏷️ Sistema: **KIGI – Sistema Financeiro Familiar**
+
+Sistema para controle financeiro familiar, focado em entradas, saídas e parcelamentos, com múltiplos membros, saldo consolidado e integração com um backend via webservice externo.
+
+---
+
+## ⚙️ Arquitetura
+
+* **Frontend**: React + TypeScript + TailwindCSS
+* **Comunicação**: Apenas via WebService externo (`http://192.168.0.5/api`)
+* **Sem lógica de persistência local**
+* **Tipos e interfaces** organizados em `/types`
+* **Sistema todo em português**
+* **Comentários explicativos em todo o código**
+
+---
+
+
+// ============================
+// 📂 src/types.ts
+// ============================
+
+export interface Usuario {
+  id: number
+  nome: string
+  senha: string
+  papel: 'pai' | 'mae' | 'filho' | 'filha'
+}
+
+export interface UsuarioInput {
+  nome: string
+  senha: string
+  papel: 'pai' | 'mae' | 'filho' | 'filha'
+}
+
+export interface Empresa {
+  id: number
+  nome: string
+}
+
+export interface EmpresaInput {
+  nome: string
+}
+
+export interface Produto {
+  id: number
+  codigoBarras?: string
+  nome: string
+  unidade: string
+  classificacao: string
+  precoUnitario: number
+}
+
+export interface ProdutoInput {
+  codigoBarras?: string
+  nome: string
+  unidade: string
+  classificacao: string
+  precoUnitario: number
+}
+
+export interface Entrada {
+  id: number
+  usuarioRegistroId: number
+  dataHoraRegistro: string
+  usuarioTitularId: number
+  dataReferencia: string
+  valor: number
+  empresaPagadoraId: number
+}
+
+export interface EntradaInput {
+  usuarioRegistroId: number
+  usuarioTitularId: number
+  dataReferencia: string
+  valor: number
+  empresaPagadoraId: number
+}
+
+export interface ItemSaida {
+  produtoId: number
+  nomeProduto: string
+  quantidade: number
+  precoUnitario: number
+  total: number
+}
+
+export interface Saida {
+  id: number
+  usuarioRegistroId: number
+  dataHoraRegistro: string
+  dataSaida: string
+  empresaId: number
+  tipoPagamento: 'avista' | 'parcelado'
+  usuariosTitularesIds: number[]
+  itens: ItemSaida[]
+  valorTotal: number
+  observacao?: string
+  saidaOriginalId?: number
+}
+
+export interface SaidaInput {
+  usuarioRegistroId: number
+  dataSaida: string
+  empresaId: number
+  tipoPagamento: 'avista' | 'parcelado'
+  usuariosTitularesIds: number[]
+  itens: ItemSaidaInput[]
+  numeroParcelas?: number
+  dataPrimeiraParcela?: string
+  observacao?: string
+}
+
+export interface ItemSaidaInput {
+  produtoId: number
+  quantidade: number
+  precoUnitario: number
+}
+
+export interface Parcela {
+  id: number
+  saidaOriginalId: number
+  numeroParcela: number
+  dataVencimento: string
+  valorParcela: number
+  status: 'paga' | 'vencida' | 'a vencer'
+  dataPagamento?: string
+}
+
+export interface ParcelaInput {
+  saidaOriginalId: number
+  numeroParcela: number
+  dataVencimento: string
+  valorParcela: number
+}
+
+export interface Transacao {
+  id: number
+  tipo: 'entrada' | 'saida'
+  data: string
+  valor: number
+  descricao: string
+}
+
+export interface ResumoFinanceiro {
+  saldoFamiliar: number
+  totalEntradas: number
+  totalSaidas: number
+  totalParcelado: number
+  totalPago: number
+  totalPendentes: number
+}
+
+export interface FiltrosRelatorio {
+  dataInicio?: string
+  dataFim?: string
+  usuarioId?: number
+  empresaId?: number
+  tipo?: 'entrada' | 'saida'
+  formaPagamento?: 'avista' | 'parcelado'
+  classificacao?: string
+}
+
+export interface RelatorioFinanceiro {
+  total: number
+  saldoFamiliar: number
+  transacoes: Transacao[]
+  agrupadoPorClassificacao: { classificacao: string; total: number }[]
+}
+
+----
+
+## 🔐 Página de Login
+
+Autentica o usuário com:
+
+* `nomeUsuario` (texto)
+* `senha` (senha)
+
+**Função**:
+
+```ts
+async function autenticarUsuario(nomeUsuario: string, senha: string): Promise<Usuario>
+```
+
+---
+
+## 🏠 Página Inicial / Dashboard
+
+Mostra a visão geral **familiar**, sem saldo individual por usuário.
+
+**Componentes**:
+
+* Cartão com saldo total da família
+* Gráfico de gastos por classificação
+* Lista de transações recentes (entradas e saídas)
+* Lista de parcelas pendentes agrupadas por mês
+
+**Funções**:
+
+```ts
+async function obterResumoFinanceiro(): Promise<ResumoFinanceiro>
+async function obterUltimasTransacoes(): Promise<Transacao[]>
+```
+
+---
+
+## 👤 Página de Gestão de Usuários
+
+**Campos**:
+
+* `nome`: texto
+* `senha`: senha
+* `papel`: dropdown (pai, mãe, filho, filha)
+
+**Ações**:
+
+* Cadastrar, editar, excluir
+* Visualizar lista e detalhes
+
+**Funções**:
+
+```ts
+async function listarUsuarios(): Promise<Usuario[]>
+async function criarUsuario(usuario: UsuarioInput): Promise<void>
+async function editarUsuario(id: number, dados: UsuarioInput): Promise<void>
+async function excluirUsuario(id: number): Promise<void>
+```
+
+---
+
+## 💰 Página de Registro de Entrada Financeira
+
+**Campos**:
+
+* `usuarioTitularId`: membro beneficiado
+* `dataReferencia`: data da entrada
+* `valor`: valor recebido
+* `empresaPagadoraId`: pagadora
+* `dataHoraRegistro`: gerado automaticamente
+* `usuarioRegistroId`: do login
+
+**Funções**:
+
+```ts
+async function listarEmpresas(): Promise<Empresa[]>
+async function registrarEntrada(entrada: EntradaInput): Promise<void>
+```
+
+---
+
+## 💸 Página de Registro de Saída Financeira
+
+### Ordem da tela:
+
+1. Itens da compra (🆕)
+2. Total calculado automaticamente
+3. Campos complementares (empresa, data, pagamento, etc.)
+
+### Itens da Compra:
+
+**Opções para adicionar item**:
+
+1. **Leitura de QRCode**
+
+   * Abre câmera
+   * Envia código para backend
+   * Retorna produto com preço
+
+2. **Busca por nome**
+
+   * Campo de busca com sugestões conforme digitação:
+
+     * Ex: digitar `cam` → `CAMA`, `CAMARAO`, `CAMPARI`
+   * Selecionar envia ID ao backend que retorna produto e valor
+
+**Validação**:
+
+* ❗Novo item só pode ser inserido se os anteriores estiverem totalmente preenchidos.
+
+### Participantes da Saída:
+
+* Múltipla seleção de membros da família
+* ✅ Botão “Família”: seleciona todos os membros de uma vez
+
+### Campos:
+
+* `empresaId`: recebedora
+* `dataSaida`: data da saída
+* `tipoPagamento`: `'avista' | 'parcelado'`
+* `numeroParcelas`: se parcelado
+* `dataPrimeiraParcela`: se parcelado
+* `observacao`: opcional
+* `dataHoraRegistro` e `usuarioRegistroId`: automáticos
+
+### Parcelamento:
+
+* Cria saída "pai" + N saídas "filhas"
+* Cada parcela tem:
+
+  * `numeroParcela`
+  * `dataVencimento`
+  * `valorParcela`
+  * `status`: `paga`, `vencida`, `a vencer`
+  * `saidaOriginalId`: aponta para a saída pai
+
+**Funções**:
+
+```ts
+async function listarEmpresas(): Promise<Empresa[]>
+async function listarProdutos(): Promise<Produto[]>
+async function registrarSaida(saida: SaidaInput): Promise<void>
+```
+
+---
+
+## 📦 Página de Cadastro de Produtos/Serviços
+
+**Campos**:
+
+* `codigoBarras`: leitura por câmera (opcional)
+* `nome`
+* `unidade` (kg, l, un...)
+* `classificacao`
+* `precoUnitario`
+
+**Funções**:
+
+```ts
+async function listarProdutos(): Promise<Produto[]>
+async function criarProduto(produto: ProdutoInput): Promise<void>
+async function editarProduto(id: number, dados: ProdutoInput): Promise<void>
+async function excluirProduto(id: number): Promise<void>
+```
+
+---
+
+## 🏢 Página de Cadastro de Empresas
+
+**Campos**:
+
+* `nome`: texto
+
+**Funções**:
+
+```ts
+async function listarEmpresas(): Promise<Empresa[]>
+async function criarEmpresa(empresa: EmpresaInput): Promise<void>
+async function editarEmpresa(id: number, dados: EmpresaInput): Promise<void>
+async function excluirEmpresa(id: number): Promise<void>
+```
+
+---
+
+## 📆 Página de Controle de Parcelas
+
+Visualização e controle das parcelas pendentes.
+
+**Componentes**:
+
+* Lista agrupada por mês
+* Filtros de status: `paga`, `vencida`, `a vencer` (**✔ corrigido valor vazio no select**)
+* Ação: marcar como paga
+
+**Funções**:
+
+```ts
+async function listarParcelasPendentes(): Promise<Parcela[]>
+async function registrarPagamentoParcela(parcelaId: number, dataPagamento: Date): Promise<void>
+```
+
+---
+
+## 📊 Página de Relatórios
+
+**Filtros**:
+
+* Data inicial / final
+* Usuário
+* Empresa
+* Tipo (entrada / saída)
+* Forma de pagamento (à vista / parcelado)
+* Classificação
+
+**Componentes**:
+
+* Tabela de transações
+* Gráfico por classificação
+* Saldo total familiar
+* Exportação (CSV/PDF)
+
+**Correção aplicada**:
+
+* ✅ `<Select.Item>` sempre com `value` válido
+
+**Função**:
+
+```ts
+async function gerarRelatorio(filtros: FiltrosRelatorio): Promise<RelatorioFinanceiro>
+```
+
+---
+
+## 🚪 Página de Logout
+
+**Função**:
+
+```ts
+function logout(): void
+```
+
+---
+
+## 🧩 Componentes Reutilizáveis
+
+### 📷 `LeitorCodigoBarras`
+
+```ts
+function LeitorCodigoBarras({ onScan }: { onScan: (codigo: string) => void }): JSX.Element
+```
+
+### 👨‍👩‍👧‍👦 `SelecionarUsuarios`
+
+Checkbox múltiplo com botão “Família” para selecionar todos.
+
+### 📋 `TabelaItensSaida`
+
+Lista de produtos/serviços com campos:
+
+* Produto (via QR ou busca)
+* Quantidade
+* Preço unitário
+* Total calculado
+* Botão para remover item
+
+### 🧾 `ResumoFinanceiroCard`
+
+Exibe saldo total da família.
+
+### 🏷️ `StatusParcelaTag`
+
+Tag com cor e status: `paga`, `vencida`, `a vencer`
+
+---
+
+

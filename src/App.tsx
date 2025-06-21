@@ -54,7 +54,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Top Header - spans full width */}
-      <header className="bg-gradient-to-b from-green-800 via-green-700 to-green-600 backdrop-blur-sm border-b border-green-600/20 px-4 lg:px-6 shadow-lg" style={{ height: '73px' }}>
+      <header className="bg-gradient-to-b from-green-600 via-green-500 to-green-400 backdrop-blur-sm border-b border-green-400/20 px-4 lg:px-6 shadow-lg" style={{ height: '73px' }}>
         <div className="flex items-center h-full">
           <div className="flex items-center justify-between w-full">
             {/* Logo na esquerda */}

@@ -80,7 +80,7 @@ export default function Users() {
   }
 
   return (
-    <div className="space-y-6 w-full max-w-full">
+    <div className="space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -99,23 +99,23 @@ export default function Users() {
 
       {/* Users Table */}
       <Card>
-        <CardContent className="p-6">
-          <div className="overflow-x-auto w-full">
-            <table className="w-full min-w-full">
-              <thead>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/30">
                 <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">USUÁRIO</th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">EMAIL</th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">FUNÇÃO</th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">STATUS</th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">AÇÕES</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground">USUÁRIO</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground">EMAIL</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground">FUNÇÃO</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground">STATUS</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground">AÇÕES</th>
                 </tr>
               </thead>
               <tbody>
                 {users.length > 0 ? (
                   users.map((user) => (
                     <tr key={user.id} className="border-b border-border hover:bg-accent/30 transition-colors">
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                             <UsersIcon className="h-4 w-4 text-primary" />
@@ -123,10 +123,10 @@ export default function Users() {
                           <span className="font-medium text-foreground">{user.nome}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         <span className="text-muted-foreground">{user.email || "Não informado"}</span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         <Badge
                           variant="secondary"
                           className={`${getRoleColor(user.papel)} text-white`}
@@ -134,12 +134,12 @@ export default function Users() {
                           {getRoleLabel(user.papel)}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         <Badge variant={user.ativo ? "default" : "secondary"}>
                           {user.ativo ? "Ativo" : "Inativo"}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         <div className="flex space-x-2">
                           <Button
                             variant="outline"

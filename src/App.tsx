@@ -56,10 +56,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       {/* Desktop Sidebar */}
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-64 w-full max-w-full">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
         <header className="bg-card/80 backdrop-blur-sm border-b border-border px-4 lg:px-6 py-4 shadow-sm">
-          <div className="flex items-center justify-between w-full max-w-full">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4 flex-1 min-w-0">
               <div className="relative max-w-xs lg:max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -100,8 +100,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-4 lg:p-6 w-full max-w-full">
-          <div className="w-full max-w-full">
+        <main className="flex-1 overflow-auto p-4 lg:p-8">
+          <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>
         </main>

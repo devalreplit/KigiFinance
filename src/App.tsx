@@ -102,6 +102,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             </div>
+          </div>
         </header>
         <main className="flex-1 overflow-auto p-4 lg:p-8">
           <div className="max-w-7xl mx-auto w-full">

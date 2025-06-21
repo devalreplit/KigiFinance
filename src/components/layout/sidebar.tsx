@@ -82,9 +82,6 @@ export default function Sidebar() {
             <span className="text-primary-foreground text-xs font-semibold">A</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-foreground truncate">
-              Admin
-            </p>
             <p className="text-xs text-muted-foreground truncate">
               Administrador
             </p>

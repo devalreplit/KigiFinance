@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -147,35 +146,32 @@ export default function Companies() {
                         {company.ativo ? "Ativa" : "Inativa"}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(company)}
-                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(company.id)}
-                        disabled={deleting === company.id}
-                        className="text-red-600 border-red-600 hover:bg-red-50"
-                      >
-                        {deleting === company.id ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                            Excluindo...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Excluir
-                          </>
-                        )}
-                      </Button>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(company)}
+                          className="w-8 h-8 p-0 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                          title="Editar empresa"
+                        >
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(company.id)}
+                          disabled={deleting === company.id}
+                          className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
+                          title="Excluir empresa"
+                        >
+                          {deleting === company.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          )}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

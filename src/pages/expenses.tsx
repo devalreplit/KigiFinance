@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
 import { authService } from "@/service/auth";
-import { userService, productService, expenseService } from "@/service/apiService";
+import { userService, productService, companyService, expenseService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, ShoppingCart, Search, Loader2, QrCode } from "lucide-react";
 import { Usuario, Produto, Empresa, SaidaInput, ItemSaidaInput } from "../../types";

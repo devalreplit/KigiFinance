@@ -1,20 +1,19 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, getRoleColor, getRoleLabel } from "@/lib/utils";
-import { userService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { User, Plus, Edit, Trash2, Users as UsersIcon, Loader2 } from "lucide-react";
+import { userService } from "@/service/apiService";
 import UserModal from "@/components/modals/user-modal";
+import { getRoleColor, getRoleLabel } from "@/lib/utils";
+import { Plus, Edit, Trash2, Loader2, Users as UsersIcon } from "lucide-react";
 import { Usuario } from "../../types";
 
 export default function Users() {
   const [users, setUsers] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<Usuario | null>(null);
+  const [editingUser, setEditingUser] = useState<Usuario | undefined>(undefined);
   const [deleting, setDeleting] = useState<number | null>(null);
   const { toast } = useToast();
 
@@ -30,7 +29,7 @@ export default function Users() {
     } catch (error) {
       toast({
         title: "Erro ao carregar usuários",
-        description: "Não foi possível carregar os usuários",
+        description: "Não foi possível carregar a lista de usuários",
         variant: "destructive",
       });
     } finally {
@@ -65,147 +64,130 @@ export default function Users() {
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setEditingUser(null);
+    setEditingUser(undefined);
     loadUsers();
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="mr-2 h-8 w-8 animate-spin" />
-        <div className="text-lg">Carregando usuários...</div>
+        <div className="text-center">
+          <Loader2 className="mr-2 h-8 w-8 animate-spin mx-auto mb-4" />
+          <div className="text-lg">Carregando usuários...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="space-y-6 w-full max-w-full">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Gestão de Usuários</h2>
-          <p className="text-gray-600">Gerencie usuários e suas permissões</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+            Gerenciar Usuários
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Controle os membros da família e suas permissões
+          </p>
         </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
+        <Button onClick={() => setIsModalOpen(true)} className="mt-4 lg:mt-0">
           <Plus className="h-4 w-4 mr-2" />
           Novo Usuário
         </Button>
       </div>
 
-      <Card className="border-gray-100 shadow-sm">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usuário
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Função
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
+      {/* Users Table */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">USUÁRIO</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">EMAIL</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">FUNÇÃO</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">STATUS</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">AÇÕES</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <User className="h-8 w-8 text-gray-400 mr-3" />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.nome}
+              <tbody>
+                {users.length > 0 ? (
+                  users.map((user) => (
+                    <tr key={user.id} className="border-b border-border hover:bg-accent/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <UsersIcon className="h-4 w-4 text-primary" />
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {user.username}
-                          </div>
+                          <span className="font-medium text-foreground">{user.nome}</span>
                         </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-muted-foreground">{user.email || "Não informado"}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge
+                          variant="secondary"
+                          className={`${getRoleColor(user.papel)} text-white`}
+                        >
+                          {getRoleLabel(user.papel)}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge variant={user.ativo ? "default" : "secondary"}>
+                          {user.ativo ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(user)}
+                            className="hover:bg-primary/10"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(user.id)}
+                            disabled={deleting === user.id}
+                            className="hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            {deleting === user.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center">
+                      <div className="flex flex-col items-center">
+                        <UsersIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">Nenhum usuário encontrado</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.email || "Não informado"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={getRoleColor(user.role)}>
-                        {getRoleLabel(user.role)}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={user.ativo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                        {user.ativo ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(user.id)}
-                        disabled={deleting === user.id}
-                        className="text-red-600 border-red-600 hover:bg-red-50"
-                      >
-                        {deleting === user.id ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                            Excluindo...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Excluir
-                          </>
-                        )}
-                      </Button>
-                    </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
-            {users.length === 0 && (
-              <div className="text-center py-12">
-                <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum usuário</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Comece criando um novo usuário.
-                </p>
-                <div className="mt-6">
-                  <Button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Usuário
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
 
+      {/* Modal */}
       <UserModal
-        isOpen={isModalOpen}
+        open={isModalOpen}
         onClose={handleModalClose}
         user={editingUser}
+        onSuccess={handleModalClose}
       />
     </div>
   );

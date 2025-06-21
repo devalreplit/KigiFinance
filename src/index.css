@@ -4,112 +4,93 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --background: 120 40% 97%;
+    --foreground: 120 10% 15%;
+    --card: 120 30% 98%;
+    --card-foreground: 120 10% 15%;
+    --popover: 120 30% 98%;
+    --popover-foreground: 120 10% 15%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 120 30% 98%;
+    --secondary: 120 20% 93%;
+    --secondary-foreground: 120 10% 25%;
+    --muted: 120 15% 92%;
+    --muted-foreground: 120 8% 45%;
+    --accent: 120 25% 90%;
+    --accent-foreground: 120 10% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --border: 120 15% 88%;
+    --input: 120 15% 88%;
+    --ring: 142 76% 36%;
+    --radius: 0.75rem;
+    --chart-1: 142 76% 36%;
+    --chart-2: 120 60% 45%;
+    --chart-3: 90 50% 55%;
+    --chart-4: 160 65% 40%;
+    --chart-5: 180 70% 35%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 120 15% 8%;
+    --foreground: 120 20% 90%;
+    --card: 120 15% 10%;
+    --card-foreground: 120 20% 90%;
+    --popover: 120 15% 10%;
+    --popover-foreground: 120 20% 90%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 120 30% 98%;
+    --secondary: 120 10% 15%;
+    --secondary-foreground: 120 20% 80%;
+    --muted: 120 10% 15%;
+    --muted-foreground: 120 8% 60%;
+    --accent: 120 15% 18%;
+    --accent-foreground: 120 20% 80%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --border: 120 10% 18%;
+    --input: 120 10% 18%;
+    --ring: 142 76% 36%;
+    --chart-1: 142 76% 36%;
+    --chart-2: 120 60% 45%;
+    --chart-3: 90 50% 55%;
+    --chart-4: 160 65% 40%;
+    --chart-5: 180 70% 35%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
+  
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: linear-gradient(135deg, hsl(120, 40%, 97%) 0%, hsl(120, 30%, 95%) 100%);
+    min-height: 100vh;
+  }
+  
+  .dark body {
+    background: linear-gradient(135deg, hsl(120, 15%, 8%) 0%, hsl(120, 10%, 6%) 100%);
   }
 }
 
-@layer components {
-  .nav-item {
-    @apply flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 hover:bg-gray-100 hover:text-primary;
-  }
-  
-  .nav-item.active {
-    @apply bg-primary text-white;
-  }
-  
-  .nav-item i {
-    @apply w-5 text-center;
-  }
-}
-
+/* Prevent horizontal scroll */
 @layer utilities {
-  .bg-surface {
-    background-color: hsl(var(--surface));
+  .no-scrollbar-x {
+    overflow-x: hidden;
   }
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
-}
-
-/* Loading animations */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .sidebar-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 z-40;
+  
+  .container-fluid {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 }

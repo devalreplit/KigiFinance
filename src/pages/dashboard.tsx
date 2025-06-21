@@ -88,10 +88,10 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
           Dashboard
         </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Visão geral das finanças familiares
         </p>
       </div>
@@ -101,52 +101,52 @@ export default function Dashboard() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Saldo Familiar</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Saldo Familiar</h3>
               <Wallet className="h-5 w-5 text-primary" />
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+            <p className="text-2xl font-bold text-foreground mt-2">
               {formatCurrency(resumo?.saldoFamiliar || 0)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Saldo atual da família</p>
+            <p className="text-xs text-muted-foreground mt-1">Saldo atual da família</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Entradas</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Total Entradas</h3>
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <p className="text-2xl font-bold text-green-600 mt-2">
               {formatCurrency(resumo?.totalEntradas || 0)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Receitas do período</p>
+            <p className="text-xs text-muted-foreground mt-1">Receitas do período</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Saídas</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Total Saídas</h3>
               <TrendingDown className="h-5 w-5 text-red-600" />
             </div>
             <p className="text-2xl font-bold text-red-600 mt-2">
               {formatCurrency(resumo?.totalSaidas || 0)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Gastos do período</p>
+            <p className="text-xs text-muted-foreground mt-1">Gastos do período</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Parcelas Pendentes</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Parcelas Pendentes</h3>
               <Calendar className="h-5 w-5 text-orange-600" />
             </div>
             <p className="text-2xl font-bold text-orange-600 mt-2">
               {formatCurrency(resumo?.totalPendentes || 0)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">A pagar</p>
+            <p className="text-xs text-muted-foreground mt-1">A pagar</p>
           </CardContent>
         </Card>
       </div>

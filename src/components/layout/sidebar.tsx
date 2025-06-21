@@ -4,171 +4,100 @@ import { cn } from "@/lib/utils";
 import { 
   Home, 
   Users, 
+  DollarSign, 
+  TrendingDown, 
   Package, 
   Building, 
   Calendar, 
-  BarChart3, 
-  LogOut,
-  ShoppingCart,
-  FileText,
-  ChevronDown,
-  ChevronRight,
-  Settings,
-  DollarSign,
-  List
+  BarChart3,
+  LogOut 
 } from "lucide-react";
-import { useState } from "react";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "Usuários", href: "/users", icon: Users },
-  { 
-    name: "Cadastros", 
-    icon: Package, 
-    children: [
-      { name: "Produtos", href: "/products" },
-      { name: "Empresas", href: "/companies" }
-    ]
-  },
-  { 
-    name: "Movimentação", 
-    icon: DollarSign,
-    children: [
-      { name: "Entradas", href: "/income" },
-      { name: "Saídas", href: "/expenses" }
-    ]
-  },
-  { name: "Parcelas", href: "/installments", icon: Calendar },
-  { name: "Relatórios", href: "/reports", icon: BarChart3 },
+const menuItems = [
+  { name: "Dashboard", path: "/", icon: Home },
+  { name: "Usuários", path: "/users", icon: Users },
+  { name: "Entradas", path: "/income", icon: DollarSign },
+  { name: "Saídas", path: "/expenses", icon: TrendingDown },
+  { name: "Produtos", path: "/products", icon: Package },
+  { name: "Empresas", path: "/companies", icon: Building },
+  { name: "Parcelas", path: "/installments", icon: Calendar },
+  { name: "Relatórios", path: "/reports", icon: BarChart3 },
 ];
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const handleLogout = () => {
     authService.logout();
     window.location.reload();
   };
 
-  const toggleExpanded = (itemName: string) => {
-    setExpandedItems(prev => 
-      prev.includes(itemName) 
-        ? prev.filter(name => name !== itemName)
-        : [...prev, itemName]
-    );
-  };
-
-  const isItemActive = (item: any) => {
-    if (item.href) return location === item.href;
-    if (item.children) {
-      return item.children.some((child: any) => location === child.href);
-    }
-    return false;
-  };
-
   return (
-    <nav className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-            <span className="text-white font-bold text-sm">KG</span>
+    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card/95 backdrop-blur-sm border-r border-border shadow-lg transform -translate-x-full transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+      {/* Logo */}
+      <div className="flex items-center h-16 px-6 border-b border-border bg-card/50">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+            <span className="text-primary-foreground font-bold text-sm">KG</span>
           </div>
-          <h1 className="text-lg font-semibold text-white">KIGI</h1>
+          <span className="text-xl font-bold text-foreground">KIGI</span>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="p-4">
-        <ul className="space-y-1">
-          {navigation.map((item) => {
-            const isActive = isItemActive(item);
-            const isExpanded = expandedItems.includes(item.name);
-
+      <nav className="mt-6">
+        <div className="px-6">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Menu Principal
+          </p>
+        </div>
+        <div className="mt-4 space-y-1 px-3">
+          {menuItems.map((item) => {
+            const isActive = location === item.path;
+            const Icon = item.icon;
+            
             return (
-              <li key={item.name}>
-                {item.children ? (
-                  // Menu with submenu
-                  <div>
-                    <button
-                      onClick={() => toggleExpanded(item.name)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors",
-                        isActive 
-                          ? "bg-green-600 text-white" 
-                          : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                      )}
-                    >
-                      <div className="flex items-center">
-                        {item.icon && <item.icon className="mr-3 h-4 w-4" />}
-                        {item.name}
-                      </div>
-                      {isExpanded ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
-                    {isExpanded && (
-                      <ul className="mt-1 ml-6 space-y-1">
-                        {item.children.map((child: any) => (
-                          <li key={child.name}>
-                            <Link href={child.href} className={`flex items-center w-full px-3 py-2 text-sm rounded-lg transition-colors ${
-                          location === child.href
-                            ? 'bg-green-600 text-white' 
-                            : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                        }`}>
-                          {child.icon && <child.icon className="h-4 w-4 mr-3" />}
-                          {child.name}
-                        </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ) : (
-                  // Simple menu item
-                  <Link href={item.href || "#"} className={cn(
-                    "flex items-center px-3 py-2 text-sm rounded-lg transition-colors relative cursor-pointer",
-                    isActive 
-                      ? "bg-green-600 text-white" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  )}>
-                    {item.icon && <item.icon className="mr-3 h-4 w-4" />}
-                    {item.name}
-                    {item.badge && (
-                      <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                )}
-              </li>
+              <Link key={item.path} href={item.path}>
+                <div
+                  className={cn(
+                    "flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-primary/15 text-primary border border-primary/20 shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  )}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  {item.name}
+                </div>
+              </Link>
             );
           })}
-        </ul>
-      </div>
+        </div>
+      </nav>
 
-      {/* User section at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-        <div className="flex items-center mb-3">
-          <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-3">
-            <span className="text-white text-sm">A</span>
+      {/* User Profile Section */}
+      <div className="absolute bottom-0 w-full p-4 border-t border-border bg-card/50">
+        <div className="flex items-center space-x-3 p-2 rounded-lg bg-accent/30">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-sm">
+            <span className="text-primary-foreground text-xs font-semibold">A</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Admin</p>
-            <p className="text-xs text-gray-400 truncate">Administrador</p>
+            <p className="text-sm font-medium text-foreground truncate">
+              Admin
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              Administrador
+            </p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+          className="mt-3 w-full flex items-center px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
         >
           <LogOut className="mr-3 h-4 w-4" />
           Sair
         </button>
       </div>
-    </nav>
+    </div>
   );
 }

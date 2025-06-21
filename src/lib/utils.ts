@@ -62,17 +62,15 @@ export function getStatusLabel(status: string): string {
 }
 
 export function getRoleColor(papel: string): string {
-  switch (papel) {
-    case 'pai':
-      return 'bg-blue-100 text-blue-800';
-    case 'mae':
-      return 'bg-pink-100 text-pink-800';
-    case 'filho':
-      return 'bg-green-100 text-green-800';
-    case 'filha':
-      return 'bg-purple-100 text-purple-800';
+  switch (papel.toLowerCase()) {
+    case 'admin':
+      return 'bg-purple-600 text-white border-purple-600';
+    case 'usuario':
+      return 'bg-blue-600 text-white border-blue-600';
+    case 'visualizador':
+      return 'bg-green-600 text-white border-green-600';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-600 text-white border-gray-600';
   }
 }
 

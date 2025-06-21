@@ -33,7 +33,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card/95 backdrop-blur-sm border-r border-border shadow-lg transform -translate-x-full transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-green-50/80 backdrop-blur-sm border-r border-green-200/50 shadow-lg transform -translate-x-full transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
       {/* Navigation */}
       <nav className="flex-1 mt-4 px-3 overflow-y-auto">
         <div className="px-3 mb-3">

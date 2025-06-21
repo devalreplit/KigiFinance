@@ -1,16 +1,21 @@
 // ============================
-// 📂 src/types.ts
+// 📂 types.ts
 // ============================
 
 export interface Usuario {
   id: number;
   nome: string;
+  email?: string;
   senha: string;
   papel: "pai" | "mae" | "filho" | "filha";
+  ativo: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
 }
 
 export interface UsuarioInput {
   nome: string;
+  email?: string;
   senha: string;
   papel: "pai" | "mae" | "filho" | "filha";
 }
@@ -18,10 +23,17 @@ export interface UsuarioInput {
 export interface Empresa {
   id: number;
   nome: string;
+  cnpj?: string;
+  categoria?: string;
+  ativo: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
 }
 
 export interface EmpresaInput {
   nome: string;
+  cnpj?: string;
+  categoria?: string;
 }
 
 export interface Produto {
@@ -31,6 +43,9 @@ export interface Produto {
   unidade: string;
   classificacao: string;
   precoUnitario: number;
+  ativo?: boolean;
+  criadoEm?: string;
+  atualizadoEm?: string;
 }
 
 export interface ProdutoInput {

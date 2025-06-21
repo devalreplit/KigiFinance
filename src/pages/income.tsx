@@ -1,15 +1,14 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { useApi, useMutation } from "@/hooks/useApi";
 import { userService, companyService, incomeService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/auth";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, DollarSign } from "lucide-react";
 import { Usuario, Empresa, EntradaInput } from "../../types";
 
 export default function Income() {
@@ -22,24 +21,15 @@ export default function Income() {
 
   const { toast } = useToast();
 
-  const { data: users } = useQuery({
-    queryKey: ["users"],
-    queryFn: userService.getAll,
-  });
+  const { data: users, isLoading: isLoadingUsers, refetch: refetchUsers } = useApi(() => userService.getAll());
+  const { data: empresasPagadoras, isLoading: isLoadingCompanies, refetch: refetchCompanies } = useApi(() => companyService.getAll());
+  const { data: entradas, isLoading: isLoadingEntradas, refetch: refetchEntradas } = useApi(() => incomeService.getAll());
 
-  const { data: empresasPagadoras } = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyService.getAll,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: incomeService.create,
+  const createMutation = useMutation(incomeService.create, {
     onSuccess: () => {
-      // Recarregar dados após operação
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["companies"] });
-      queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
-      queryClient.invalidateQueries({ queryKey: ["recent-transactions"] });
+      refetchEntradas();
+      refetchUsers();
+      refetchCompanies();
 
       toast({
         title: "Entrada registrada",
@@ -54,17 +44,26 @@ export default function Income() {
         empresaPagadoraId: "",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Erro ao registrar entrada",
-        description: "Não foi possível registrar a entrada",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.usuarioTitularId || !formData.valor || !formData.empresaPagadoraId) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const currentUser = authService.getCurrentUser();
     if (!currentUser) {
@@ -76,147 +75,193 @@ export default function Income() {
       return;
     }
 
-    if (!formData.usuarioTitularId || !formData.valor || !formData.empresaPagadoraId) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const entradaData: InsertEntrada = {
+    const entradaData: EntradaInput = {
+      usuarioRegistroId: currentUser.id,
       usuarioTitularId: parseInt(formData.usuarioTitularId),
       dataReferencia: formData.dataReferencia,
-      valor: parseFloat(formData.valor).toFixed(2),
+      valor: parseFloat(formData.valor),
       empresaPagadoraId: parseInt(formData.empresaPagadoraId),
-      usuarioRegistroId: currentUser.id,
     };
 
-    createMutation.mutate(entradaData);
+    await createMutation.mutate(entradaData);
   };
 
-  const handleClear = () => {
-    setFormData({
-      usuarioTitularId: "",
-      dataReferencia: new Date().toISOString().split('T')[0],
-      valor: "",
-      empresaPagadoraId: "",
-    });
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Registro de Entrada</h2>
-        <p className="text-gray-600">Registrar uma nova entrada financeira</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+            Registrar Entrada
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Registre receitas e ganhos familiares
+          </p>
+        </div>
       </div>
 
-      <div className="max-w-2xl mx-auto">
-        <Card className="border-gray-100 shadow-sm">
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Form */}
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="usuarioTitularId" className="text-sm font-medium text-gray-700">
-                  Membro da Família
-                </Label>
-                <Select
-                  value={formData.usuarioTitularId}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, usuarioTitularId: value }))}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Selecione o membro" />
+                <Label htmlFor="usuarioTitularId">Titular da Entrada *</Label>
+                <Select value={formData.usuarioTitularId} onValueChange={(value) => handleInputChange('usuarioTitularId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o titular" />
                   </SelectTrigger>
                   <SelectContent>
-                    {users?.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.nome}
-                      </SelectItem>
-                    ))}
+                    {isLoadingUsers ? (
+                      <SelectItem value="">Carregando...</SelectItem>
+                    ) : (
+                      users?.map((user: Usuario) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.nome}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="dataReferencia" className="text-sm font-medium text-gray-700">
-                  Data de Referência
-                </Label>
+                <Label htmlFor="empresaPagadoraId">Empresa Pagadora *</Label>
+                <Select value={formData.empresaPagadoraId} onValueChange={(value) => handleInputChange('empresaPagadoraId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingCompanies ? (
+                      <SelectItem value="">Carregando...</SelectItem>
+                    ) : (
+                      empresasPagadoras?.map((empresa: Empresa) => (
+                        <SelectItem key={empresa.id} value={empresa.id.toString()}>
+                          {empresa.nome}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="dataReferencia">Data de Referência *</Label>
                 <Input
                   id="dataReferencia"
                   type="date"
                   value={formData.dataReferencia}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dataReferencia: e.target.value }))}
-                  className="mt-2"
+                  onChange={(e) => handleInputChange('dataReferencia', e.target.value)}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="valor" className="text-sm font-medium text-gray-700">
-                  Valor (R$)
-                </Label>
+                <Label htmlFor="valor">Valor (R$) *</Label>
                 <Input
                   id="valor"
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.valor}
-                  onChange={(e) => setFormData(prev => ({ ...prev, valor: e.target.value }))}
                   placeholder="0,00"
-                  className="mt-2"
+                  value={formData.valor}
+                  onChange={(e) => handleInputChange('valor', e.target.value)}
                   required
                 />
               </div>
+            </div>
 
-              <div>
-                <Label htmlFor="empresaPagadoraId" className="text-sm font-medium text-gray-700">
-                  Empresa Pagadora
-                </Label>
-                <Select
-                  value={formData.empresaPagadoraId}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, empresaPagadoraId: value }))}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Selecione a empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {empresasPagadoras.map((empresa) => (
-                      <SelectItem key={empresa.id} value={empresa.id.toString()}>
-                        {empresa.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setFormData({
+                  usuarioTitularId: "",
+                  dataReferencia: new Date().toISOString().split('T')[0],
+                  valor: "",
+                  empresaPagadoraId: "",
+                })}
+              >
+                Limpar
+              </Button>
+              <Button type="submit" disabled={createMutation.isLoading}>
+                {createMutation.isLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                Registrar Entrada
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
-              <div className="flex gap-4">
-                <Button
-                  type="submit"
-                  className="flex-1 bg-primary hover:bg-blue-700"
-                  disabled={createMutation.isPending}
-                >
-                  {createMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Registrando...
-                    </>
-                  ) : (
-                    "Registrar Entrada"
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClear}
-                  className="px-6"
-                >
-                  Limpar
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Entradas Recentes */}
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center">
+            <DollarSign className="h-5 w-5 mr-2 text-green-600" />
+            Entradas Recentes
+          </h3>
+          
+          {isLoadingEntradas ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          ) : entradas && entradas.length > 0 ? (
+            <div className="space-y-4">
+              {entradas.slice(0, 5).map((entrada: any) => {
+                const titular = users?.find((u: Usuario) => u.id === entrada.usuarioTitularId);
+                const empresa = empresasPagadoras?.find((e: Empresa) => e.id === entrada.empresaPagadoraId);
+                
+                return (
+                  <div key={entrada.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                        <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {titular?.nome || 'Usuário não encontrado'}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {empresa?.nome || 'Empresa não encontrada'} • {new Date(entrada.dataReferencia).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-green-600 dark:text-green-400">
+                        R$ {entrada.valor.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">Nenhuma entrada registrada ainda</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

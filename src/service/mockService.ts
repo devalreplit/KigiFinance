@@ -33,24 +33,17 @@ let installments = [...mockInstallments];
 // Serviços de Autenticação Mock
 export const mockAuthService = {
   login: async (username: string, senha: string): Promise<{ user: Usuario; token: string }> => {
-    // Simular delay da API
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await mockDelay(1000);
 
-    // Verificar credenciais - comparar com dados mock
-    if (username === 'admin' && senha === '123456') {
-      const user = {
-        id: 1,
-        nome: 'Administrador',
-        username: 'admin',
-        tipo: 'admin' as const,
-        ativo: true,
-        criadoEm: new Date().toISOString(),
-        atualizadoEm: new Date().toISOString()
-      };
+    // Verificar credenciais com dados mock dos usuários
+    const user = users.find(u => 
+      (u.email === username || u.nome === username) && u.senha === senha && u.ativo
+    );
 
+    if (user) {
       return {
         user,
-        token: `mock-token-${user.id}-${Date.now()}`
+        token: 'mock-jwt-token-' + Date.now()
       };
     }
 
@@ -58,30 +51,15 @@ export const mockAuthService = {
   },
 
   logout: async (): Promise<void> => {
-    await mockDelay(200);
-    localStorage.removeItem('authToken');
+    await mockDelay(300);
+    // Não precisa fazer nada no mock
   },
 
   getCurrentUser: async (): Promise<Usuario> => {
-    // Simular delay da API
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Retornar usuário atual baseado no token (simulado)
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      throw new Error('Token não encontrado');
-    }
-
-    // Simular retorno do usuário admin
-    return {
-      id: 1,
-      nome: 'Administrador',
-      username: 'admin',
-      tipo: 'admin',
-      ativo: true,
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString()
-    };
+    await mockDelay(200);
+    // Retorna o primeiro usuário admin como padrão
+    const adminUser = users.find(u => u.papel === 'pai') || users[0];
+    return adminUser;
   },
 };
 
@@ -89,7 +67,7 @@ export const mockAuthService = {
 export const mockUserService = {
   getAll: async (): Promise<Usuario[]> => {
     await mockDelay();
-    return users;
+    return users.filter(u => u.ativo);
   },
 
   getById: async (id: number): Promise<Usuario> => {
@@ -116,7 +94,7 @@ export const mockUserService = {
     await mockDelay();
     const index = users.findIndex(u => u.id === id);
     if (index === -1) throw new Error('Usuário não encontrado');
-
+    
     users[index] = {
       ...users[index],
       ...userData,
@@ -129,7 +107,7 @@ export const mockUserService = {
     await mockDelay();
     const index = users.findIndex(u => u.id === id);
     if (index === -1) throw new Error('Usuário não encontrado');
-    users.splice(index, 1);
+    users[index].ativo = false;
   },
 };
 
@@ -137,7 +115,7 @@ export const mockUserService = {
 export const mockCompanyService = {
   getAll: async (): Promise<Empresa[]> => {
     await mockDelay();
-    return companies;
+    return companies.filter(c => c.ativo);
   },
 
   getById: async (id: number): Promise<Empresa> => {
@@ -164,7 +142,7 @@ export const mockCompanyService = {
     await mockDelay();
     const index = companies.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Empresa não encontrada');
-
+    
     companies[index] = {
       ...companies[index],
       ...companyData,
@@ -177,7 +155,7 @@ export const mockCompanyService = {
     await mockDelay();
     const index = companies.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Empresa não encontrada');
-    companies.splice(index, 1);
+    companies[index].ativo = false;
   },
 };
 
@@ -219,7 +197,7 @@ export const mockProductService = {
     await mockDelay();
     const index = products.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Produto não encontrado');
-
+    
     products[index] = {
       ...products[index],
       ...productData,
@@ -255,8 +233,7 @@ export const mockIncomeService = {
     const newIncome: Entrada = {
       id: Math.max(...incomes.map(i => i.id)) + 1,
       ...incomeData,
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString(),
+      dataHoraRegistro: new Date().toISOString(),
     };
     incomes.push(newIncome);
     return newIncome;
@@ -266,11 +243,10 @@ export const mockIncomeService = {
     await mockDelay();
     const index = incomes.findIndex(i => i.id === id);
     if (index === -1) throw new Error('Entrada não encontrada');
-
+    
     incomes[index] = {
       ...incomes[index],
       ...incomeData,
-      atualizadoEm: new Date().toISOString(),
     };
     return incomes[index];
   },
@@ -299,16 +275,26 @@ export const mockExpenseService = {
 
   getWithInstallments: async (): Promise<Saida[]> => {
     await mockDelay();
-    return expenses;
+    return expenses.filter(e => e.tipoPagamento === 'parcelado');
   },
 
   create: async (expenseData: SaidaInput): Promise<Saida> => {
     await mockDelay();
     const newExpense: Saida = {
       id: Math.max(...expenses.map(e => e.id)) + 1,
-      ...expenseData,
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString(),
+      usuarioRegistroId: expenseData.usuarioRegistroId,
+      dataHoraRegistro: new Date().toISOString(),
+      dataSaida: expenseData.dataSaida,
+      empresaId: expenseData.empresaId,
+      tipoPagamento: expenseData.tipoPagamento,
+      usuariosTitularesIds: expenseData.usuariosTitularesIds,
+      itens: expenseData.itens.map(item => ({
+        ...item,
+        nomeProduto: products.find(p => p.id === item.produtoId)?.nome || 'Produto não encontrado',
+        total: item.quantidade * item.precoUnitario,
+      })),
+      valorTotal: expenseData.itens.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0),
+      observacao: expenseData.observacao,
     };
     expenses.push(newExpense);
     return newExpense;
@@ -318,11 +304,10 @@ export const mockExpenseService = {
     await mockDelay();
     const index = expenses.findIndex(e => e.id === id);
     if (index === -1) throw new Error('Saída não encontrada');
-
+    
     expenses[index] = {
       ...expenses[index],
       ...expenseData,
-      atualizadoEm: new Date().toISOString(),
     };
     return expenses[index];
   },
@@ -353,13 +338,9 @@ export const mockInstallmentService = {
     await mockDelay();
     const index = installments.findIndex(i => i.id === id);
     if (index === -1) throw new Error('Parcela não encontrada');
-
-    installments[index] = {
-      ...installments[index],
-      pago: true,
-      dataPagamento: paymentDate,
-      atualizadoEm: new Date().toISOString(),
-    };
+    
+    installments[index].status = 'paga';
+    installments[index].dataPagamento = paymentDate;
   },
 };
 
@@ -378,8 +359,11 @@ export const mockReportService = {
   getDetailedReport: async (filters: any) => {
     await mockDelay();
     return {
-      transactions: mockTransactions,
-      summary: mockFinancialSummary,
+      total: mockFinancialSummary.saldoFamiliar,
+      transactions: mockTransactions.filter(t => {
+        // Aplicar filtros se necessário
+        return true;
+      }),
     };
   },
 };

@@ -12,7 +12,7 @@ import Installments from "@/pages/installments";
 import Reports from "@/pages/reports";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
-import { authService } from "@/lib/auth";
+import { authService } from "@/service/auth";
 import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useApi, useMutation } from "@/hooks/useApi";
 import { userService, companyService, incomeService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { authService } from "@/lib/auth";
+import { authService } from "@/service/auth";
 import { Loader2, Plus, DollarSign } from "lucide-react";
 import { Usuario, Empresa, EntradaInput } from "../../types";
 

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { authService } from "@/lib/auth";
+import { authService } from "@/service/auth";
 import { cn } from "@/lib/utils";
 import { 
   Home, 

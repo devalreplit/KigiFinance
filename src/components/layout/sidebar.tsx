@@ -35,7 +35,7 @@ export default function Sidebar() {
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card/95 backdrop-blur-sm border-r border-border shadow-lg transform -translate-x-full transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
       {/* Logo */}
-      <div className="flex items-center h-16 px-6 border-b border-border bg-card/50">
+      <div className="flex items-center h-[73px] px-6 border-b border-border bg-card/50">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
             <span className="text-primary-foreground font-bold text-sm">KG</span>

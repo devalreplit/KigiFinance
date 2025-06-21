@@ -58,8 +58,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="bg-card/80 backdrop-blur-sm border-b border-border px-4 lg:px-6 py-4 shadow-sm">
-          <div className="flex items-center justify-between w-full">
+        <header className="bg-card/80 backdrop-blur-sm border-b border-border px-4 lg:px-6 shadow-sm" style={{ height: '73px' }}>
+          <div className="flex items-center h-full">
+            <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4 flex-1 min-w-0">
               <div className="relative max-w-xs lg:max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -96,6 +97,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
+                </div>
               </div>
             </div>
           </div>

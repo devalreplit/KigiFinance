@@ -52,10 +52,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       <div className="lg:hidden">
         <MobileNav />
       </div>
-      
+
       {/* Desktop Sidebar */}
       <Sidebar />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
         <header className="bg-card/80 backdrop-blur-sm border-b border-border px-4 lg:px-6 shadow-sm" style={{ height: '73px' }}>
@@ -86,18 +86,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                   </span>
                 </button>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground hidden sm:inline">KG</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-foreground hidden sm:inline">Admin</span>
-                  <span className="text-sm text-muted-foreground hidden lg:inline">Administrador</span>
+              <div className="flex items-center space-x-3 bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-2 rounded-lg border border-primary/20">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-primary-foreground text-sm font-bold">KG</span>
                 </div>
-                <button className="p-1 rounded-full hover:bg-accent transition-colors">
-                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-foreground">Admin</span>
+                  <span className="text-xs text-primary font-medium">Administrador</span>
+                </div>
+                <button className="p-1 rounded-full hover:bg-primary/20 transition-colors">
+                  <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                </div>
               </div>
             </div>
           </div>

@@ -55,7 +55,7 @@ export default function Sidebar() {
           {menuItems.map((item) => {
             const isActive = location === item.path;
             const Icon = item.icon;
-            
+
             return (
               <Link key={item.path} href={item.path}>
                 <div
@@ -75,7 +75,7 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      
+
     </div>
   );
 }

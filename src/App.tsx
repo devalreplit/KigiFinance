@@ -58,31 +58,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="bg-card/80 backdrop-blur-sm border-b border-border px-4 lg:px-6 shadow-sm" style={{ height: '73px' }}>
+        <header className="bg-gradient-to-r from-green-800 via-green-700 to-green-600 backdrop-blur-sm border-b border-green-600/20 px-4 lg:px-6 shadow-lg" style={{ height: '73px' }}>
           <div className="flex items-center h-full">
             <div className="flex items-center justify-between w-full">
               <div className="flex-1"></div>
               <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
                 <div className="relative hidden sm:block">
                   <button className="p-2 rounded-lg hover:bg-accent relative transition-colors">
-                    <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM12 2l3.09 6.26L22 9l-5 4.87L18.18 22 12 18.82 5.82 22 7 13.87 2 9l6.91-.74L12 2z" />
                     </svg>
-                    <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       3
                     </span>
                   </button>
                 </div>
-                <div className="flex items-center space-x-3 bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-2 rounded-lg border border-primary/20">
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-sm">
-                    <span className="text-primary-foreground text-sm font-bold">KG</span>
+                <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/20">
+                  <div className="w-8 h-8 bg-gradient-to-br from-white to-green-100 rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-green-800 text-sm font-bold">KG</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-foreground">Admin</span>
-                    <span className="text-xs text-primary font-medium">Administrador</span>
+                    <span className="text-sm font-semibold text-white">Admin</span>
+                    <span className="text-xs text-green-100 font-medium">Administrador</span>
                   </div>
-                  <button className="p-1 rounded-full hover:bg-primary/20 transition-colors">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>

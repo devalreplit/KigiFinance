@@ -13,9 +13,9 @@ import {
 export const mockUsers: Usuario[] = [
   {
     id: 1,
-    nome: 'João Silva',
-    email: 'joao@email.com',
-    senha: '123456',
+    nome: 'Admin',
+    email: 'admin@kigi.com',
+    senha: 'admin',
     papel: 'pai',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',

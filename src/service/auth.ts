@@ -6,7 +6,10 @@ class AuthService {
 
   async login(username: string, senha: string): Promise<Usuario> {
     try {
+      console.log('AuthService.login - tentativa:', { username, senha });
       const response = await apiAuthService.login(username, senha);
+      
+      console.log('AuthService.login - resposta:', response);
       
       // Salvar token no localStorage
       localStorage.setItem('authToken', response.token);
@@ -14,7 +17,8 @@ class AuthService {
       this.user = response.user;
       return response.user;
     } catch (error) {
-      throw new Error("Credenciais inválidas");
+      console.error('AuthService.login - erro:', error);
+      throw error;
     }
   }
 

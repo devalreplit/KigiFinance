@@ -124,9 +124,18 @@ export default function Login({ onLogin }: LoginProps) {
                 Credenciais de Demonstração:
               </h3>
               <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                <p><strong>Usuário:</strong> admin ou João Silva</p>
-                <p><strong>Senha:</strong> 123456</p>
+                <p><strong>Usuário:</strong> admin</p>
+                <p><strong>Senha:</strong> admin</p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({ username: 'admin', password: 'admin' });
+                }}
+                className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Preencher automaticamente
+              </button>
             </div>
           </CardContent>
         </Card>

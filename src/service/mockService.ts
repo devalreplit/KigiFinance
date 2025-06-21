@@ -35,10 +35,26 @@ export const mockAuthService = {
   login: async (username: string, senha: string): Promise<{ user: Usuario; token: string }> => {
     await mockDelay(1000);
 
+    console.log('Mock login - tentativa:', { username, senha });
+    console.log('Usuários disponíveis:', users.map(u => ({ nome: u.nome, email: u.email, senha: u.senha })));
+
     // Verificar credenciais com dados mock dos usuários
     const user = users.find(u => 
-      (u.email === username || u.nome === username) && u.senha === senha && u.ativo
+      (u.email === username || u.nome === username || username === 'admin') && 
+      u.senha === senha && 
+      u.ativo
     );
+
+    // Verificação especial para admin/admin
+    if (username === 'admin' && senha === 'admin') {
+      const adminUser = users.find(u => u.nome === 'Admin') || users[0];
+      return {
+        user: adminUser,
+        token: 'mock-jwt-token-' + Date.now()
+      };
+    }
+
+    console.log('Usuário encontrado:', user);
 
     if (user) {
       return {

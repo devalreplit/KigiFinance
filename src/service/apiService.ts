@@ -1,5 +1,5 @@
 
-import apiClient from './api';
+import api from './api';
 import {
   Usuario,
   UsuarioInput,

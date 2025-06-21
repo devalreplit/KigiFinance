@@ -1,3 +1,4 @@
+
 import {
   Usuario,
   Empresa,
@@ -9,7 +10,7 @@ import {
   Transacao,
 } from '../../types';
 
-// Dados mockados para desenvolvimento
+// Dados mockados para desenvolvimento - apenas para referência
 export const mockUsers: Usuario[] = [
   {
     id: 1,
@@ -108,6 +109,7 @@ export const mockProducts: Produto[] = [
   },
   {
     id: 3,
+    codigoBarras: '7891234567892',
     nome: 'Óleo de Soja 900ml',
     unidade: 'ml',
     classificacao: 'Alimentação',

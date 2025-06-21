@@ -54,34 +54,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Top Header - spans full width */}
-      <header className="bg-gradient-to-b from-green-600 via-green-500 to-green-400 backdrop-blur-sm border-b border-green-400/20 px-4 lg:px-6 shadow-lg" style={{ height: '73px' }}>
+      <header className="bg-gradient-to-b from-green-600 via-green-500 to-green-400 backdrop-blur-sm border-b border-green-400/20 px-3 lg:px-4 shadow-lg" style={{ height: '56px' }}>
         <div className="flex items-center h-full">
           <div className="flex items-center justify-between w-full">
             {/* Logo na esquerda */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-white to-green-100 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-green-800 font-bold text-sm">KG</span>
+            <div className="flex items-center space-x-1.5">
+              <div className="w-6 h-6 bg-gradient-to-br from-white to-green-100 rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-green-800 font-bold text-xs">KG</span>
               </div>
-              <span className="text-xl font-bold text-white">KIGI</span>
+              <span className="text-lg font-bold text-white">KIGI</span>
             </div>
-            <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
+            <div className="flex items-center space-x-1.5 lg:space-x-3 flex-shrink-0">
               <div className="relative hidden sm:block">
-                <button className="p-2 rounded-lg hover:bg-accent relative transition-colors">
-                  <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button className="p-1.5 rounded-lg hover:bg-accent relative transition-colors">
+                  <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM12 2l3.09 6.26L22 9l-5 4.87L18.18 22 12 18.82 5.82 22 7 13.87 2 9l6.91-.74L12 2z" />
                   </svg>
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     3
                   </span>
                 </button>
               </div>
-              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-white/30 shadow-sm">
-                <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
+              <div className="flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
+                <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white text-xs font-bold">KG</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-green-800">Admin</span>
-                  <span className="text-xs text-green-600 font-medium">Administrador</span>
+                  <span className="text-xs font-semibold text-green-800 leading-tight">Admin</span>
+                  <span className="text-xs text-green-600 font-medium leading-tight">Administrador</span>
                 </div>
                 <button className="p-0.5 rounded-full hover:bg-green-100/50 transition-colors">
                   <svg className="w-3 h-3 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">

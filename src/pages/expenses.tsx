@@ -8,7 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { authService } from "@/service/auth";
 import { userService, productService, expenseService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ShoppingCart, Search, Loader2 } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, Search, Loader2, QrCode } from "lucide-react";
 import { Usuario, Produto, Empresa, SaidaInput, ItemSaidaInput } from "../../types";
 
 export default function Expenses() {

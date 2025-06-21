@@ -129,7 +129,7 @@ export default function Users() {
                       <td className="py-4 px-6">
                         <Badge
                           variant="secondary"
-                          className={`${getRoleColor(user.papel)} text-white font-medium shadow-sm`}
+                          className={`${getRoleColor(user.papel)} text-white font-medium shadow-sm border-0`}
                         >
                           {getRoleLabel(user.papel)}
                         </Badge>

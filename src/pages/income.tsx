@@ -117,7 +117,7 @@ export default function Income() {
                   </SelectTrigger>
                   <SelectContent>
                     {isLoadingUsers ? (
-                      <SelectItem value="">Carregando...</SelectItem>
+                      <SelectItem value="loading">Carregando...</SelectItem>
                     ) : (
                       users?.map((user: Usuario) => (
                         <SelectItem key={user.id} value={user.id.toString()}>
@@ -137,7 +137,7 @@ export default function Income() {
                   </SelectTrigger>
                   <SelectContent>
                     {isLoadingCompanies ? (
-                      <SelectItem value="">Carregando...</SelectItem>
+                      <SelectItem value="loading">Carregando...</SelectItem>
                     ) : (
                       empresasPagadoras?.map((empresa: Empresa) => (
                         <SelectItem key={empresa.id} value={empresa.id.toString()}>

@@ -117,7 +117,7 @@ export default function Users() {
                     <tr key={user.id} className="border-b border-border hover:bg-accent/30 transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                          <div className="w-8 h-8 bg-primary/15 rounded-full flex items-center justify-center border border-primary/20">
                             <UsersIcon className="h-4 w-4 text-primary" />
                           </div>
                           <span className="font-medium text-foreground">{user.nome}</span>
@@ -129,7 +129,7 @@ export default function Users() {
                       <td className="py-4 px-6">
                         <Badge
                           variant="secondary"
-                          className={`${getRoleColor(user.papel)} text-white`}
+                          className={`${getRoleColor(user.papel)} text-white font-medium shadow-sm`}
                         >
                           {getRoleLabel(user.papel)}
                         </Badge>
@@ -145,21 +145,21 @@ export default function Users() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(user)}
-                            className="hover:bg-primary/10"
+                            className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-4 w-4 text-blue-600" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleDelete(user.id)}
                             disabled={deleting === user.id}
-                            className="hover:bg-destructive/10 hover:text-destructive"
+                            className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                           >
                             {deleting === user.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <Loader2 className="h-4 w-4 animate-spin text-red-600" />
                             ) : (
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 text-red-600" />
                             )}
                           </Button>
                         </div>

@@ -75,26 +75,7 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* User Profile Section */}
-      <div className="flex-shrink-0 p-3 border-t border-border bg-card/50">
-        <div className="flex items-center space-x-2 p-2 rounded-lg bg-accent/30">
-          <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-sm">
-            <span className="text-primary-foreground text-xs font-semibold">A</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground truncate">
-              Administrador
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="mt-2 w-full flex items-center px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
-        >
-          <LogOut className="mr-2 h-3 w-3" />
-          Sair
-        </button>
-      </div>
+      
     </div>
   );
 }

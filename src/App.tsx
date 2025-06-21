@@ -75,16 +75,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                   </span>
                 </button>
               </div>
-              <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/20">
-                <div className="w-8 h-8 bg-gradient-to-br from-white to-green-100 rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-green-800 text-sm font-bold">KG</span>
+              <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-2 py-1.5 rounded-lg border border-white/30 shadow-sm">
+                <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
+                  <span className="text-white text-xs font-bold">KG</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">Admin</span>
-                  <span className="text-xs text-green-100 font-medium">Administrador</span>
+                  <span className="text-xs font-semibold text-green-800">Admin</span>
+                  <span className="text-xs text-green-600 font-medium">Administrador</span>
                 </div>
-                <button className="p-1 rounded-full hover:bg-white/20 transition-colors">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button className="p-0.5 rounded-full hover:bg-green-100/50 transition-colors">
+                  <svg className="w-3 h-3 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>

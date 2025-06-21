@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Camera, X, Check, RotateCcw, Monitor, Smartphone, AlertTriangle } from "lucide-react";
+import { Camera, X, Check, RotateCcw, Monitor, Smartphone, AlertTriangle, Keyboard } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { BrowserMultiFormatReader, Exception } from '@zxing/library';
 
 interface BarcodeScannerProps {
@@ -17,8 +18,12 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
   const [deviceType, setDeviceType] = useState<'mobile' | 'desktop'>('mobile');
   const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualCode, setManualCode] = useState('');
+  const [scanAttempts, setScanAttempts] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Detectar tipo de dispositivo
   useEffect(() => {
@@ -72,76 +77,87 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
         return;
       }
 
+      // Parar qualquer scanner anterior
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset();
+      }
+
+      // Parar stream anterior se existir
+      if (videoRef.current && videoRef.current.srcObject) {
+        const oldStream = videoRef.current.srcObject as MediaStream;
+        oldStream.getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+
       // Listar câmeras
       const hasCameras = await getCameras();
       if (!hasCameras) return;
 
       // Inicializar leitor de código
-      if (!codeReaderRef.current) {
-        codeReaderRef.current = new BrowserMultiFormatReader();
-      }
-
+      codeReaderRef.current = new BrowserMultiFormatReader();
       const codeReader = codeReaderRef.current;
-      setIsScanning(true);
-
-      // Configurar constraints da câmera
-      const constraints: MediaStreamConstraints = {
-        video: {
-          deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
-          width: { ideal: 640, max: 1280 },
-          height: { ideal: 480, max: 720 },
-          facingMode: deviceType === 'mobile' ? 'environment' : 'user'
-        }
-      };
-
-      // Iniciar stream de vídeo
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        
-        // Aguardar vídeo carregar
-        await new Promise((resolve) => {
-          if (videoRef.current) {
-            videoRef.current.onloadedmetadata = () => resolve(true);
-          }
-        });
+      setIsScanning(true);
+      console.log('Iniciando scanner...');
 
-        // Iniciar decodificação contínua
-        codeReader.decodeFromVideoDevice(selectedCameraId, videoRef.current, (result, err) => {
-          if (result) {
-            const code = result.getText();
-            setScannedCode(code);
-            setIsScanning(false);
+      // Timeout para evitar travamento
+      timeoutRef.current = setTimeout(() => {
+        if (isScanning) {
+          console.log('Timeout do scanner - oferecendo entrada manual');
+          setError('Scanner demorou para detectar. Tente entrada manual ou posicione melhor o código.');
+          setIsScanning(false);
+          codeReader.reset();
+        }
+      }, 30000); // 30 segundos
+
+      // Iniciar decodificação contínua diretamente
+      try {
+        await codeReader.decodeFromVideoDevice(
+          selectedCameraId ? selectedCameraId : null, 
+          videoRef.current!,
+          (result, err) => {
+            if (result) {
+              console.log('Código detectado:', result.getText());
+              const code = result.getText();
+              setScannedCode(code);
+              setIsScanning(false);
+              
+              // Limpar timeout
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+              }
+              
+              // Parar scanner
+              codeReader.reset();
+            }
             
-            // Parar stream
-            stream.getTracks().forEach(track => track.stop());
-            codeReader.reset();
+            // Log de erros apenas para debug, não mostrar para usuário
+            if (err && !(err instanceof Exception)) {
+              console.debug('Erro durante scan (normal):', err);
+            }
           }
-          
-          if (err && !(err instanceof Exception)) {
-            console.error('Erro durante scan:', err);
-          }
-        });
+        );
+      } catch (scanErr) {
+        console.error('Erro ao iniciar scan:', scanErr);
+        setIsScanning(false);
+        setError('Erro ao iniciar scanner. Tente novamente.');
       }
-    } catch (err) {
+
+    } catch (err: any) {
       console.error('Erro no scanner:', err);
       setIsScanning(false);
       
-      if (err instanceof Exception) {
-        if (err.message.includes('NotAllowedError') || err.message.includes('Permission denied')) {
-          setError('Permissão de câmera negada. Por favor, permita o acesso à câmera nas configurações do navegador.');
-        } else if (err.message.includes('NotFoundError') || err.message.includes('No video input devices found')) {
-          setError(deviceType === 'desktop' 
-            ? 'Nenhuma câmera encontrada. Conecte uma webcam ao seu computador e tente novamente.' 
-            : 'Nenhuma câmera encontrada neste dispositivo.');
-        } else if (err.message.includes('NotReadableError') || err.message.includes('Could not start video source')) {
-          setError('Câmera em uso por outro aplicativo. Feche outros apps que possam estar usando a câmera.');
-        } else {
-          setError('Não foi possível escanear código. Verifique se há luz suficiente e tente novamente.');
-        }
+      if (err.name === 'NotAllowedError') {
+        setError('Permissão de câmera negada. Clique no ícone de câmera na barra de endereços e permita o acesso.');
+      } else if (err.name === 'NotFoundError') {
+        setError(deviceType === 'desktop' 
+          ? 'Nenhuma câmera encontrada. Conecte uma webcam ao seu computador.' 
+          : 'Nenhuma câmera encontrada neste dispositivo.');
+      } else if (err.name === 'NotReadableError') {
+        setError('Câmera em uso por outro aplicativo. Feche outros apps que usam a câmera.');
       } else {
-        setError('Erro inesperado ao acessar a câmera. Tente recarregar a página.');
+        setError('Erro ao acessar câmera. Verifique as permissões e tente novamente.');
       }
     }
   };
@@ -149,6 +165,11 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
   // Parar scanner
   const stopScanning = () => {
     setIsScanning(false);
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     
     if (codeReaderRef.current) {
       codeReaderRef.current.reset();
@@ -176,11 +197,22 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
     startScanning();
   };
 
+  // Usar entrada manual
+  const handleManualInput = () => {
+    if (manualCode.trim()) {
+      setScannedCode(manualCode.trim());
+      setShowManualInput(false);
+      setManualCode('');
+    }
+  };
+
   // Fechar modal
   const handleClose = () => {
     stopScanning();
     setScannedCode(null);
     setError(null);
+    setShowManualInput(false);
+    setManualCode('');
     onClose();
   };
 
@@ -290,31 +322,50 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                   style={{ maxHeight: '300px', objectFit: 'cover' }}
                 />
                 
+                {/* Status do scanner */}
                 {isScanning && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-lg">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-                      <p className="text-sm font-medium">Procurando código...</p>
-                    </div>
+                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+                    Scanner Ativo - Procurando código...
                   </div>
                 )}
 
                 {/* Overlay de scanning */}
                 {isScanning && (
-                  <div className="absolute inset-4 border-2 border-green-500 rounded-lg">
+                  <div className="absolute inset-4 border-2 border-green-500 rounded-lg animate-pulse">
                     <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-green-500 rounded-tl-lg"></div>
                     <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-green-500 rounded-tr-lg"></div>
                     <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-green-500 rounded-bl-lg"></div>
                     <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-green-500 rounded-br-lg"></div>
                   </div>
                 )}
+
+                {/* Linha de scan horizontal animada */}
+                {isScanning && (
+                  <div className="absolute inset-4 overflow-hidden rounded-lg">
+                    <div className="absolute w-full h-0.5 bg-green-500 animate-pulse" 
+                         style={{ 
+                           top: '50%', 
+                           transform: 'translateY(-50%)',
+                           boxShadow: '0 0 10px rgba(34, 197, 94, 0.8)'
+                         }}>
+                    </div>
+                  </div>
+                )}
               </div>
               
-              <p className="text-sm text-muted-foreground mb-4">
-                {deviceType === 'mobile' 
-                  ? 'Posicione o código dentro do quadro. Funciona com códigos de barras e QR codes.'
-                  : 'Posicione o código em frente à webcam. Certifique-se que há boa iluminação.'}
+              <p className="text-sm text-muted-foreground mb-2">
+                {isScanning 
+                  ? 'Scanner ativo - posicione o código no centro da tela'
+                  : deviceType === 'mobile' 
+                    ? 'Posicione o código dentro do quadro. Funciona com códigos de barras e QR codes.'
+                    : 'Posicione o código em frente à webcam. Certifique-se que há boa iluminação.'}
               </p>
+
+              {isScanning && (
+                <p className="text-xs text-green-600 mb-4 font-medium">
+                  Dica: Mantenha o código bem iluminado e focado para melhor detecção
+                </p>
+              )}
               
               <div className="space-y-2">
                 <div className="flex space-x-2 justify-center">
@@ -340,6 +391,48 @@ export default function BarcodeScanner({ isOpen, onClose, onScan }: BarcodeScann
                   <X className="mr-2 h-4 w-4" />
                   Cancelar
                 </Button>
+
+                {/* Entrada manual como alternativa */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  {!showManualInput ? (
+                    <Button 
+                      onClick={() => setShowManualInput(true)} 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full text-sm"
+                    >
+                      <Keyboard className="mr-2 h-4 w-4" />
+                      Digitar código manualmente
+                    </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex space-x-2">
+                        <Input
+                          placeholder="Digite o código de barras"
+                          value={manualCode}
+                          onChange={(e) => setManualCode(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleManualInput()}
+                          className="text-sm"
+                        />
+                        <Button 
+                          onClick={handleManualInput} 
+                          size="sm" 
+                          disabled={!manualCode.trim()}
+                        >
+                          OK
+                        </Button>
+                      </div>
+                      <Button 
+                        onClick={() => setShowManualInput(false)} 
+                        variant="ghost" 
+                        size="sm" 
+                        className="w-full text-xs"
+                      >
+                        Voltar ao scanner
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

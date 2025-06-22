@@ -119,26 +119,73 @@ export const mockProducts: Produto[] = [
   },
 ];
 
-export const mockIncomes: Entrada[] = [
-  {
-    id: 1,
-    usuarioRegistroId: 1,
-    dataHoraRegistro: '2024-01-15T10:30:00.000Z',
-    usuarioTitularId: 1,
-    dataReferencia: '2024-01-15',
-    valor: 5000.00,
-    empresaPagadoraId: 1,
-  },
-  {
-    id: 2,
-    usuarioRegistroId: 2,
-    dataHoraRegistro: '2024-01-20T14:00:00.000Z',
-    usuarioTitularId: 2,
-    dataReferencia: '2024-01-20',
-    valor: 3500.00,
-    empresaPagadoraId: 2,
-  },
-];
+// Gerar entradas mockadas dinamicamente para mês corrente e anterior
+const generateMockIncomes = (): Entrada[] => {
+  const hoje = new Date();
+  const mesCorrente = hoje.getMonth() + 1;
+  const anoCorrente = hoje.getFullYear();
+  
+  // Calcular mês anterior
+  let mesAnterior = mesCorrente - 1;
+  let anoAnterior = anoCorrente;
+  if (mesAnterior === 0) {
+    mesAnterior = 12;
+    anoAnterior = anoCorrente - 1;
+  }
+
+  return [
+    // Entradas do mês corrente
+    {
+      id: 1,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 1,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-05`,
+      valor: 5000.00,
+      empresaPagadoraId: 1,
+    },
+    {
+      id: 2,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 2,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-10`,
+      valor: 3500.00,
+      empresaPagadoraId: 2,
+    },
+    {
+      id: 3,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 3,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-15`,
+      valor: 1200.00,
+      empresaPagadoraId: 3,
+    },
+    
+    // Entradas do mês anterior
+    {
+      id: 4,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: new Date(anoAnterior, mesAnterior - 1, 8).toISOString(),
+      usuarioTitularId: 1,
+      dataReferencia: `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-08`,
+      valor: 4800.00,
+      empresaPagadoraId: 1,
+    },
+    {
+      id: 5,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date(anoAnterior, mesAnterior - 1, 15).toISOString(),
+      usuarioTitularId: 2,
+      dataReferencia: `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-15`,
+      valor: 3200.00,
+      empresaPagadoraId: 2,
+    },
+  ];
+};
+
+export const mockIncomes: Entrada[] = generateMockIncomes();
 
 export const mockExpenses: Saida[] = [
   {

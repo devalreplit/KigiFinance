@@ -146,26 +146,120 @@ const initialProducts: Produto[] = [
   },
 ];
 
-const initialIncomes: Entrada[] = [
-  {
-    id: 1,
-    usuarioRegistroId: 1,
-    dataHoraRegistro: '2024-01-15T10:30:00.000Z',
-    usuarioTitularId: 1,
-    dataReferencia: '2024-01-15',
-    valor: 5000.00,
-    empresaPagadoraId: 1,
-  },
-  {
-    id: 2,
-    usuarioRegistroId: 2,
-    dataHoraRegistro: '2024-01-20T14:00:00.000Z',
-    usuarioTitularId: 2,
-    dataReferencia: '2024-01-20',
-    valor: 3500.00,
-    empresaPagadoraId: 2,
-  },
-];
+// Gerar entradas para o mês corrente e anterior dinamicamente
+const generateInitialIncomes = (): Entrada[] => {
+  const hoje = new Date();
+  const mesCorrente = hoje.getMonth() + 1;
+  const anoCorrente = hoje.getFullYear();
+  
+  // Calcular mês anterior
+  let mesAnterior = mesCorrente - 1;
+  let anoAnterior = anoCorrente;
+  if (mesAnterior === 0) {
+    mesAnterior = 12;
+    anoAnterior = anoCorrente - 1;
+  }
+
+  return [
+    // Entradas do mês corrente
+    {
+      id: 1,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 1,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-05`,
+      valor: 5000.00,
+      empresaPagadoraId: 1,
+    },
+    {
+      id: 2,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 2,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-10`,
+      valor: 3500.00,
+      empresaPagadoraId: 2,
+    },
+    {
+      id: 3,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 3,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-15`,
+      valor: 1200.00,
+      empresaPagadoraId: 3,
+    },
+    {
+      id: 4,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: new Date().toISOString(),
+      usuarioTitularId: 4,
+      dataReferencia: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-20`,
+      valor: 800.00,
+      empresaPagadoraId: 1,
+    },
+    
+    // Entradas do mês anterior
+    {
+      id: 5,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date(anoAnterior, mesAnterior - 1, 5).toISOString(),
+      usuarioTitularId: 1,
+      dataReferencia: `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-05`,
+      valor: 4800.00,
+      empresaPagadoraId: 1,
+    },
+    {
+      id: 6,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: new Date(anoAnterior, mesAnterior - 1, 12).toISOString(),
+      usuarioTitularId: 2,
+      dataReferencia: `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-12`,
+      valor: 3200.00,
+      empresaPagadoraId: 2,
+    },
+    {
+      id: 7,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date(anoAnterior, mesAnterior - 1, 18).toISOString(),
+      usuarioTitularId: 3,
+      dataReferencia: `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-18`,
+      valor: 950.00,
+      empresaPagadoraId: 3,
+    },
+    {
+      id: 8,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: new Date(anoAnterior, mesAnterior - 1, 25).toISOString(),
+      usuarioTitularId: 4,
+      dataReferencia: `${anoAnterior}-${mesAnterior.toString().padStart(2, '0')}-25`,
+      valor: 600.00,
+      empresaPagadoraId: 2,
+    },
+    
+    // Algumas entradas de meses mais antigos para testar filtros
+    {
+      id: 9,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: '2024-10-15T10:30:00.000Z',
+      usuarioTitularId: 1,
+      dataReferencia: '2024-10-15',
+      valor: 4500.00,
+      empresaPagadoraId: 1,
+    },
+    {
+      id: 10,
+      usuarioRegistroId: 2,
+      dataHoraRegistro: '2024-09-20T14:00:00.000Z',
+      usuarioTitularId: 2,
+      dataReferencia: '2024-09-20',
+      valor: 3000.00,
+      empresaPagadoraId: 2,
+    },
+  ];
+};
+
+const initialIncomes: Entrada[] = generateInitialIncomes();
 
 const initialExpenses: Saida[] = [
   {

@@ -48,11 +48,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col h-screen w-full max-w-full overflow-hidden">
-      {/* Mobile Navigation */}
-      <div className="lg:hidden">
-        <MobileNav />
-      </div>
-
       {/* Top Header - spans full width */}
       <header className="bg-gradient-to-b from-green-600 via-green-500 to-green-400 backdrop-blur-sm border-b border-green-400/20 px-3 lg:px-4 shadow-lg" style={{ height: '56px' }}>
         <div className="flex items-center h-full">
@@ -65,6 +60,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
               <span className="text-lg font-bold text-white">KIGI</span>
             </div>
             <div className="flex items-center space-x-1.5 lg:space-x-3 flex-shrink-0">
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden">
+                <MobileNav />
+              </div>
+              
               <div className="relative hidden sm:block">
                 <button className="p-1.5 rounded-lg hover:bg-accent relative transition-colors">
                   <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                   </span>
                 </button>
               </div>
-              <div className="flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
+              <div className="hidden lg:flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
                 <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white text-xs font-bold">KG</span>
                 </div>

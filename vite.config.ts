@@ -13,7 +13,7 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5000,
     allowedHosts: [
-      "af14a66a-38c5-455a-be6b-d07d26f91d3c-00-bvf9jy0zf2g5.riker.replit.dev",
+      "63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev",
     ],
   },
   build: {

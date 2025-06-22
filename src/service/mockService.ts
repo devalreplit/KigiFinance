@@ -1,4 +1,3 @@
-
 import {
   Usuario,
   UsuarioInput,
@@ -227,37 +226,53 @@ initializeData();
 // Serviços de Autenticação Mock
 export const mockAuthService = {
   login: async (username: string, senha: string): Promise<{ user: Usuario; token: string }> => {
-    await mockDelay(1000);
+    await mockDelay(500);
+
+    console.log('🔍 mockAuthService.login - tentativa:', { username, senha });
 
     const users = MockStorage.get<Usuario>('users', initialUsers);
-    
-    console.log('🔐 Mock Auth - Tentativa de login:', { username, senha: '*'.repeat(senha.length) });
+    console.log('🔍 mockAuthService.login - usuários disponíveis:', users);
 
-    // Verificar credenciais por login ou nome
+    // Buscar usuário por login ou nome
     const user = users.find(u => 
-      (u.login === username || u.nome === username) && 
-      u.senha === senha && 
-      u.ativo
+      u.ativo && (u.login === username || u.nome === username)
     );
 
-    if (user) {
-      console.log('✅ Mock Auth - Login realizado com sucesso:', { userId: user.id, nome: user.nome, papel: user.papel });
-      return {
-        user,
-        token: 'mock-jwt-token-' + Date.now()
-      };
+    console.log('🔍 mockAuthService.login - usuário encontrado:', user);
+
+    if (!user || user.senha !== senha) {
+      console.log('🔍 mockAuthService.login - credenciais inválidas');
+      throw new Error('Credenciais inválidas');
     }
 
-    console.log('❌ Mock Auth - Credenciais inválidas para:', username);
-    throw new Error('Credenciais inválidas');
+    const token = 'mock-jwt-token-' + Date.now();
+    console.log('🔍 mockAuthService.login - sucesso, token:', token);
+
+    return { user, token };
   },
 
   logout: async (): Promise<void> => {
     await mockDelay(300);
+    // Limpar dados de autenticação do localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
   },
 
   getCurrentUser: async (): Promise<Usuario> => {
     await mockDelay(200);
+
+    // Verificar se há usuário salvo no localStorage
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch (error) {
+        console.error('Erro ao parsear usuário do localStorage:', error);
+        localStorage.removeItem('currentUser');
+      }
+    }
+
+    // Fallback para usuário admin padrão
     const users = MockStorage.get<Usuario>('users', initialUsers);
     const adminUser = users.find(u => u.papel === 'pai') || users[0];
     return adminUser;
@@ -283,7 +298,7 @@ export const mockUserService = {
   create: async (userData: UsuarioInput): Promise<Usuario> => {
     await mockDelay();
     const users = MockStorage.get<Usuario>('users', initialUsers);
-    
+
     // Verificar se login já existe
     if (users.find(u => u.login === userData.login && u.ativo)) {
       throw new Error('Login já está em uso');
@@ -296,7 +311,7 @@ export const mockUserService = {
       criadoEm: new Date().toISOString(),
       atualizadoEm: new Date().toISOString(),
     };
-    
+
     users.push(newUser);
     MockStorage.set('users', users);
     return newUser;
@@ -307,7 +322,7 @@ export const mockUserService = {
     const users = MockStorage.get<Usuario>('users', initialUsers);
     const index = users.findIndex(u => u.id === id);
     if (index === -1) throw new Error('Usuário não encontrado');
-    
+
     // Verificar se login já existe (excluindo o usuário atual)
     if (userData.login && users.find(u => u.login === userData.login && u.id !== id && u.ativo)) {
       throw new Error('Login já está em uso');
@@ -318,7 +333,7 @@ export const mockUserService = {
       ...userData,
       atualizadoEm: new Date().toISOString(),
     };
-    
+
     MockStorage.set('users', users);
     return users[index];
   },
@@ -328,7 +343,7 @@ export const mockUserService = {
     const users = MockStorage.get<Usuario>('users', initialUsers);
     const index = users.findIndex(u => u.id === id);
     if (index === -1) throw new Error('Usuário não encontrado');
-    
+
     users[index].ativo = false;
     users[index].atualizadoEm = new Date().toISOString();
     MockStorage.set('users', users);
@@ -354,7 +369,7 @@ export const mockCompanyService = {
   create: async (companyData: EmpresaInput): Promise<Empresa> => {
     await mockDelay();
     const companies = MockStorage.get<Empresa>('companies', initialCompanies);
-    
+
     // Verificar se CNPJ já existe
     if (companyData.cnpj && companies.find(c => c.cnpj === companyData.cnpj && c.ativo)) {
       throw new Error('CNPJ já está em uso');
@@ -367,7 +382,7 @@ export const mockCompanyService = {
       criadoEm: new Date().toISOString(),
       atualizadoEm: new Date().toISOString(),
     };
-    
+
     companies.push(newCompany);
     MockStorage.set('companies', companies);
     return newCompany;
@@ -378,7 +393,7 @@ export const mockCompanyService = {
     const companies = MockStorage.get<Empresa>('companies', initialCompanies);
     const index = companies.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Empresa não encontrada');
-    
+
     // Verificar se CNPJ já existe (excluindo a empresa atual)
     if (companyData.cnpj && companies.find(c => c.cnpj === companyData.cnpj && c.id !== id && c.ativo)) {
       throw new Error('CNPJ já está em uso');
@@ -389,7 +404,7 @@ export const mockCompanyService = {
       ...companyData,
       atualizadoEm: new Date().toISOString(),
     };
-    
+
     MockStorage.set('companies', companies);
     return companies[index];
   },
@@ -399,7 +414,7 @@ export const mockCompanyService = {
     const companies = MockStorage.get<Empresa>('companies', initialCompanies);
     const index = companies.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Empresa não encontrada');
-    
+
     companies[index].ativo = false;
     companies[index].atualizadoEm = new Date().toISOString();
     MockStorage.set('companies', companies);
@@ -433,7 +448,7 @@ export const mockProductService = {
   create: async (productData: ProdutoInput): Promise<Produto> => {
     await mockDelay();
     const products = MockStorage.get<Produto>('products', initialProducts);
-    
+
     // Verificar se código de barras já existe
     if (productData.codigoBarras && products.find(p => p.codigoBarras === productData.codigoBarras && p.ativo)) {
       throw new Error('Código de barras já está em uso');
@@ -446,7 +461,7 @@ export const mockProductService = {
       criadoEm: new Date().toISOString(),
       atualizadoEm: new Date().toISOString(),
     };
-    
+
     products.push(newProduct);
     MockStorage.set('products', products);
     return newProduct;
@@ -457,7 +472,7 @@ export const mockProductService = {
     const products = MockStorage.get<Produto>('products', initialProducts);
     const index = products.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Produto não encontrado');
-    
+
     // Verificar se código de barras já existe (excluindo o produto atual)
     if (productData.codigoBarras && products.find(p => p.codigoBarras === productData.codigoBarras && p.id !== id && p.ativo)) {
       throw new Error('Código de barras já está em uso');
@@ -468,7 +483,7 @@ export const mockProductService = {
       ...productData,
       atualizadoEm: new Date().toISOString(),
     };
-    
+
     MockStorage.set('products', products);
     return products[index];
   },
@@ -478,7 +493,7 @@ export const mockProductService = {
     const products = MockStorage.get<Produto>('products', initialProducts);
     const index = products.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Produto não encontrado');
-    
+
     products[index].ativo = false;
     products[index].atualizadoEm = new Date().toISOString();
     MockStorage.set('products', products);
@@ -504,13 +519,13 @@ export const mockIncomeService = {
   create: async (incomeData: EntradaInput): Promise<Entrada> => {
     await mockDelay();
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
-    
+
     const newIncome: Entrada = {
       id: Math.max(...incomes.map(i => i.id), 0) + 1,
       ...incomeData,
       dataHoraRegistro: new Date().toISOString(),
     };
-    
+
     incomes.push(newIncome);
     MockStorage.set('incomes', incomes);
     return newIncome;
@@ -521,12 +536,12 @@ export const mockIncomeService = {
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
     const index = incomes.findIndex(i => i.id === id);
     if (index === -1) throw new Error('Entrada não encontrada');
-    
+
     incomes[index] = {
       ...incomes[index],
       ...incomeData,
     };
-    
+
     MockStorage.set('incomes', incomes);
     return incomes[index];
   },
@@ -536,7 +551,7 @@ export const mockIncomeService = {
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
     const index = incomes.findIndex(i => i.id === id);
     if (index === -1) throw new Error('Entrada não encontrada');
-    
+
     incomes.splice(index, 1);
     MockStorage.set('incomes', incomes);
   },
@@ -568,7 +583,7 @@ export const mockExpenseService = {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     const products = MockStorage.get<Produto>('products', initialProducts);
-    
+
     const newExpense: Saida = {
       id: Math.max(...expenses.map(e => e.id), 0) + 1,
       usuarioRegistroId: expenseData.usuarioRegistroId,
@@ -588,7 +603,7 @@ export const mockExpenseService = {
       valorTotal: expenseData.itens.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0),
       observacao: expenseData.observacao,
     };
-    
+
     expenses.push(newExpense);
     MockStorage.set('expenses', expenses);
     return newExpense;
@@ -599,12 +614,12 @@ export const mockExpenseService = {
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     const index = expenses.findIndex(e => e.id === id);
     if (index === -1) throw new Error('Saída não encontrada');
-    
+
     expenses[index] = {
       ...expenses[index],
       ...expenseData,
     };
-    
+
     MockStorage.set('expenses', expenses);
     return expenses[index];
   },
@@ -614,7 +629,7 @@ export const mockExpenseService = {
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     const index = expenses.findIndex(e => e.id === id);
     if (index === -1) throw new Error('Saída não encontrada');
-    
+
     expenses.splice(index, 1);
     MockStorage.set('expenses', expenses);
   },
@@ -627,13 +642,13 @@ export const mockInstallmentService = {
     // Gerar parcelas dinamicamente baseado nas saídas parceladas
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     const installments: any[] = [];
-    
+
     expenses.filter(e => e.tipoPagamento === 'parcelado').forEach(expense => {
       // Simular 3 parcelas para cada saída parcelada
       for (let i = 1; i <= 3; i++) {
         const dueDate = new Date();
         dueDate.setMonth(dueDate.getMonth() + i);
-        
+
         installments.push({
           id: expense.id * 10 + i,
           saidaOriginalId: expense.id,
@@ -645,7 +660,7 @@ export const mockInstallmentService = {
         });
       }
     });
-    
+
     return installments;
   },
 
@@ -670,13 +685,13 @@ export const mockReportService = {
     await mockDelay();
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    
+
     const totalEntradas = incomes.reduce((sum, income) => sum + income.valor, 0);
     const totalSaidas = expenses.reduce((sum, expense) => sum + expense.valorTotal, 0);
     const totalParcelado = expenses
       .filter(e => e.tipoPagamento === 'parcelado')
       .reduce((sum, expense) => sum + expense.valorTotal, 0);
-    
+
     return {
       saldoFamiliar: totalEntradas - totalSaidas,
       totalEntradas,
@@ -691,7 +706,7 @@ export const mockReportService = {
     await mockDelay();
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    
+
     const transactions: any[] = [
       ...incomes.map(income => ({
         id: `income_${income.id}`,
@@ -708,7 +723,7 @@ export const mockReportService = {
         descricao: `Saída registrada`,
       })),
     ];
-    
+
     return transactions
       .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
       .slice(0, limit);
@@ -718,7 +733,7 @@ export const mockReportService = {
     await mockDelay();
     const summary = await mockReportService.getFinancialSummary();
     const transactions = await mockReportService.getRecentTransactions(50);
-    
+
     return {
       total: summary.saldoFamiliar,
       transactions: transactions.filter(t => {

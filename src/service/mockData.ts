@@ -1,4 +1,3 @@
-
 import {
   Usuario,
   Empresa,
@@ -226,3 +225,26 @@ export const mockTransactions: Transacao[] = [
 
 export const mockDelay = (ms: number = 500) => 
   new Promise(resolve => setTimeout(resolve, ms));
+
+export const initialUsers: Usuario[] = [
+  {
+    id: 1,
+    nome: "Administrador",
+    login: "admin",
+    senha: "admin",
+    papel: "pai",
+    ativo: true,
+    criadoEm: "2024-01-01T00:00:00Z",
+    atualizadoEm: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: 2,
+    nome: "João Silva",
+    login: "joao",
+    senha: "123456",
+    papel: "pai",
+    ativo: true,
+    criadoEm: "2024-01-01T00:00:00Z",
+    atualizadoEm: "2024-01-01T00:00:00Z",
+  },
+];

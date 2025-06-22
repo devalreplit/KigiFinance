@@ -29,9 +29,15 @@ export default function Sidebar() {
   const [location] = useLocation();
     const { user } = useAuth();
 
-  const handleLogout = () => {
-    authService.logout();
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    } finally {
+      // Forçar recarregamento da página
+      window.location.href = '/';
+    }
   };
 
   return (

@@ -9,8 +9,9 @@ class AuthService {
       
       console.log('AuthService.login - resposta:', response);
       
-      // Salvar token no localStorage
+      // Salvar token e usuário no localStorage
       localStorage.setItem('authToken', response.token);
+      localStorage.setItem('currentUser', JSON.stringify(response.user));
       
       return response.user;
     } catch (error) {
@@ -26,7 +27,19 @@ class AuthService {
       // Mesmo se falhar no servidor, limpar dados locais
       console.error('Erro ao fazer logout:', error);
     } finally {
+      // Limpar todos os dados de autenticação do localStorage
       localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      
+      // Limpar qualquer outro dado relacionado ao usuário
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('user_') || key.startsWith('auth_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
     }
   }
 

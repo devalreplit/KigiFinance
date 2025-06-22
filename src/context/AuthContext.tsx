@@ -38,10 +38,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     try {
       await authService.logout();
-      setUser(null);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
+    } finally {
+      // Sempre limpar o estado do usuário, independente de erro
       setUser(null);
+      
+      // Forçar recarregamento da página para garantir limpeza completa
+      window.location.href = '/';
     }
   };
 

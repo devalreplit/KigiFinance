@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { userService, companyService, incomeService } from "@/service/apiService";
 import IncomeModal from "@/components/modals/income-modal";
@@ -160,26 +161,40 @@ export default function Income() {
             <div className="flex-1">
               <Label htmlFor="mes">Consultar Período Específico</Label>
               <div className="flex gap-2 mt-2">
-                <div className="w-20">
-                  <Input
-                    id="mes"
-                    type="number"
-                    min="1"
-                    max="12"
-                    placeholder="Mês"
-                    value={mesConsulta}
-                    onChange={(e) => setMesConsulta(e.target.value)}
-                  />
+                <div className="w-32">
+                  <Select value={mesConsulta} onValueChange={setMesConsulta}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Mês" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">JAN</SelectItem>
+                      <SelectItem value="2">FEV</SelectItem>
+                      <SelectItem value="3">MAR</SelectItem>
+                      <SelectItem value="4">ABR</SelectItem>
+                      <SelectItem value="5">MAI</SelectItem>
+                      <SelectItem value="6">JUN</SelectItem>
+                      <SelectItem value="7">JUL</SelectItem>
+                      <SelectItem value="8">AGO</SelectItem>
+                      <SelectItem value="9">SET</SelectItem>
+                      <SelectItem value="10">OUT</SelectItem>
+                      <SelectItem value="11">NOV</SelectItem>
+                      <SelectItem value="12">DEZ</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="w-24">
-                  <Input
-                    type="number"
-                    min="2020"
-                    max="2030"
-                    placeholder="Ano"
-                    value={anoConsulta}
-                    onChange={(e) => setAnoConsulta(e.target.value)}
-                  />
+                <div className="w-28">
+                  <Select value={anoConsulta} onValueChange={setAnoConsulta}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: new Date().getFullYear() - 2023 }, (_, i) => 2024 + i).map((ano) => (
+                        <SelectItem key={ano} value={ano.toString()}>
+                          {ano}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button 
                   onClick={handleFiltrarPorPeriodo}

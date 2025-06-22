@@ -119,7 +119,37 @@ function Router() {
   );
 }
 
+// Função para extrair iniciais do nome
+const getUserInitials = (nome: string): string => {
+  if (!nome) return 'U';
+
+  const words = nome.trim().split(' ').filter(word => word.length > 0);
+
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  if (words.length >= 2) {
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  }
+
+  return 'U';
+};
+
+// Função para obter label do papel do usuário
+const getRoleLabel = (papel: string): string => {
+  const roles = {
+    'pai': 'Pai',
+    'mae': 'Mãe',
+    'filho': 'Filho',
+    'filha': 'Filha'
+  };
+  return roles[papel as keyof typeof roles] || 'Usuário';
+};
+
 function App() {
+  const { user, isAuthenticated } = useAuth();
+
   return (
     <TooltipProvider>
       <AuthProvider>

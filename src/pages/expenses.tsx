@@ -10,7 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import { authService } from "@/service/apiService";
 import { userService, productService, companyService, expenseService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ShoppingCart, Search, Loader2, QrCode } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, Search, Loader2, QrCode, MessageCircle } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
 import { Usuario, Produto, Empresa, SaidaInput, ItemSaidaInput } from "../../types";
 
@@ -22,6 +22,8 @@ export default function Expenses() {
   const [submitting, setSubmitting] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [scanningIndex, setScanningIndex] = useState<number | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [showObservacao, setShowObservacao] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -29,7 +31,6 @@ export default function Expenses() {
     valorTotal: 0,
     metodoPagamento: "",
     empresaId: "",
-    usuarioId: "",
     observacoes: "",
     temParcelas: false,
     quantidadeParcelas: 1,
@@ -69,6 +70,34 @@ export default function Expenses() {
       setLoading(false);
     }
   };
+
+  // Funções para gerenciar seleção de usuários
+  const toggleUserSelection = (userId: number) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const toggleFamiliaSelection = () => {
+    const allUserIds = users.map(user => user.id);
+    if (selectedUsers.length === allUserIds.length) {
+      // Se todos estão selecionados, desmarcar todos
+      setSelectedUsers([]);
+    } else {
+      // Se nem todos estão selecionados, selecionar todos
+      setSelectedUsers(allUserIds);
+    }
+  };
+
+  // Função para controlar exibição do campo observação
+  const toggleObservacao = () => {
+    setShowObservacao(!showObservacao);
+  };
+
+  // Verificar se deve mostrar observação baseado no texto
+  const shouldShowObservacao = showObservacao || formData.observacoes.length > 0;
 
   const addItem = () => {
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
@@ -133,6 +162,15 @@ export default function Expenses() {
       return;
     }
 
+    if (selectedUsers.length === 0) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione pelo menos um responsável pela saída",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setSubmitting(true);
       const currentUser = await authService.getCurrentUser();
@@ -142,7 +180,7 @@ export default function Expenses() {
         dataSaida: new Date().toISOString().split('T')[0],
         empresaId: parseInt(formData.empresaId),
         tipoPagamento: formData.temParcelas ? "parcelado" : "avista",
-        usuariosTitularesIds: [parseInt(formData.usuarioId)],
+        usuariosTitularesIds: selectedUsers,
         itens: items,
         numeroParcelas: formData.temParcelas ? formData.quantidadeParcelas : undefined,
         dataPrimeiraParcela: formData.temParcelas ? formData.dataPrimeiraParcela : undefined,
@@ -174,7 +212,6 @@ export default function Expenses() {
       valorTotal: 0,
       metodoPagamento: "",
       empresaId: "",
-      usuarioId: "",
       observacoes: "",
       temParcelas: false,
       quantidadeParcelas: 1,
@@ -185,6 +222,8 @@ export default function Expenses() {
       quantidade: 1,
       precoUnitario: 0,
     }]);
+    setSelectedUsers([]);
+    setShowObservacao(false);
   };
 
   if (loading) {
@@ -214,21 +253,41 @@ export default function Expenses() {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="usuarioId">Responsável *</Label>
-                <Select value={formData.usuarioId} onValueChange={(value) => setFormData(prev => ({ ...prev, usuarioId: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o responsável" />
-                  </SelectTrigger>
-                  <SelectContent>
+                <Label className="text-sm font-medium mb-3 block">Responsáveis *</Label>
+                <div className="space-y-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                  {/* Opção Família */}
+                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <Checkbox
+                      checked={selectedUsers.length === users.length && users.length > 0}
+                      onCheckedChange={toggleFamiliaSelection}
+                      className="w-4 h-4"
+                    />
+                    <Label className="font-medium text-blue-600 dark:text-blue-400 cursor-pointer">
+                      👨‍👩‍👧‍👦 Família
+                    </Label>
+                  </div>
+                  
+                  {/* Separador */}
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                  
+                  {/* Lista de usuários */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.nome}
-                      </SelectItem>
+                      <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <Checkbox
+                          checked={selectedUsers.includes(user.id)}
+                          onCheckedChange={() => toggleUserSelection(user.id)}
+                          className="w-4 h-4"
+                        />
+                        <Label className="cursor-pointer text-sm">
+                          {user.nome}
+                        </Label>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -379,14 +438,29 @@ export default function Expenses() {
 
             {/* Observations */}
             <div>
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                value={formData.observacoes}
-                onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
-                placeholder="Observações adicionais sobre a saída"
-                rows={3}
-              />
+              <div className="flex items-center gap-2 mb-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleObservacao}
+                  className="p-1 h-8 w-8"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+                <Label className="text-sm font-medium">Observações</Label>
+              </div>
+              
+              {shouldShowObservacao && (
+                <Textarea
+                  id="observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                  placeholder="Observações adicionais sobre a saída"
+                  rows={3}
+                  className="mt-2"
+                />
+              )}
             </div>
 
             {/* Total */}

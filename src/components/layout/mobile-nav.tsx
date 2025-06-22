@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Sidebar from "./sidebar";
@@ -26,17 +26,6 @@ export default function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-72 max-w-[85vw]">
-        <div className="flex items-center justify-between p-4 border-b">
-          <span className="font-semibold text-lg">Menu</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenChange(false)}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
         <Sidebar />
       </SheetContent>
     </Sheet>

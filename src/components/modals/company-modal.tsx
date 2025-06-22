@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,19 +18,34 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    nomeFantasia: company?.nomeFantasia || "",
+    nome: company?.nome || "",
     cnpj: company?.cnpj || "",
-    endereco: company?.endereco || "",
-    telefone: company?.telefone || "",
+    categoria: company?.categoria || "",
   });
+
+  useEffect(() => {
+    if (company) {
+      setFormData({
+        nome: company.nome || "",
+        cnpj: company.cnpj || "",
+        categoria: company.categoria || "",
+      });
+    } else {
+      setFormData({
+        nome: "",
+        cnpj: "",
+        categoria: "",
+      });
+    }
+  }, [company]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.nomeFantasia.trim() || !formData.cnpj.trim()) {
+    if (!formData.nome.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Nome fantasia e CNPJ são obrigatórios",
+        description: "Nome da empresa é obrigatório",
         variant: "destructive",
       });
       return;
@@ -40,10 +55,9 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
       setLoading(true);
 
       const empresaData: EmpresaInput = {
-        nomeFantasia: formData.nomeFantasia,
+        nome: formData.nome,
         cnpj: formData.cnpj,
-        endereco: formData.endereco,
-        telefone: formData.telefone,
+        categoria: formData.categoria,
       };
 
       if (company) {
@@ -89,44 +103,33 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="nomeFantasia">Nome Fantasia *</Label>
+            <Label htmlFor="nome">Nome da Empresa *</Label>
             <Input
-              id="nomeFantasia"
-              value={formData.nomeFantasia}
-              onChange={(e) => handleInputChange("nomeFantasia", e.target.value)}
-              placeholder="Digite o nome fantasia"
+              id="nome"
+              value={formData.nome}
+              onChange={(e) => handleInputChange("nome", e.target.value)}
+              placeholder="Digite o nome da empresa"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cnpj">CNPJ *</Label>
+            <Label htmlFor="cnpj">CNPJ</Label>
             <Input
               id="cnpj"
               value={formData.cnpj}
               onChange={(e) => handleInputChange("cnpj", e.target.value)}
               placeholder="00.000.000/0000-00"
-              required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="endereco">Endereço</Label>
+            <Label htmlFor="categoria">Categoria</Label>
             <Input
-              id="endereco"
-              value={formData.endereco}
-              onChange={(e) => handleInputChange("endereco", e.target.value)}
-              placeholder="Digite o endereço"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="telefone">Telefone</Label>
-            <Input
-              id="telefone"
-              value={formData.telefone}
-              onChange={(e) => handleInputChange("telefone", e.target.value)}
-              placeholder="(00) 00000-0000"
+              id="categoria"
+              value={formData.categoria}
+              onChange={(e) => handleInputChange("categoria", e.target.value)}
+              placeholder="Ex: Alimentação, Saúde, Combustível"
             />
           </div>
 

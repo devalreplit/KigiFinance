@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +20,36 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nome: user?.nome || "",
-    username: user?.username || "",
+    email: user?.email || "",
     senha: "",
-    tipo: user?.tipo || "filho",
+    papel: user?.papel || "filho",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        nome: user.nome || "",
+        email: user.email || "",
+        senha: "",
+        papel: user.papel || "filho",
+      });
+    } else {
+      setFormData({
+        nome: "",
+        email: "",
+        senha: "",
+        papel: "filho",
+      });
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.nome.trim() || !formData.username.trim()) {
+    if (!formData.nome.trim() || !formData.email.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Nome e username são obrigatórios",
+        description: "Nome e email são obrigatórios",
         variant: "destructive",
       });
       return;
@@ -52,8 +69,8 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
 
       const userData: UsuarioInput = {
         nome: formData.nome,
-        username: formData.username,
-        tipo: formData.tipo as "pai" | "mae" | "filho" | "filha" | "admin",
+        email: formData.email,
+        papel: formData.papel as "pai" | "mae" | "filho" | "filha",
         ...(formData.senha && { senha: formData.senha }),
       };
 
@@ -111,12 +128,13 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Username *</Label>
+            <Label htmlFor="email">Email *</Label>
             <Input
-              id="username"
-              value={formData.username}
-              onChange={(e) => handleInputChange("username", e.target.value)}
-              placeholder="Digite o username"
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              placeholder="Digite o email"
               required
             />
           </div>
@@ -134,17 +152,16 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tipo">Tipo de Usuário *</Label>
-            <Select value={formData.tipo} onValueChange={(value) => handleInputChange("tipo", value)}>
+            <Label htmlFor="papel">Papel do Usuário *</Label>
+            <Select value={formData.papel} onValueChange={(value) => handleInputChange("papel", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Selecione o papel" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pai">Pai</SelectItem>
                 <SelectItem value="mae">Mãe</SelectItem>
                 <SelectItem value="filho">Filho</SelectItem>
                 <SelectItem value="filha">Filha</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
               </SelectContent>
             </Select>
           </div>

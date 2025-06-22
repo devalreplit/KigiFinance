@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,26 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
     classificacao: product?.classificacao || "",
     precoUnitario: product?.precoUnitario ? product.precoUnitario.toString() : "",
   });
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        nome: product.nome || "",
+        codigoBarras: product.codigoBarras || "",
+        unidade: product.unidade || "un",
+        classificacao: product.classificacao || "",
+        precoUnitario: product.precoUnitario ? product.precoUnitario.toString() : "",
+      });
+    } else {
+      setFormData({
+        nome: "",
+        codigoBarras: "",
+        unidade: "un",
+        classificacao: "",
+        precoUnitario: "",
+      });
+    }
+  }, [product]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

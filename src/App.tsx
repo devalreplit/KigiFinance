@@ -77,8 +77,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                   <span className="text-white text-xs font-bold">KG</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-green-800 leading-tight">Admin</span>
-                  <span className="text-xs text-green-600 font-medium leading-tight">Administrador</span>
+                  <span className="text-xs font-semibold text-green-800 leading-tight">Administrador</span>
                 </div>
                 <button className="p-0.5 rounded-full hover:bg-green-100/50 transition-colors">
                   <svg className="w-3 h-3 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">

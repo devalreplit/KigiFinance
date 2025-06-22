@@ -2,10 +2,10 @@ import { authService as apiAuthService } from "./apiService";
 import { Usuario } from "../../types";
 
 class AuthService {
-  async login(username: string, senha: string): Promise<Usuario> {
+  async login(login: string, senha: string): Promise<Usuario> {
     try {
-      console.log('AuthService.login - tentativa:', { username, senha });
-      const response = await apiAuthService.login(username, senha);
+      console.log('AuthService.login - tentativa:', { login, senha });
+      const response = await apiAuthService.login(login, senha);
       
       console.log('AuthService.login - resposta:', response);
       

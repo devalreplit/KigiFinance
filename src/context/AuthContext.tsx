@@ -8,7 +8,7 @@ interface AuthContextType {
   setUser: (user: Usuario | null) => void;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (login: string, senha: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -25,9 +25,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isAuthenticated = !!user && authService.isAuthenticated();
 
-  const login = async (username: string, password: string) => {
+  const login = async (login: string, senha: string) => {
     try {
-      const loggedUser = await authService.login(username, password);
+      const loggedUser = await authService.login(login, senha);
       setUser(loggedUser);
     } catch (error) {
       console.error('Erro no login:', error);

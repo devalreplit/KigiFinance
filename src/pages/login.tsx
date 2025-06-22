@@ -14,8 +14,8 @@ interface LoginProps {
 
 export default function Login({ onLogin }: LoginProps) {
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
+    login: "",
+    senha: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -24,7 +24,7 @@ export default function Login({ onLogin }: LoginProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.password) {
+    if (!formData.login || !formData.senha) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos",
@@ -35,9 +35,9 @@ export default function Login({ onLogin }: LoginProps) {
 
     try {
       setIsLoading(true);
-      console.log("Tentando fazer login com:", { username: formData.username, senha: formData.password });
+      console.log("Tentando fazer login com:", { login: formData.login, senha: formData.senha });
       
-      const user = await authService.login(formData.username, formData.password);
+      const user = await authService.login(formData.login, formData.senha);
       setUser(user);
       
       toast({
@@ -86,26 +86,26 @@ export default function Login({ onLogin }: LoginProps) {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="username">Login ou Nome</Label>
+                <Label htmlFor="login">Login</Label>
                 <Input
-                  id="username"
+                  id="login"
                   type="text"
-                  placeholder="Digite seu login ou nome"
-                  value={formData.username}
-                  onChange={(e) => handleInputChange('username', e.target.value)}
+                  placeholder="Digite seu login"
+                  value={formData.login}
+                  onChange={(e) => handleInputChange('login', e.target.value)}
                   required
                   autoComplete="username"
                 />
               </div>
 
               <div>
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="senha">Senha</Label>
                 <Input
-                  id="password"
+                  id="senha"
                   type="password"
                   placeholder="Digite sua senha"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  value={formData.senha}
+                  onChange={(e) => handleInputChange('senha', e.target.value)}
                   required
                   autoComplete="current-password"
                 />
@@ -127,13 +127,13 @@ export default function Login({ onLogin }: LoginProps) {
                 Credenciais de Demonstração:
               </h3>
               <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                <p><strong>Usuário:</strong> admin</p>
+                <p><strong>Login:</strong> admin</p>
                 <p><strong>Senha:</strong> admin</p>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setFormData({ username: 'admin', password: 'admin' });
+                  setFormData({ login: 'admin', senha: 'admin' });
                 }}
                 className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
               >

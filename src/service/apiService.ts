@@ -1,4 +1,3 @@
-
 import api from './api';
 import {
   Usuario,
@@ -33,8 +32,8 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 // Serviços de Autenticação Reais
 const realAuthService = {
-  login: async (username: string, senha: string): Promise<{ user: Usuario; token: string }> => {
-    const response = await api.post('/auth/login', { username, senha });
+  login: async (login: string, senha: string): Promise<{ user: Usuario; token: string }> => {
+    const response = await api.post('/auth/login', { login, senha });
     return response.data;
   },
 

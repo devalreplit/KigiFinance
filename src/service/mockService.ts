@@ -225,17 +225,17 @@ initializeData();
 
 // Serviços de Autenticação Mock
 export const mockAuthService = {
-  login: async (username: string, senha: string): Promise<{ user: Usuario; token: string }> => {
+  login: async (login: string, senha: string): Promise<{ user: Usuario; token: string }> => {
     await mockDelay(500);
 
-    console.log('🔍 mockAuthService.login - tentativa:', { username, senha });
+    console.log('🔍 mockAuthService.login - tentativa:', { login, senha });
 
     const users = MockStorage.get<Usuario>('users', initialUsers);
     console.log('🔍 mockAuthService.login - usuários disponíveis:', users);
 
-    // Buscar usuário por login ou nome
+    // Buscar usuário apenas por login
     const user = users.find(u => 
-      u.ativo && (u.login === username || u.nome === username)
+      u.ativo && u.login === login
     );
 
     console.log('🔍 mockAuthService.login - usuário encontrado:', user);

@@ -257,23 +257,8 @@ export default function Expenses() {
               <div>
                 <Label className="text-sm font-medium mb-3 block">Responsáveis *</Label>
                 <div className="space-y-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
-                  {/* Opção Família */}
-                  <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <Checkbox
-                      checked={selectedUsers.length === users.length && users.length > 0}
-                      onCheckedChange={toggleFamiliaSelection}
-                      className="w-4 h-4"
-                    />
-                    <Label className="font-medium text-blue-600 dark:text-blue-400 cursor-pointer">
-                      👨‍👩‍👧‍👦 Família
-                    </Label>
-                  </div>
-                  
-                  {/* Separador */}
-                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                  
-                  {/* Lista de usuários */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {/* Lista de usuários - 2 por linha */}
+                  <div className="grid grid-cols-2 gap-3">
                     {users.map((user) => (
                       <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
                         <Checkbox
@@ -286,6 +271,23 @@ export default function Expenses() {
                         </Label>
                       </div>
                     ))}
+                  </div>
+                  
+                  {/* Separador */}
+                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                  
+                  {/* Opção Família - centralizada */}
+                  <div className="flex justify-center">
+                    <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <Checkbox
+                        checked={selectedUsers.length === users.length && users.length > 0}
+                        onCheckedChange={toggleFamiliaSelection}
+                        className="w-4 h-4"
+                      />
+                      <Label className="font-medium text-blue-600 dark:text-blue-400 cursor-pointer">
+                        👨‍👩‍👧‍👦 Família
+                      </Label>
+                    </div>
                   </div>
                 </div>
               </div>

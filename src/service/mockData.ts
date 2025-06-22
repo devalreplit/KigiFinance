@@ -245,6 +245,6 @@ export const initialUsers: Usuario[] = [
     papel: "pai",
     ativo: true,
     criadoEm: "2024-01-01T00:00:00Z",
-    atualizadoEm: "2024-01-01T00:00:00Z",
+    atualizadoEm: "2024-01-01T00:00:00Z",T00:00:00Z",
   },
 ];

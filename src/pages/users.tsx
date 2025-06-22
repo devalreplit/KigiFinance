@@ -116,7 +116,7 @@ export default function Users() {
               <thead className="bg-muted/30">
                 <tr className="border-b border-border">
                   <th className="text-left py-4 px-6 font-semibold text-foreground">USUÁRIO</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">EMAIL</th>
+                  <th className="text-left py-4 px-6 font-semibold text-foreground">LOGIN</th>
                   <th className="text-left py-4 px-6 font-semibold text-foreground">FUNÇÃO</th>
                   <th className="text-left py-4 px-6 font-semibold text-foreground">STATUS</th>
                   <th className="text-left py-4 px-6 font-semibold text-foreground">AÇÕES</th>
@@ -135,7 +135,7 @@ export default function Users() {
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="text-muted-foreground">{user.email || "Não informado"}</span>
+                        <span className="text-muted-foreground">{user.login}</span>
                       </td>
                       <td className="py-4 px-6">
                         <Badge

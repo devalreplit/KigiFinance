@@ -78,8 +78,8 @@ export default function Companies() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="p-4 lg:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 lg:mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Gestão de Empresas</h2>
           <p className="text-gray-600">Gerencie empresas e fornecedores</p>
@@ -93,9 +93,10 @@ export default function Companies() {
         </Button>
       </div>
 
-      <Card className="border-gray-100 shadow-sm">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <Card className="border-gray-100 shadow-sm">
+          <CardContent className="p-0">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -127,7 +128,7 @@ export default function Companies() {
                             {company.nome}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {company.endereco}
+                            {company.categoria}
                           </div>
                         </div>
                       </div>
@@ -137,8 +138,7 @@ export default function Companies() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>
-                        {company.telefone && <div>{company.telefone}</div>}
-                        {company.email && <div>{company.email}</div>}
+                        <div className="text-sm">Categoria: {company.categoria}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -177,32 +177,104 @@ export default function Companies() {
                 ))}
               </tbody>
             </table>
-            {companies.length === 0 && (
-              <div className="text-center py-12">
-                <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhuma empresa</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Comece criando uma nova empresa.
-                </p>
-                <div className="mt-6">
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {companies.map((company) => (
+          <Card key={company.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Building2 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">{company.nome}</h3>
+                    <Badge 
+                      className={`mt-1 ${company.ativo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                    >
+                      {company.ativo ? "Ativa" : "Inativa"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex space-x-1">
                   <Button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(company)}
+                    className="w-8 h-8 p-0 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                    title="Editar empresa"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nova Empresa
+                    <Edit className="h-4 w-4 text-blue-600" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(company.id)}
+                    disabled={deleting === company.id}
+                    className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
+                    title="Excluir empresa"
+                  >
+                    {deleting === company.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    )}
                   </Button>
                 </div>
               </div>
-            )}
+              
+              <div className="space-y-2 text-sm text-gray-600">
+                {company.cnpj && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">CNPJ:</span>
+                    <span>{company.cnpj}</span>
+                  </div>
+                )}
+                {company.categoria && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">Categoria:</span>
+                    <span>{company.categoria}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="font-medium">Criada em:</span>
+                  <span>{new Date(company.criadoEm).toLocaleDateString('pt-BR')}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {companies.length === 0 && (
+        <div className="text-center py-12">
+          <Building2 className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhuma empresa</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Comece criando uma nova empresa.
+          </p>
+          <div className="mt-6">
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Empresa
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
       <CompanyModal
-        isOpen={isModalOpen}
+        open={isModalOpen}
         onClose={handleModalClose}
-        company={editingCompany}
+        company={editingCompany ? editingCompany : undefined}
+        onSuccess={handleModalClose}
       />
     </div>
   );

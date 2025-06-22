@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { userService } from "@/service/apiService";
 import UserModal from "@/components/modals/user-modal";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { getRoleColor, getRoleLabel } from "@/lib/utils";
 import { Plus, Edit, Trash2, Loader2, Users as UsersIcon } from "lucide-react";
 import { Usuario } from "../../types";
@@ -15,6 +16,8 @@ export default function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Usuario | undefined>(undefined);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<Usuario | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,10 +45,17 @@ export default function Users() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteClick = (user: Usuario) => {
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+    
     try {
-      setDeleting(id);
-      await userService.delete(id);
+      setDeleting(userToDelete.id);
+      await userService.delete(userToDelete.id);
       await loadUsers();
       toast({
         title: "Usuário excluído",
@@ -59,6 +69,7 @@ export default function Users() {
       });
     } finally {
       setDeleting(null);
+      setUserToDelete(null);
     }
   };
 
@@ -152,7 +163,7 @@ export default function Users() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(user.id)}
+                            onClick={() => handleDeleteClick(user)}
                             disabled={deleting === user.id}
                             className="hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                           >
@@ -216,7 +227,7 @@ export default function Users() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDeleteClick(user)}
                       disabled={deleting === user.id}
                       className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                       title="Excluir usuário"
@@ -275,6 +286,18 @@ export default function Users() {
         onClose={handleModalClose}
         user={editingUser}
         onSuccess={handleModalClose}
+      />
+
+      {/* Confirmação de exclusão */}
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir o usuário "${userToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleDelete}
+        destructive
       />
     </div>
   );

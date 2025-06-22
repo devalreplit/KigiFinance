@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { productService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from "lucide-react";
 import ProductModal from "@/components/modals/product-modal";
 import { Produto } from "../../types";
@@ -17,6 +18,8 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Produto | undefined>(undefined);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Produto | null>(null);
   const { toast } = useToast();
 
   const loadProducts = async () => {
@@ -50,10 +53,17 @@ export default function Products() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteClick = (product: Produto) => {
+    setProductToDelete(product);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!productToDelete) return;
+    
     try {
-      setDeleting(id);
-      await productService.delete(id);
+      setDeleting(productToDelete.id);
+      await productService.delete(productToDelete.id);
       toast({
         title: "Produto excluído",
         description: "Produto excluído com sucesso",
@@ -67,6 +77,7 @@ export default function Products() {
       });
     } finally {
       setDeleting(null);
+      setProductToDelete(null);
     }
   };
 
@@ -199,7 +210,7 @@ export default function Products() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(product.id)}
+                            onClick={() => handleDeleteClick(product)}
                             disabled={deleting === product.id}
                             className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                             title="Excluir produto"
@@ -263,7 +274,7 @@ export default function Products() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(product.id)}
+                      onClick={() => handleDeleteClick(product)}
                       disabled={deleting === product.id}
                       className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                       title="Excluir produto"
@@ -326,6 +337,18 @@ export default function Products() {
         onClose={handleModalClose}
         product={editingProduct}
         onSuccess={handleModalSuccess}
+      />
+
+      {/* Confirmação de exclusão */}
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir o produto "${productToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleDelete}
+        destructive
       />
     </div>
   );

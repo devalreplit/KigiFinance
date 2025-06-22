@@ -139,17 +139,19 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="senha">Senha {!user && "*"}</Label>
-            <Input
-              id="senha"
-              type="password"
-              value={formData.senha}
-              onChange={(e) => handleInputChange("senha", e.target.value)}
-              placeholder={user ? "Deixe em branco para manter atual" : "Digite a senha"}
-              required={!user}
-            />
-          </div>
+          {!user && (
+            <div className="space-y-2">
+              <Label htmlFor="senha">Senha *</Label>
+              <Input
+                id="senha"
+                type="password"
+                value={formData.senha}
+                onChange={(e) => handleInputChange("senha", e.target.value)}
+                placeholder="Digite a senha"
+                required
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="papel">Papel do Usuário *</Label>

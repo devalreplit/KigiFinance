@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { companyService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Building2, Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import CompanyModal from "@/components/modals/company-modal";
 import { Empresa } from "../../types";
@@ -15,6 +16,8 @@ export default function Companies() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Empresa | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<Empresa | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,10 +45,17 @@ export default function Companies() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteClick = (company: Empresa) => {
+    setCompanyToDelete(company);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!companyToDelete) return;
+    
     try {
-      setDeleting(id);
-      await companyService.delete(id);
+      setDeleting(companyToDelete.id);
+      await companyService.delete(companyToDelete.id);
       await loadCompanies();
       toast({
         title: "Empresa excluída",
@@ -59,6 +69,7 @@ export default function Companies() {
       });
     } finally {
       setDeleting(null);
+      setCompanyToDelete(null);
     }
   };
 
@@ -160,7 +171,7 @@ export default function Companies() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(company.id)}
+                          onClick={() => handleDeleteClick(company)}
                           disabled={deleting === company.id}
                           className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                           title="Excluir empresa"
@@ -213,7 +224,7 @@ export default function Companies() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDelete(company.id)}
+                    onClick={() => handleDeleteClick(company)}
                     disabled={deleting === company.id}
                     className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
                     title="Excluir empresa"
@@ -275,6 +286,18 @@ export default function Companies() {
         onClose={handleModalClose}
         company={editingCompany ? editingCompany : undefined}
         onSuccess={handleModalClose}
+      />
+
+      {/* Confirmação de exclusão */}
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir a empresa "${companyToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleDelete}
+        destructive
       />
     </div>
   );

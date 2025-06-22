@@ -96,10 +96,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
-        <Sidebar />
+        <div className="hidden lg:block w-64 flex-shrink-0">
+          <Sidebar />
+        </div>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto p-4 lg:p-8">
+          <main className="flex-1 overflow-auto p-4 lg:p-8">
             <div className="max-w-7xl mx-auto w-full">
               {children}
             </div>

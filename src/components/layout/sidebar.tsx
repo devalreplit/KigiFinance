@@ -33,9 +33,17 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-green-50/80 backdrop-blur-sm border-r border-green-200/50 shadow-lg transform -translate-x-full transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+    <div className="h-full flex flex-col bg-green-50/80 backdrop-blur-sm border-r border-green-200/50">
+      {/* Logo Section */}
+      <div className="flex items-center px-4 py-6">
+        <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+          <span className="text-white font-bold text-sm">KG</span>
+        </div>
+        <span className="text-lg font-bold text-green-800">KIGI</span>
+      </div>
+
       {/* Navigation */}
-      <nav className="flex-1 mt-4 px-3 overflow-y-auto">
+      <nav className="flex-1 px-3 overflow-y-auto">
         <div className="px-3 mb-3">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Menu Principal
@@ -52,8 +60,8 @@ export default function Sidebar() {
                   className={cn(
                     "flex items-center px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-primary/15 text-primary border border-primary/20 shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      ? "bg-green-600 text-white shadow-sm"
+                      : "text-gray-700 hover:text-green-800 hover:bg-green-100"
                   )}
                 >
                   <Icon className="mr-3 h-4 w-4" />
@@ -65,7 +73,16 @@ export default function Sidebar() {
         </div>
       </nav>
 
-
+      {/* Logout Section */}
+      <div className="p-3 border-t border-green-200/50">
+        <button
+          onClick={handleLogout}
+          className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200"
+        >
+          <LogOut className="mr-3 h-4 w-4" />
+          Sair
+        </button>
+      </div>
     </div>
   );
 }

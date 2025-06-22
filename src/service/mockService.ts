@@ -501,7 +501,7 @@ export const mockProductService = {
 };
 
 // Income Service - Entradas
-const mockIncomeService = {
+export const mockIncomeService = {
   // Retorna apenas as entradas do mês corrente (padrão)
   getAll: async (mes?: number, ano?: number): Promise<Entrada[]> => {
     await mockDelay();

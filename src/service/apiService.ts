@@ -27,10 +27,10 @@ import {
   mockReportService,
 } from './mockService';
 
-// Flag para determinar se deve usar mock ou API real
+// Flag para alternar entre dados mock (desenvolvimento) e API real (produção)
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
-// Serviços de Autenticação Reais
+// Serviços de Autenticação para comunicação com webservice externo
 const realAuthService = {
   login: async (login: string, senha: string): Promise<{ user: Usuario; token: string }> => {
     const response = await api.post('/auth/login', { login, senha });
@@ -45,6 +45,11 @@ const realAuthService = {
   getCurrentUser: async (): Promise<Usuario> => {
     const response = await api.get('/auth/me');
     return response.data;
+  },
+
+  isAuthenticated: (): boolean => {
+    const hasToken = localStorage.getItem('authToken') !== null;
+    return hasToken;
   },
 };
 
@@ -242,7 +247,7 @@ const realReportService = {
   },
 };
 
-// Exportação condicional dos serviços
+// Exportação condicional: usa mock durante desenvolvimento ou API real em produção
 export const authService = USE_MOCK ? mockAuthService : realAuthService;
 export const userService = USE_MOCK ? mockUserService : realUserService;
 export const companyService = USE_MOCK ? mockCompanyService : realCompanyService;

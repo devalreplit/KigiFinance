@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { authService } from "@/service/auth";
+import { authService } from "@/service/apiService";
 import { Loader2, LogIn } from "lucide-react";
 
 interface LoginProps {
@@ -64,8 +64,8 @@ export default function Login({ onLogin }: LoginProps) {
       setIsLoading(true);
       console.log("Tentando fazer login com:", { login: formData.login, senha: formData.senha });
       
-      const user = await authService.login(formData.login, formData.senha);
-      setUser(user);
+      const response = await authService.login(formData.login, formData.senha);
+      setUser(response.user);
       
       toast({
         title: "Login realizado",

@@ -1,0 +1,16 @@
+Sobre o item 1. Arquitetura Inconsistente com Guidelines: Não teremos nenhum backend local, todo acesso aos dados será realizado através de um webservice externo,
+ por enquanto utilizaremos apenas os dados mocados que simulam um banco de dados, mas as requisições reais ao webservice externo devem estar configuradas corretamente assim
+ como a interação com demais partes do sistema, se encontrar alguma referencia a backend local deve ser removido pois essa aplicação é somente frontend.
+Sobre o item 2. Componentes UI Ausentes/Incompletos: analise o contexto dos componentes e caso realmente houver algum erro faça a correção.
+Sobre o item 3. Problemas de Configuração: como já esplicado por enquanto utilizamos a estrutura de dados mocados e integrados, mas tambem deve estar configurados as requisições
+e integração de dados reais.
+Sobre o item 4. Estrutura de Dados Inconsistente: como já explicado não teremos nada de backend local utilizaremos apenas o types.ts que define os tipos usados em toda aplicação.
+sobre o item 5. Problemas de Gerenciamento de Estado:  localStorage atualmente é usado para auxiliar nos dados mocados, posteriormente será removido toda rotina de dados mocados, mas
+a extrutura e configuração dos dados no Context devem estar funcional e configurados para dados reais.
+Sobre item 6. Segurança: não vamos alterar nada no momento.
+Sobre o item 7. Dependências: não utilizaremos react-query e nehuma configuração para backend local, se houver alguma guidelines refernte a isso deve ser removida.
+Sobre o item 8. Estrutura de Arquivos: a questão de Mistura inglês/português nos nomes e comentários, corrija apenas oscomentários devem estar em portugues e os demais codigoa 
+adicionados a partir de agora devem estar em portugues, na questão de arquivos duplicados, analise profundamente o contexto e se realmente estiver duplicado faça os ajustes, na 
+questão Componentes UI customizados em vez de usar shadcn padrão, algumas situações pode ser necessários componentes customizados pois as vezes um componente padrão não atende a situação
+caso houver um componente padrão que atenda a mesma situação você pode sugerir a troca mas não altere sem a minha confirmação.
+os itens não mencionados não vamos mexer

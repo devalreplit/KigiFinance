@@ -371,6 +371,11 @@ export const mockAuthService = {
     const adminUser = users.find(u => u.papel === 'pai') || users[0];
     return adminUser;
   },
+
+  isAuthenticated: (): boolean => {
+    const hasToken = localStorage.getItem('authToken') !== null;
+    return hasToken;
+  },
 };
 
 // Serviços de Usuários Mock
@@ -401,6 +406,7 @@ export const mockUserService = {
     const newUser: Usuario = {
       id: Math.max(...users.map(u => u.id), 0) + 1,
       ...userData,
+      senha: userData.senha || '',
       ativo: true,
       criadoEm: new Date().toISOString(),
       atualizadoEm: new Date().toISOString(),

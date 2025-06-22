@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
-import { authService } from "@/service/auth";
+import { authService } from "@/service/apiService";
 import { userService, productService, companyService, expenseService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, ShoppingCart, Search, Loader2, QrCode } from "lucide-react";
@@ -135,7 +135,7 @@ export default function Expenses() {
 
     try {
       setSubmitting(true);
-      const currentUser = authService.getCurrentUser();
+      const currentUser = await authService.getCurrentUser();
       
       const expenseData: SaidaInput = {
         usuarioRegistroId: currentUser?.id || 1,

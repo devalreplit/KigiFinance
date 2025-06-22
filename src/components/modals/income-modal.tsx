@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useApi } from "@/hooks/useApi";
 import { userService, companyService, incomeService } from "@/service/apiService";
-import { authService } from "@/service/auth";
+import { authService } from "@/service/apiService";
 import { Loader2 } from "lucide-react";
 import { Usuario, Empresa, EntradaInput } from "../../../types";
 
@@ -58,7 +58,7 @@ export default function IncomeModal({ open, onClose, onSuccess }: IncomeModalPro
     try {
       setLoading(true);
 
-      const currentUser = authService.getCurrentUser();
+      const currentUser = await authService.getCurrentUser();
       if (!currentUser) {
         toast({
           title: "Erro de autenticação",

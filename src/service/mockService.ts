@@ -42,7 +42,7 @@ const initialUsers: Usuario[] = [
   {
     id: 1,
     nome: 'Admin',
-    email: 'admin@kigi.com',
+    login: 'admin',
     senha: 'admin',
     papel: 'pai',
     ativo: true,
@@ -52,7 +52,7 @@ const initialUsers: Usuario[] = [
   {
     id: 2,
     nome: 'Maria Silva',
-    email: 'maria@email.com',
+    login: 'maria',
     senha: '123456',
     papel: 'mae',
     ativo: true,
@@ -62,7 +62,7 @@ const initialUsers: Usuario[] = [
   {
     id: 3,
     nome: 'Pedro Silva',
-    email: 'pedro@email.com',
+    login: 'pedro',
     senha: '123456',
     papel: 'filho',
     ativo: true,
@@ -72,7 +72,7 @@ const initialUsers: Usuario[] = [
   {
     id: 4,
     nome: 'Ana Silva',
-    email: 'ana@email.com',
+    login: 'ana',
     senha: '123456',
     papel: 'filha',
     ativo: true,
@@ -231,31 +231,24 @@ export const mockAuthService = {
 
     const users = MockStorage.get<Usuario>('users', initialUsers);
     
-    console.log('Mock login - tentativa:', { username, senha });
+    console.log('🔐 Mock Auth - Tentativa de login:', { username, senha: '*'.repeat(senha.length) });
 
-    // Verificar credenciais
+    // Verificar credenciais por login ou nome
     const user = users.find(u => 
-      (u.login === username || u.nome === username || username === 'admin') && 
+      (u.login === username || u.nome === username) && 
       u.senha === senha && 
       u.ativo
     );
 
-    // Verificação especial para admin/admin
-    if (username === 'admin' && senha === 'admin') {
-      const adminUser = users.find(u => u.nome === 'Admin') || users[0];
-      return {
-        user: adminUser,
-        token: 'mock-jwt-token-' + Date.now()
-      };
-    }
-
     if (user) {
+      console.log('✅ Mock Auth - Login realizado com sucesso:', { userId: user.id, nome: user.nome, papel: user.papel });
       return {
         user,
         token: 'mock-jwt-token-' + Date.now()
       };
     }
 
+    console.log('❌ Mock Auth - Credenciais inválidas para:', username);
     throw new Error('Credenciais inválidas');
   },
 

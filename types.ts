@@ -16,7 +16,7 @@ export interface Usuario {
 export interface UsuarioInput {
   nome: string;
   login: string;
-  senha: string;
+  senha?: string;
   papel: "pai" | "mae" | "filho" | "filha";
 }
 

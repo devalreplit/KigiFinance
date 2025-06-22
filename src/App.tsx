@@ -60,12 +60,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
               <span className="text-lg font-bold text-white">KIGI</span>
             </div>
             <div className="flex items-center space-x-1.5 lg:space-x-3 flex-shrink-0">
-              {/* Mobile Menu Button */}
-              <div className="lg:hidden">
-                <MobileNav />
-              </div>
-              
-              <div className="relative hidden sm:block">
+              <div className="relative hidden sm:block lg:block">
                 <button className="p-1.5 rounded-lg hover:bg-accent relative transition-colors">
                   <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM12 2l3.09 6.26L22 9l-5 4.87L18.18 22 12 18.82 5.82 22 7 13.87 2 9l6.91-.74L12 2z" />
@@ -75,7 +70,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                   </span>
                 </button>
               </div>
-              <div className="hidden lg:flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
+              
+              {/* User Info - Always visible */}
+              <div className="flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
                 <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
                   <span className="text-white text-xs font-bold">KG</span>
                 </div>
@@ -88,6 +85,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden">
+                <MobileNav />
               </div>
             </div>
           </div>

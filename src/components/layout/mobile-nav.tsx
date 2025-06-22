@@ -15,9 +15,7 @@ export default function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64">
-        <div className="h-full overflow-y-auto">
-          <Sidebar />
-        </div>
+        <Sidebar />
       </SheetContent>
     </Sheet>
   );

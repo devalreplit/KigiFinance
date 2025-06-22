@@ -500,12 +500,38 @@ export const mockProductService = {
   },
 };
 
-// Serviços de Entradas Mock
-export const mockIncomeService = {
-  getAll: async (): Promise<Entrada[]> => {
+// Income Service - Entradas
+const mockIncomeService = {
+  // Retorna apenas as entradas do mês corrente (padrão)
+  getAll: async (mes?: number, ano?: number): Promise<Entrada[]> => {
     await mockDelay();
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
-    return incomes;
+
+    // Se não especificar mês/ano, filtrar pelo mês corrente
+    if (!mes || !ano) {
+      const hoje = new Date();
+      mes = hoje.getMonth() + 1; // getMonth() retorna 0-11, precisamos 1-12
+      ano = hoje.getFullYear();
+    }
+
+    // Filtrar entradas pelo mês e ano especificados
+    const entradasFiltradas = incomes.filter(entrada => {
+      const dataEntrada = new Date(entrada.dataReferencia);
+      const mesEntrada = dataEntrada.getMonth() + 1;
+      const anoEntrada = dataEntrada.getFullYear();
+
+      return mesEntrada === mes && anoEntrada === ano;
+    });
+
+    // Ordenar por data mais recente primeiro
+    return entradasFiltradas.sort((a, b) => 
+      new Date(b.dataReferencia).getTime() - new Date(a.dataReferencia).getTime()
+    );
+  },
+
+  // Função específica para buscar entradas de um mês/ano específico
+  getByMonthYear: async (mes: number, ano: number): Promise<Entrada[]> => {
+    return mockIncomeService.getAll(mes, ano);
   },
 
   getById: async (id: number): Promise<Entrada> => {

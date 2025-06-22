@@ -136,8 +136,22 @@ const realProductService = {
 
 // Serviços de Entradas Reais
 const realIncomeService = {
-  getAll: async (): Promise<Entrada[]> => {
-    const response = await api.get('/entradas');
+  // Buscar entradas com filtro opcional de mês/ano
+  getAll: async (mes?: number, ano?: number): Promise<Entrada[]> => {
+    let url = '/entradas';
+    
+    // Se especificar mês/ano, adicionar como query parameters
+    if (mes && ano) {
+      url += `?mes=${mes}&ano=${ano}`;
+    }
+    
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Função específica para buscar entradas de um mês/ano específico
+  getByMonthYear: async (mes: number, ano: number): Promise<Entrada[]> => {
+    const response = await api.get(`/entradas?mes=${mes}&ano=${ano}`);
     return response.data;
   },
 

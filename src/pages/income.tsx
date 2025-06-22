@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { userService, companyService, incomeService } from "@/service/apiService";
 import IncomeModal from "@/components/modals/income-modal";
-import { Plus, DollarSign, Loader2, TrendingUp } from "lucide-react";
+import { Plus, DollarSign, Loader2, TrendingUp, Search, Calendar } from "lucide-react";
 import { Usuario, Empresa } from "../../types";
 
 export default function Income() {
@@ -15,17 +17,32 @@ export default function Income() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Estados para filtro de mês/ano
+  const [mesConsulta, setMesConsulta] = useState<string>("");
+  const [anoConsulta, setAnoConsulta] = useState<string>("");
+  const [periodoAtual, setPeriodoAtual] = useState<{mes: number, ano: number}>({
+    mes: new Date().getMonth() + 1,
+    ano: new Date().getFullYear()
+  });
+  
   const { toast } = useToast();
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  // Carregar dados de entradas - por padrão carrega do mês corrente
+  const loadData = async (mes?: number, ano?: number) => {
     try {
       setLoading(true);
+      
+      // Se não especificar mês/ano, usar o período atual (mês corrente)
+      const mesParam = mes || periodoAtual.mes;
+      const anoParam = ano || periodoAtual.ano;
+      
       const [entradasData, usersData, empresasData] = await Promise.all([
-        incomeService.getAll(),
+        incomeService.getAll(mesParam, anoParam), // Buscar apenas entradas do período especificado
         userService.getAll(),
         companyService.getAll()
       ]);
@@ -33,6 +50,10 @@ export default function Income() {
       setEntradas(entradasData);
       setUsers(usersData);
       setEmpresas(empresasData);
+      
+      // Atualizar período atual sendo exibido
+      setPeriodoAtual({ mes: mesParam, ano: anoParam });
+      
     } catch (error) {
       toast({
         title: "Erro ao carregar dados",
@@ -46,7 +67,36 @@ export default function Income() {
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    loadData();
+    // Recarregar dados do período atual após fechar modal
+    loadData(periodoAtual.mes, periodoAtual.ano);
+  };
+
+  // Filtrar entradas por mês/ano específico
+  const handleFiltrarPorPeriodo = () => {
+    const mes = parseInt(mesConsulta);
+    const ano = parseInt(anoConsulta);
+    
+    if (!mes || !ano || mes < 1 || mes > 12 || ano < 2020 || ano > 2030) {
+      toast({
+        title: "Período inválido",
+        description: "Por favor, informe um mês (1-12) e ano válidos",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    loadData(mes, ano);
+  };
+
+  // Voltar para o mês corrente
+  const handleVoltarMesCorrente = () => {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    
+    setMesConsulta("");
+    setAnoConsulta("");
+    loadData(mesAtual, anoAtual);
   };
 
   const formatCurrency = (value: number) => {
@@ -90,7 +140,11 @@ export default function Income() {
             Gerenciar Entradas
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Registre e controle as entradas financeiras da família
+            Entradas de {periodoAtual.mes.toString().padStart(2, '0')}/{periodoAtual.ano} 
+            {periodoAtual.mes === new Date().getMonth() + 1 && periodoAtual.ano === new Date().getFullYear() 
+              ? " (Mês Corrente)" 
+              : ""
+            }
           </p>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="mt-4 lg:mt-0">
@@ -98,6 +152,57 @@ export default function Income() {
           Nova Entrada
         </Button>
       </div>
+
+      {/* Filtros de Período */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <Label htmlFor="mes">Consultar Período Específico</Label>
+              <div className="flex gap-2 mt-2">
+                <div className="w-20">
+                  <Input
+                    id="mes"
+                    type="number"
+                    min="1"
+                    max="12"
+                    placeholder="Mês"
+                    value={mesConsulta}
+                    onChange={(e) => setMesConsulta(e.target.value)}
+                  />
+                </div>
+                <div className="w-24">
+                  <Input
+                    type="number"
+                    min="2020"
+                    max="2030"
+                    placeholder="Ano"
+                    value={anoConsulta}
+                    onChange={(e) => setAnoConsulta(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handleFiltrarPorPeriodo}
+                  variant="outline"
+                  disabled={loading}
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Consultar
+                </Button>
+                <Button 
+                  onClick={handleVoltarMesCorrente}
+                  variant="outline"
+                  disabled={loading}
+                  className="text-green-600 border-green-600 hover:bg-green-50"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Mês Corrente
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
@@ -148,7 +253,9 @@ export default function Income() {
                     <td colSpan={5} className="py-8 text-center">
                       <div className="flex flex-col items-center">
                         <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">Nenhuma entrada encontrada</p>
+                        <p className="text-muted-foreground">
+                          Nenhuma entrada encontrada para {periodoAtual.mes.toString().padStart(2, '0')}/{periodoAtual.ano}
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -200,9 +307,14 @@ export default function Income() {
         ) : (
           <div className="text-center py-12">
             <DollarSign className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Nenhuma entrada</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              Nenhuma entrada em {periodoAtual.mes.toString().padStart(2, '0')}/{periodoAtual.ano}
+            </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Comece registrando uma nova entrada.
+              {periodoAtual.mes === new Date().getMonth() + 1 && periodoAtual.ano === new Date().getFullYear()
+                ? "Comece registrando uma nova entrada."
+                : "Não há entradas registradas neste período."
+              }
             </p>
             <div className="mt-6">
               <Button

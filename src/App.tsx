@@ -87,7 +87,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
               </div>
 
               {/* Mobile Menu Button */}
-              <div className="lg:hidden">
+              <div className="lg:hidden flex items-center">
                 <MobileNav />
               </div>
             </div>

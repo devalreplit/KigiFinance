@@ -94,3 +94,34 @@
     overflow-x: hidden;
   }
 }
+
+/* Mobile sheet/modal styles */
+@layer components {
+  .sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+  }
+  
+  .sheet-content {
+    position: fixed;
+    background: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 101;
+  }
+  
+  .sheet-content-left {
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 288px;
+    max-width: 85vw;
+  }
+  
+  @media (max-width: 640px) {
+    .sheet-content-left {
+      width: 280px;
+    }
+  }
+}

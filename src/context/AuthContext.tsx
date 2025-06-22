@@ -7,6 +7,8 @@ interface AuthContextType {
   user: Usuario | null;
   setUser: (user: Usuario | null) => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -19,8 +21,19 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<Usuario | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = !!user && authService.isAuthenticated();
+
+  const login = async (username: string, password: string) => {
+    try {
+      const loggedUser = await authService.login(username, password);
+      setUser(loggedUser);
+    } catch (error) {
+      console.error('Erro no login:', error);
+      throw error;
+    }
+  };
 
   const logout = async () => {
     try {
@@ -34,6 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshUser = async () => {
     try {
+      setIsLoading(true);
       if (authService.isAuthenticated()) {
         const currentUser = await authService.getCurrentUser();
         setUser(currentUser);
@@ -41,14 +55,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('Erro ao buscar usuário atual:', error);
       setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     // Inicializar usuário se há token válido
-    if (authService.isAuthenticated()) {
-      refreshUser();
-    }
+    const initializeAuth = async () => {
+      if (authService.isAuthenticated()) {
+        await refreshUser();
+      } else {
+        setIsLoading(false);
+      }
+    };
+    
+    initializeAuth();
   }, []);
 
   return (
@@ -56,6 +78,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       setUser,
       isAuthenticated,
+      isLoading,
+      login,
       logout,
       refreshUser
     }}>

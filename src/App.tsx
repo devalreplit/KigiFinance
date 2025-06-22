@@ -1,3 +1,4 @@
+
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,8 +17,36 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 
+// Função para extrair iniciais do nome
+const getUserInitials = (nome: string): string => {
+  if (!nome) return 'U';
+
+  const words = nome.trim().split(' ').filter(word => word.length > 0);
+
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+
+  if (words.length >= 2) {
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  }
+
+  return 'U';
+};
+
+// Função para obter label do papel do usuário
+const getRoleLabel = (papel: string): string => {
+  const roles = {
+    'pai': 'Pai',
+    'mae': 'Mãe',
+    'filho': 'Filho',
+    'filha': 'Filha'
+  };
+  return roles[papel as keyof typeof roles] || 'Usuário';
+};
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -33,6 +62,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     return <Login />;
   }
+
+  // Obter iniciais e papel do usuário logado
+  const userInitials = user ? getUserInitials(user.nome) : 'U';
+  const userRole = user ? getRoleLabel(user.papel) : 'Usuário';
 
   return (
     <div className="flex flex-col h-screen w-full max-w-full overflow-hidden">
@@ -62,10 +95,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
               {/* User Info - Always visible */}
               <div className="flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
                 <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-white text-xs font-bold">KG</span>
+                  <span className="text-white text-xs font-bold">{userInitials}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-green-800 leading-tight">Administrador</span>
+                  <span className="text-xs font-semibold text-green-800 leading-tight">{userRole}</span>
                 </div>
                 <button className="p-0.5 rounded-full hover:bg-green-100/50 transition-colors">
                   <svg className="w-3 h-3 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,37 +152,7 @@ function Router() {
   );
 }
 
-// Função para extrair iniciais do nome
-const getUserInitials = (nome: string): string => {
-  if (!nome) return 'U';
-
-  const words = nome.trim().split(' ').filter(word => word.length > 0);
-
-  if (words.length === 1) {
-    return words[0].charAt(0).toUpperCase();
-  }
-
-  if (words.length >= 2) {
-    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
-  }
-
-  return 'U';
-};
-
-// Função para obter label do papel do usuário
-const getRoleLabel = (papel: string): string => {
-  const roles = {
-    'pai': 'Pai',
-    'mae': 'Mãe',
-    'filho': 'Filho',
-    'filha': 'Filha'
-  };
-  return roles[papel as keyof typeof roles] || 'Usuário';
-};
-
 function App() {
-  const { user, isAuthenticated } = useAuth();
-
   return (
     <TooltipProvider>
       <AuthProvider>

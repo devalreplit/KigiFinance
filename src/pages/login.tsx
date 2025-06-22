@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/service/auth";
 import { Loader2, LogIn } from "lucide-react";
 
@@ -18,6 +19,7 @@ export default function Login({ onLogin }: LoginProps) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +37,8 @@ export default function Login({ onLogin }: LoginProps) {
       setIsLoading(true);
       console.log("Tentando fazer login com:", { username: formData.username, senha: formData.password });
       
-      await authService.login(formData.username, formData.password);
+      const user = await authService.login(formData.username, formData.password);
+      setUser(user);
       
       toast({
         title: "Login realizado",
@@ -83,11 +86,11 @@ export default function Login({ onLogin }: LoginProps) {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="username">Usuário ou Email</Label>
+                <Label htmlFor="username">Login ou Nome</Label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Digite seu usuário ou email"
+                  placeholder="Digite seu login ou nome"
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
                   required

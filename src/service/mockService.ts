@@ -235,7 +235,7 @@ export const mockAuthService = {
 
     // Verificar credenciais
     const user = users.find(u => 
-      (u.email === username || u.nome === username || username === 'admin') && 
+      (u.login === username || u.nome === username || username === 'admin') && 
       u.senha === senha && 
       u.ativo
     );
@@ -291,9 +291,9 @@ export const mockUserService = {
     await mockDelay();
     const users = MockStorage.get<Usuario>('users', initialUsers);
     
-    // Verificar se email já existe
-    if (users.find(u => u.email === userData.email && u.ativo)) {
-      throw new Error('Email já está em uso');
+    // Verificar se login já existe
+    if (users.find(u => u.login === userData.login && u.ativo)) {
+      throw new Error('Login já está em uso');
     }
 
     const newUser: Usuario = {
@@ -315,9 +315,9 @@ export const mockUserService = {
     const index = users.findIndex(u => u.id === id);
     if (index === -1) throw new Error('Usuário não encontrado');
     
-    // Verificar se email já existe (excluindo o usuário atual)
-    if (userData.email && users.find(u => u.email === userData.email && u.id !== id && u.ativo)) {
-      throw new Error('Email já está em uso');
+    // Verificar se login já existe (excluindo o usuário atual)
+    if (userData.login && users.find(u => u.login === userData.login && u.id !== id && u.ativo)) {
+      throw new Error('Login já está em uso');
     }
 
     users[index] = {

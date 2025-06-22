@@ -5,7 +5,7 @@
 export interface Usuario {
   id: number;
   nome: string;
-  email?: string;
+  login: string;
   senha: string;
   papel: "pai" | "mae" | "filho" | "filha";
   ativo: boolean;
@@ -15,7 +15,7 @@ export interface Usuario {
 
 export interface UsuarioInput {
   nome: string;
-  email?: string;
+  login: string;
   senha: string;
   papel: "pai" | "mae" | "filho" | "filha";
 }

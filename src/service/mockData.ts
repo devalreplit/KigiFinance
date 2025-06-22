@@ -15,7 +15,7 @@ export const mockUsers: Usuario[] = [
   {
     id: 1,
     nome: 'Admin',
-    email: 'admin@kigi.com',
+    login: 'admin',
     senha: 'admin',
     papel: 'pai',
     ativo: true,
@@ -25,7 +25,7 @@ export const mockUsers: Usuario[] = [
   {
     id: 2,
     nome: 'Maria Silva',
-    email: 'maria@email.com',
+    login: 'maria',
     senha: '123456',
     papel: 'mae',
     ativo: true,
@@ -35,7 +35,7 @@ export const mockUsers: Usuario[] = [
   {
     id: 3,
     nome: 'Pedro Silva',
-    email: 'pedro@email.com',
+    login: 'pedro',
     senha: '123456',
     papel: 'filho',
     ativo: true,
@@ -45,7 +45,7 @@ export const mockUsers: Usuario[] = [
   {
     id: 4,
     nome: 'Ana Silva',
-    email: 'ana@email.com',
+    login: 'ana',
     senha: '123456',
     papel: 'filha',
     ativo: true,

@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { authService } from "@/service/auth";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 import { 
   Home, 
   Users, 
@@ -26,6 +27,7 @@ const menuItems = [
 
 export default function Sidebar() {
   const [location] = useLocation();
+    const { user } = useAuth();
 
   const handleLogout = () => {
     authService.logout();

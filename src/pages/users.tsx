@@ -52,7 +52,7 @@ export default function Users() {
 
   const handleDelete = async () => {
     if (!userToDelete) return;
-    
+
     try {
       setDeleting(userToDelete.id);
       await userService.delete(userToDelete.id);
@@ -240,11 +240,12 @@ export default function Users() {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Email:</span>
-                    <span>{user.email || "Não informado"}</span>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Login:</span>
+                    <span className="text-muted-foreground">{user.login}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Status:</span>

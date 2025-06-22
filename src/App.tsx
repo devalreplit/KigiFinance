@@ -12,24 +12,12 @@ import Installments from "@/pages/installments";
 import Reports from "@/pages/reports";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
-import { authService } from "@/service/auth";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Inicializar autenticação
-    authService.initializeFromStorage();
-    setIsAuthenticated(authService.isAuthenticated());
-    setIsLoading(false);
-
-    const checkAuth = () => setIsAuthenticated(authService.isAuthenticated());
-    const interval = setInterval(checkAuth, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -43,7 +31,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
+    return <Login />;
   }
 
   return (
@@ -70,7 +58,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                   </span>
                 </button>
               </div>
-              
+
               {/* User Info - Always visible */}
               <div className="flex items-center space-x-1.5 bg-white/80 backdrop-blur-sm px-1.5 py-1 rounded-lg border border-white/30 shadow-sm">
                 <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-sm">
@@ -114,9 +102,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  const { login } = useAuth();
   return (
     <Switch>
-      <Route path="/login" component={() => <Login onLogin={() => window.location.reload()} />} />
+      <Route path="/login" component={() => <Login onLogin={login} />} />
       <Route path="/" component={() => <ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/users" component={() => <ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/income" component={() => <ProtectedRoute><Income /></ProtectedRoute>} />
@@ -133,8 +122,10 @@ function Router() {
 function App() {
   return (
     <TooltipProvider>
-      <Toaster />
-      <Router />
+      <AuthProvider>
+        <Toaster />
+        <Router />
+      </AuthProvider>
     </TooltipProvider>
   );
 }

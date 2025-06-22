@@ -1,69 +1,67 @@
-import * as React from "react";
+
+import React from "react";
 import { cn } from "@/lib/utils";
 
 interface SheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
-interface SheetContentProps {
-  children: React.ReactNode;
-  side?: "left" | "right" | "top" | "bottom";
-  className?: string;
 }
 
 interface SheetTriggerProps {
-  children: React.ReactNode;
   asChild?: boolean;
+  children: React.ReactNode;
 }
 
-const SheetContext = React.createContext<{
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}>({
-  open: false,
-  onOpenChange: () => {},
-});
+interface SheetContentProps {
+  side?: "left" | "right" | "top" | "bottom";
+  className?: string;
+  children: React.ReactNode;
+}
 
-export function Sheet({ children, open = false, onOpenChange = () => {} }: SheetProps) {
+const Sheet = ({ open, onOpenChange, children }: SheetProps) => {
   return (
-    <SheetContext.Provider value={{ open, onOpenChange }}>
-      {children}
-    </SheetContext.Provider>
+    <div>
+      {React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, { open, onOpenChange } as any);
+        }
+        return child;
+      })}
+    </div>
   );
-}
+};
 
-export function SheetTrigger({ children, asChild }: SheetTriggerProps) {
-  const { onOpenChange } = React.useContext(SheetContext);
+const SheetTrigger = ({ asChild, children, ...props }: SheetTriggerProps & any) => {
+  const { onOpenChange } = props;
   
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    onOpenChange(true);
+  const handleClick = () => {
+    if (onOpenChange) {
+      onOpenChange(true);
+    }
   };
 
   if (asChild && React.isValidElement(children)) {
-    const childProps = children.props || {};
-    const originalOnClick = childProps.onClick;
-    
     return React.cloneElement(children, {
-      ...childProps,
-      onClick: (e: React.MouseEvent) => {
-        handleClick(e);
-        if (originalOnClick) originalOnClick(e);
-      },
+      ...children.props,
+      onClick: handleClick,
     });
   }
 
   return (
-    <button onClick={handleClick} type="button">
+    <button onClick={handleClick} {...props}>
       {children}
     </button>
   );
-}
+};
 
-export function SheetContent({ children, side = "right", className }: SheetContentProps) {
-  const { open, onOpenChange } = React.useContext(SheetContext);
+const SheetContent = ({ 
+  side = "left", 
+  className, 
+  children, 
+  ...props 
+}: SheetContentProps & any) => {
+  const { open, onOpenChange } = props;
 
   if (!open) return null;
 
@@ -94,4 +92,6 @@ export function SheetContent({ children, side = "right", className }: SheetConte
       </div>
     </>
   );
-}
+};
+
+export { Sheet, SheetTrigger, SheetContent };

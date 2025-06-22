@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,33 @@ export default function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { setUser } = useAuth();
+
+  // Limpar localStorage ao carregar a tela de login
+  useEffect(() => {
+    console.log('🧹 Limpando localStorage ao carregar tela de login');
+    
+    // Limpar dados de autenticação
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    
+    // Limpar dados relacionados ao usuário e autenticação
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.startsWith('user_') || 
+        key.startsWith('auth_') || 
+        key.startsWith('kigi_') ||
+        key.includes('token') ||
+        key.includes('session')
+      )) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    console.log('✅ localStorage limpo com sucesso');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

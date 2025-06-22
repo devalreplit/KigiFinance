@@ -97,10 +97,10 @@ export default function Users() {
         </Button>
       </div>
 
-      {/* Users Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <Card>
+          <CardContent className="p-0">
             <table className="w-full">
               <thead className="bg-muted/30">
                 <tr className="border-b border-border">
@@ -178,9 +178,96 @@ export default function Users() {
                 )}
               </tbody>
             </table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {users.length > 0 ? (
+          users.map((user) => (
+            <Card key={user.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <UsersIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">{user.nome}</h3>
+                      <Badge 
+                        variant="secondary"
+                        className={`mt-1 ${getRoleColor(user.papel)} text-white font-medium shadow-sm border-0`}
+                      >
+                        {getRoleLabel(user.papel)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex space-x-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(user)}
+                      className="w-8 h-8 p-0 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                      title="Editar usuário"
+                    >
+                      <Edit className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(user.id)}
+                      disabled={deleting === user.id}
+                      className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
+                      title="Excluir usuário"
+                    >
+                      {deleting === user.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Email:</span>
+                    <span>{user.email || "Não informado"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Status:</span>
+                    <Badge variant={user.ativo ? "default" : "secondary"}>
+                      {user.ativo ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Criado em:</span>
+                    <span>{new Date(user.criadoEm).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum usuário</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Comece criando um novo usuário.
+            </p>
+            <div className="mt-6">
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Usuário
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Modal */}
       <UserModal

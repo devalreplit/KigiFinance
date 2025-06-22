@@ -121,10 +121,10 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="w-full">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <Card>
+          <CardContent className="p-0">
             <table className="w-full table-fixed">
               <thead className="bg-muted/30">
                 <tr className="border-b border-border">
@@ -228,9 +228,97 @@ export default function Products() {
                 )}
               </tbody>
             </table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
+            <Card key={product.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Package className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm">{product.nome}</h3>
+                      <Badge variant={product.ativo ? "default" : "secondary"}>
+                        {product.ativo ? "Ativo" : "Inativo"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex space-x-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(product)}
+                      className="w-8 h-8 p-0 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                      title="Editar produto"
+                    >
+                      <Edit className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(product.id)}
+                      disabled={deleting === product.id}
+                      className="w-8 h-8 p-0 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors"
+                      title="Excluir produto"
+                    >
+                      {deleting === product.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Código:</span>
+                    <span>{product.codigoBarras || "Não informado"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Categoria:</span>
+                    <span>{product.classificacao || "Não categorizado"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Preço:</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(product.precoUnitario)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Unidade:</span>
+                    <span>{product.unidade}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <Package className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum produto</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchTerm ? "Nenhum produto encontrado" : "Comece criando um novo produto."}
+            </p>
+            {!searchTerm && (
+              <div className="mt-6">
+                <Button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Produto
+                </Button>
+              </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Modal */}
       <ProductModal

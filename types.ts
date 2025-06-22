@@ -23,8 +23,6 @@ export interface UsuarioInput {
 export interface Empresa {
   id: number;
   nome: string;
-  cnpj?: string;
-  categoria?: string;
   ativo: boolean;
   criadoEm: string;
   atualizadoEm: string;
@@ -32,8 +30,6 @@ export interface Empresa {
 
 export interface EmpresaInput {
   nome: string;
-  cnpj?: string;
-  categoria?: string;
 }
 
 export interface Produto {

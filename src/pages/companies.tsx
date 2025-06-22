@@ -115,10 +115,7 @@ export default function Companies() {
                     Empresa
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CNPJ
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contato
+                    Data de Criação
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -138,19 +135,11 @@ export default function Companies() {
                           <div className="text-sm font-medium text-gray-900">
                             {company.nome}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {company.categoria}
-                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {company.cnpj || "Não informado"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>
-                        <div className="text-sm">Categoria: {company.categoria}</div>
-                      </div>
+                      {new Date(company.criadoEm).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge className={company.ativo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
@@ -239,21 +228,13 @@ export default function Companies() {
               </div>
               
               <div className="space-y-2 text-sm text-gray-600">
-                {company.cnpj && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">CNPJ:</span>
-                    <span>{company.cnpj}</span>
-                  </div>
-                )}
-                {company.categoria && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">Categoria:</span>
-                    <span>{company.categoria}</span>
-                  </div>
-                )}
                 <div className="flex justify-between">
                   <span className="font-medium">Criada em:</span>
                   <span>{new Date(company.criadoEm).toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Atualizada em:</span>
+                  <span>{new Date(company.atualizadoEm).toLocaleDateString('pt-BR')}</span>
                 </div>
               </div>
             </CardContent>

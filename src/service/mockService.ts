@@ -84,8 +84,6 @@ const initialCompanies: Empresa[] = [
   {
     id: 1,
     nome: 'Supermercado ABC',
-    cnpj: '12.345.678/0001-90',
-    categoria: 'Alimentação',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',
     atualizadoEm: '2024-01-01T00:00:00.000Z',
@@ -93,8 +91,6 @@ const initialCompanies: Empresa[] = [
   {
     id: 2,
     nome: 'Farmácia Central',
-    cnpj: '98.765.432/0001-10',
-    categoria: 'Saúde',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',
     atualizadoEm: '2024-01-01T00:00:00.000Z',
@@ -102,8 +98,6 @@ const initialCompanies: Empresa[] = [
   {
     id: 3,
     nome: 'Posto Shell',
-    cnpj: '11.222.333/0001-44',
-    categoria: 'Combustível',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',
     atualizadoEm: '2024-01-01T00:00:00.000Z',
@@ -470,9 +464,9 @@ export const mockCompanyService = {
     await mockDelay();
     const companies = MockStorage.get<Empresa>('companies', initialCompanies);
 
-    // Verificar se CNPJ já existe
-    if (companyData.cnpj && companies.find(c => c.cnpj === companyData.cnpj && c.ativo)) {
-      throw new Error('CNPJ já está em uso');
+    // Verificar se nome já existe
+    if (companyData.nome && companies.find(c => c.nome === companyData.nome && c.ativo)) {
+      throw new Error('Nome da empresa já está em uso');
     }
 
     const newCompany: Empresa = {
@@ -494,9 +488,9 @@ export const mockCompanyService = {
     const index = companies.findIndex(c => c.id === id);
     if (index === -1) throw new Error('Empresa não encontrada');
 
-    // Verificar se CNPJ já existe (excluindo a empresa atual)
-    if (companyData.cnpj && companies.find(c => c.cnpj === companyData.cnpj && c.id !== id && c.ativo)) {
-      throw new Error('CNPJ já está em uso');
+    // Verificar se nome já existe (excluindo a empresa atual)
+    if (companyData.nome && companies.find(c => c.nome === companyData.nome && c.id !== id && c.ativo)) {
+      throw new Error('Nome da empresa já está em uso');
     }
 
     companies[index] = {

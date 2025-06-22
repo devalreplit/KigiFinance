@@ -57,8 +57,6 @@ export const mockCompanies: Empresa[] = [
   {
     id: 1,
     nome: 'Supermercado ABC',
-    cnpj: '12.345.678/0001-90',
-    categoria: 'Alimentação',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',
     atualizadoEm: '2024-01-01T00:00:00.000Z',
@@ -66,8 +64,6 @@ export const mockCompanies: Empresa[] = [
   {
     id: 2,
     nome: 'Farmácia Central',
-    cnpj: '98.765.432/0001-10',
-    categoria: 'Saúde',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',
     atualizadoEm: '2024-01-01T00:00:00.000Z',
@@ -75,8 +71,6 @@ export const mockCompanies: Empresa[] = [
   {
     id: 3,
     nome: 'Posto Shell',
-    cnpj: '11.222.333/0001-44',
-    categoria: 'Combustível',
     ativo: true,
     criadoEm: '2024-01-01T00:00:00.000Z',
     atualizadoEm: '2024-01-01T00:00:00.000Z',
@@ -292,6 +286,6 @@ export const initialUsers: Usuario[] = [
     papel: "pai",
     ativo: true,
     criadoEm: "2024-01-01T00:00:00Z",
-    atualizadoEm: "2024-01-01T00:00:00Z",T00:00:00Z",
+    atualizadoEm: "2024-01-01T00:00:00Z",
   },
 ];

@@ -19,22 +19,16 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nome: company?.nome || "",
-    cnpj: company?.cnpj || "",
-    categoria: company?.categoria || "",
   });
 
   useEffect(() => {
     if (company) {
       setFormData({
         nome: company.nome || "",
-        cnpj: company.cnpj || "",
-        categoria: company.categoria || "",
       });
     } else {
       setFormData({
         nome: "",
-        cnpj: "",
-        categoria: "",
       });
     }
   }, [company]);
@@ -56,8 +50,6 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
 
       const empresaData: EmpresaInput = {
         nome: formData.nome,
-        cnpj: formData.cnpj,
-        categoria: formData.categoria,
       };
 
       if (company) {
@@ -113,25 +105,7 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cnpj">CNPJ</Label>
-            <Input
-              id="cnpj"
-              value={formData.cnpj}
-              onChange={(e) => handleInputChange("cnpj", e.target.value)}
-              placeholder="00.000.000/0000-00"
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="categoria">Categoria</Label>
-            <Input
-              id="categoria"
-              value={formData.categoria}
-              onChange={(e) => handleInputChange("categoria", e.target.value)}
-              placeholder="Ex: Alimentação, Saúde, Combustível"
-            />
-          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>

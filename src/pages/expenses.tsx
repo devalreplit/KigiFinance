@@ -128,6 +128,10 @@ export default function Expenses() {
     setFormData(prev => ({ ...prev, valorTotal: total }));
   };
 
+  const hasValidItems = () => {
+    return items.some(item => item.produtoId > 0 && item.precoUnitario > 0);
+  };
+
   const handleBarcodeScanned = async (barcode: string) => {
     if (scanningIndex === null) return;
 
@@ -311,12 +315,8 @@ export default function Expenses() {
 
             {/* Items */}
             <div>
-              <div className="flex justify-between items-center mb-4">
+              <div className="mb-4">
                 <Label className="text-lg font-semibold">Itens da Compra</Label>
-                <Button type="button" onClick={addItem} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Item
-                </Button>
               </div>
 
               <div className="space-y-3">
@@ -391,6 +391,13 @@ export default function Expenses() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-4">
+                <Button type="button" onClick={addItem} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Item
+                </Button>
               </div>
             </div>
 
@@ -478,7 +485,7 @@ export default function Expenses() {
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={submitting}
+                disabled={submitting || !hasValidItems()}
               >
                 {submitting ? (
                   <>

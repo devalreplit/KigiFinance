@@ -360,31 +360,91 @@ export default function Expenses() {
 
                     <div>
                       <Label>Quantidade *</Label>
-                      <Input
-                        type="number"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        min="1"
-                        step="1"
-                        value={item.quantidade}
-                        onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value) || 1)}
-                        placeholder="Ex: 1"
-                        className="text-center"
-                      />
+                      <div className="relative">
+                        <Input
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={item.quantidade.toString()}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            const numValue = parseInt(value) || 1;
+                            if (numValue >= 1) {
+                              updateItem(index, 'quantidade', numValue);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value || parseInt(e.target.value) < 1) {
+                              updateItem(index, 'quantidade', 1);
+                            }
+                          }}
+                          placeholder="1"
+                          className="text-center text-lg font-medium pr-8"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          spellCheck="false"
+                        />
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col">
+                          <button
+                            type="button"
+                            className="h-4 w-4 text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center"
+                            onClick={() => updateItem(index, 'quantidade', item.quantidade + 1)}
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            className="h-4 w-4 text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center"
+                            onClick={() => item.quantidade > 1 && updateItem(index, 'quantidade', item.quantidade - 1)}
+                          >
+                            ▼
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     <div>
                       <Label>Preço Unitário *</Label>
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        min="0"
-                        step="0.01"
-                        value={item.precoUnitario}
-                        onChange={(e) => updateItem(index, 'precoUnitario', parseFloat(e.target.value) || 0)}
-                        placeholder="Ex: 10.50"
-                        className="text-center"
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                        <Input
+                          type="tel"
+                          inputMode="decimal"
+                          value={item.precoUnitario > 0 ? item.precoUnitario.toFixed(2) : ''}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9,\.]/g, '');
+                            value = value.replace(',', '.');
+                            
+                            // Permite apenas um ponto decimal
+                            const parts = value.split('.');
+                            if (parts.length > 2) {
+                              value = parts[0] + '.' + parts.slice(1).join('');
+                            }
+                            
+                            // Limita a 2 casas decimais
+                            if (parts[1] && parts[1].length > 2) {
+                              value = parts[0] + '.' + parts[1].substring(0, 2);
+                            }
+                            
+                            const numValue = parseFloat(value) || 0;
+                            updateItem(index, 'precoUnitario', numValue);
+                          }}
+                          onBlur={(e) => {
+                            const value = parseFloat(e.target.value) || 0;
+                            updateItem(index, 'precoUnitario', Math.max(0, value));
+                          }}
+                          onFocus={(e) => {
+                            if (item.precoUnitario === 0) {
+                              e.target.value = '';
+                            }
+                          }}
+                          placeholder="0.00"
+                          className="text-center text-lg font-medium pl-10"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          spellCheck="false"
+                        />
+                      </div>
                     </div>
 
                     <div className="flex items-end">

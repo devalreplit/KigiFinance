@@ -362,10 +362,14 @@ export default function Expenses() {
                       <Label>Quantidade *</Label>
                       <Input
                         type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="1"
                         step="1"
                         value={item.quantidade}
                         onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value) || 1)}
+                        placeholder="Ex: 1"
+                        className="text-center"
                       />
                     </div>
 
@@ -373,10 +377,13 @@ export default function Expenses() {
                       <Label>Preço Unitário *</Label>
                       <Input
                         type="number"
+                        inputMode="decimal"
                         min="0"
                         step="0.01"
                         value={item.precoUnitario}
                         onChange={(e) => updateItem(index, 'precoUnitario', parseFloat(e.target.value) || 0)}
+                        placeholder="Ex: 10.50"
+                        className="text-center"
                       />
                     </div>
 

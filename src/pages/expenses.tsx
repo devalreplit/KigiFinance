@@ -360,38 +360,17 @@ export default function Expenses() {
 
                     <div>
                       <Label>Quantidade * (0-20)</Label>
-                      <div className="space-y-2">
-                        {/* Slider horizontal para arrastar */}
-                        <div className="relative w-full h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center px-4">
-                          <input
-                            type="range"
-                            min="0"
-                            max="20"
-                            value={item.quantidade}
-                            onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                            style={{
-                              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(item.quantidade / 20) * 100}%, #e5e7eb ${(item.quantidade / 20) * 100}%, #e5e7eb 100%)`
-                            }}
-                          />
-                          <div className="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
-                            <span className="text-xs text-gray-500">0</span>
-                            <span className="text-lg font-bold text-blue-600">{item.quantidade}</span>
-                            <span className="text-xs text-gray-500">20</span>
-                          </div>
-                        </div>
+                      <div className="flex items-center justify-center gap-4 py-2">
+                        <button
+                          type="button"
+                          className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => item.quantidade > 0 && updateItem(index, 'quantidade', item.quantidade - 1)}
+                          disabled={item.quantidade <= 0}
+                        >
+                          -
+                        </button>
                         
-                        {/* Botões de incremento/decremento horizontais */}
-                        <div className="flex items-center justify-center gap-4">
-                          <button
-                            type="button"
-                            className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all"
-                            onClick={() => item.quantidade > 0 && updateItem(index, 'quantidade', item.quantidade - 1)}
-                            disabled={item.quantidade <= 0}
-                          >
-                            -
-                          </button>
-                          
+                        <div className="flex flex-col items-center">
                           <Input
                             type="tel"
                             inputMode="numeric"
@@ -404,21 +383,22 @@ export default function Expenses() {
                                 updateItem(index, 'quantidade', numValue);
                               }
                             }}
-                            className="w-16 text-center text-lg font-medium"
+                            className="w-20 text-center text-xl font-bold"
                             autoComplete="off"
                             autoCorrect="off"
                             spellCheck="false"
                           />
-                          
-                          <button
-                            type="button"
-                            className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all"
-                            onClick={() => item.quantidade < 20 && updateItem(index, 'quantidade', item.quantidade + 1)}
-                            disabled={item.quantidade >= 20}
-                          >
-                            +
-                          </button>
+                          <span className="text-xs text-gray-500 mt-1">0-20</span>
                         </div>
+                        
+                        <button
+                          type="button"
+                          className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => item.quantidade < 20 && updateItem(index, 'quantidade', item.quantidade + 1)}
+                          disabled={item.quantidade >= 20}
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
 

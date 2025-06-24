@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Usuario } from '../../types';
 import { authService } from '@/service/apiService';
@@ -43,7 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       // Sempre limpar o estado do usuário, independente de erro
       setUser(null);
-      
+
       // Forçar recarregamento da página para garantir limpeza completa
       window.location.href = '/';
     }
@@ -73,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoading(false);
       }
     };
-    
+
     initializeAuth();
   }, []);
 

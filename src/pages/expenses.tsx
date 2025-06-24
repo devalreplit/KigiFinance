@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Autocomplete, AutocompleteOption } from "@/components/ui/autocomplete";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
 import { authService } from "@/service/apiService";
 import { userService, productService, companyService, expenseService } from "@/service/apiService";

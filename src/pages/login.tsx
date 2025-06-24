@@ -24,11 +24,11 @@ export default function Login({ onLogin }: LoginProps) {
   // Limpar localStorage ao carregar a tela de login
   useEffect(() => {
     console.log('🧹 Limpando localStorage ao carregar tela de login');
-    
+
     // Limpar dados de autenticação
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
-    
+
     // Limpar dados relacionados ao usuário e autenticação
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -44,13 +44,13 @@ export default function Login({ onLogin }: LoginProps) {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
-    
+
     console.log('✅ localStorage limpo com sucesso');
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.login || !formData.senha) {
       toast({
         title: "Campos obrigatórios",
@@ -63,16 +63,38 @@ export default function Login({ onLogin }: LoginProps) {
     try {
       setIsLoading(true);
       console.log("Tentando fazer login com:", { login: formData.login, senha: formData.senha });
-      
+
       const response = await authService.login(formData.login, formData.senha);
       setUser(response.user);
-      
+
       toast({
         title: "Login realizado",
         description: "Bem-vindo ao sistema KIGI!",
       });
-      
-      onLogin();
+
+      if (typeof onLogin === 'function') {
+        const success = await onLogin(formData.login, formData.senha);
+
+        if (success) {
+          toast({
+            title: "Login realizado com sucesso",
+            description: "Bem-vindo de volta!",
+          });
+        } else {
+          toast({
+            title: "Erro no login",
+            description: "Credenciais inválidas",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.error('onLogin não é uma função:', onLogin);
+        toast({
+          title: "Erro no login",
+          description: "Função de login não disponível",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Erro no login:", error);
       toast({

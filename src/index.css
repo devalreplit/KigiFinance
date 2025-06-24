@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilos customizados para o slider de quantidade */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-webkit-slider-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.slider:active::-moz-range-thumb {
+  transform: scale(1.2);
+}
+
 @layer base {
   :root {
     --background: 120 40% 97%;

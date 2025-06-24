@@ -359,45 +359,64 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label>Quantidade *</Label>
-                      <div className="relative">
-                        <Input
-                          type="tel"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={item.quantidade.toString()}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9]/g, '');
-                            const numValue = parseInt(value) || 1;
-                            if (numValue >= 1) {
-                              updateItem(index, 'quantidade', numValue);
-                            }
-                          }}
-                          onBlur={(e) => {
-                            if (!e.target.value || parseInt(e.target.value) < 1) {
-                              updateItem(index, 'quantidade', 1);
-                            }
-                          }}
-                          placeholder="1"
-                          className="text-center text-lg font-medium pr-8"
-                          autoComplete="off"
-                          autoCorrect="off"
-                          spellCheck="false"
-                        />
-                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex flex-col">
+                      <Label>Quantidade * (0-20)</Label>
+                      <div className="space-y-2">
+                        {/* Slider horizontal para arrastar */}
+                        <div className="relative w-full h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center px-4">
+                          <input
+                            type="range"
+                            min="0"
+                            max="20"
+                            value={item.quantidade}
+                            onChange={(e) => updateItem(index, 'quantidade', parseInt(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                            style={{
+                              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(item.quantidade / 20) * 100}%, #e5e7eb ${(item.quantidade / 20) * 100}%, #e5e7eb 100%)`
+                            }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
+                            <span className="text-xs text-gray-500">0</span>
+                            <span className="text-lg font-bold text-blue-600">{item.quantidade}</span>
+                            <span className="text-xs text-gray-500">20</span>
+                          </div>
+                        </div>
+                        
+                        {/* Botões de incremento/decremento horizontais */}
+                        <div className="flex items-center justify-center gap-4">
                           <button
                             type="button"
-                            className="h-4 w-4 text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center"
-                            onClick={() => updateItem(index, 'quantidade', item.quantidade + 1)}
+                            className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all"
+                            onClick={() => item.quantidade > 0 && updateItem(index, 'quantidade', item.quantidade - 1)}
+                            disabled={item.quantidade <= 0}
                           >
-                            ▲
+                            -
                           </button>
+                          
+                          <Input
+                            type="tel"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={item.quantidade.toString()}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^0-9]/g, '');
+                              const numValue = parseInt(value) || 0;
+                              if (numValue >= 0 && numValue <= 20) {
+                                updateItem(index, 'quantidade', numValue);
+                              }
+                            }}
+                            className="w-16 text-center text-lg font-medium"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            spellCheck="false"
+                          />
+                          
                           <button
                             type="button"
-                            className="h-4 w-4 text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center"
-                            onClick={() => item.quantidade > 1 && updateItem(index, 'quantidade', item.quantidade - 1)}
+                            className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all"
+                            onClick={() => item.quantidade < 20 && updateItem(index, 'quantidade', item.quantidade + 1)}
+                            disabled={item.quantidade >= 20}
                           >
-                            ▼
+                            +
                           </button>
                         </div>
                       </div>
@@ -406,40 +425,53 @@ export default function Expenses() {
                     <div>
                       <Label>Preço Unitário *</Label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">R$</span>
                         <Input
-                          type="tel"
+                          type="text"
                           inputMode="decimal"
-                          value={item.precoUnitario > 0 ? item.precoUnitario.toFixed(2) : ''}
+                          value={item.precoUnitario > 0 ? item.precoUnitario.toFixed(2).replace('.', ',') : ''}
                           onChange={(e) => {
-                            let value = e.target.value.replace(/[^0-9,\.]/g, '');
-                            value = value.replace(',', '.');
+                            let value = e.target.value;
                             
-                            // Permite apenas um ponto decimal
-                            const parts = value.split('.');
+                            // Remove caracteres que não são números, vírgula ou ponto
+                            value = value.replace(/[^0-9,\.]/g, '');
+                            
+                            // Substitui pontos por vírgulas para facilitar a digitação BR
+                            value = value.replace(/\./g, ',');
+                            
+                            // Permite apenas uma vírgula
+                            const parts = value.split(',');
                             if (parts.length > 2) {
-                              value = parts[0] + '.' + parts.slice(1).join('');
+                              value = parts[0] + ',' + parts.slice(1).join('');
                             }
                             
                             // Limita a 2 casas decimais
                             if (parts[1] && parts[1].length > 2) {
-                              value = parts[0] + '.' + parts[1].substring(0, 2);
+                              value = parts[0] + ',' + parts[1].substring(0, 2);
                             }
                             
-                            const numValue = parseFloat(value) || 0;
+                            // Converte para formato americano para cálculo
+                            const numericValue = value.replace(',', '.');
+                            const numValue = parseFloat(numericValue) || 0;
+                            
+                            // Atualiza o valor no estado
                             updateItem(index, 'precoUnitario', numValue);
+                            
+                            // Atualiza o campo com o valor formatado brasileiro
+                            e.target.value = value;
                           }}
                           onBlur={(e) => {
-                            const value = parseFloat(e.target.value) || 0;
-                            updateItem(index, 'precoUnitario', Math.max(0, value));
+                            const value = e.target.value.replace(',', '.');
+                            const numValue = parseFloat(value) || 0;
+                            updateItem(index, 'precoUnitario', Math.max(0, numValue));
                           }}
                           onFocus={(e) => {
                             if (item.precoUnitario === 0) {
                               e.target.value = '';
                             }
                           }}
-                          placeholder="0.00"
-                          className="text-center text-lg font-medium pl-10"
+                          placeholder="0,00"
+                          className="text-center text-lg font-medium pl-12 pr-4"
                           autoComplete="off"
                           autoCorrect="off"
                           spellCheck="false"

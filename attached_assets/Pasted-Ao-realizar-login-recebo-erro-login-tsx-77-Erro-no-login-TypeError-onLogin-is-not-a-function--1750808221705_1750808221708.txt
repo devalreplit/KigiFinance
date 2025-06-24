@@ -1,0 +1,118 @@
+Ao realizar login recebo erro: 
+ login.tsx:77 Erro no login: TypeError: onLogin is not a function
+    at handleSubmit (login.tsx:75:7)
+	
+e ao acessar pagina de registro de saida recebo erro:
+
+MobileNav: Mudança de estado para: true
+expenses.tsx:333 Uncaught ReferenceError: Select is not defined
+    at Expenses (expenses.tsx:333:18)
+    at renderWithHooks (chunk-PJEEZAML.js?v=7b00c059:11548:26)
+    at updateFunctionComponent (chunk-PJEEZAML.js?v=7b00c059:14582:28)
+    at beginWork (chunk-PJEEZAML.js?v=7b00c059:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-PJEEZAML.js?v=7b00c059:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-PJEEZAML.js?v=7b00c059:3699:24)
+    at invokeGuardedCallback (chunk-PJEEZAML.js?v=7b00c059:3733:39)
+    at beginWork$1 (chunk-PJEEZAML.js?v=7b00c059:19765:15)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=7b00c059:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js?v=7b00c059:19137:13)
+Expenses @ expenses.tsx:333
+renderWithHooks @ chunk-PJEEZAML.js?v=7b00c059:11548
+updateFunctionComponent @ chunk-PJEEZAML.js?v=7b00c059:14582
+beginWork @ chunk-PJEEZAML.js?v=7b00c059:15924
+callCallback2 @ chunk-PJEEZAML.js?v=7b00c059:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=7b00c059:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=7b00c059:3733
+beginWork$1 @ chunk-PJEEZAML.js?v=7b00c059:19765
+performUnitOfWork @ chunk-PJEEZAML.js?v=7b00c059:19198
+workLoopSync @ chunk-PJEEZAML.js?v=7b00c059:19137
+renderRootSync @ chunk-PJEEZAML.js?v=7b00c059:19116
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=7b00c059:18678
+workLoop @ chunk-PJEEZAML.js?v=7b00c059:197
+flushWork @ chunk-PJEEZAML.js?v=7b00c059:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=7b00c059:384Understand this error
+expenses.tsx:333 Uncaught ReferenceError: Select is not defined
+    at Expenses (expenses.tsx:333:18)
+    at renderWithHooks (chunk-PJEEZAML.js?v=7b00c059:11548:26)
+    at updateFunctionComponent (chunk-PJEEZAML.js?v=7b00c059:14582:28)
+    at beginWork (chunk-PJEEZAML.js?v=7b00c059:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-PJEEZAML.js?v=7b00c059:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-PJEEZAML.js?v=7b00c059:3699:24)
+    at invokeGuardedCallback (chunk-PJEEZAML.js?v=7b00c059:3733:39)
+    at beginWork$1 (chunk-PJEEZAML.js?v=7b00c059:19765:15)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=7b00c059:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js?v=7b00c059:19137:13)
+Expenses @ expenses.tsx:333
+renderWithHooks @ chunk-PJEEZAML.js?v=7b00c059:11548
+updateFunctionComponent @ chunk-PJEEZAML.js?v=7b00c059:14582
+beginWork @ chunk-PJEEZAML.js?v=7b00c059:15924
+callCallback2 @ chunk-PJEEZAML.js?v=7b00c059:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=7b00c059:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=7b00c059:3733
+beginWork$1 @ chunk-PJEEZAML.js?v=7b00c059:19765
+performUnitOfWork @ chunk-PJEEZAML.js?v=7b00c059:19198
+workLoopSync @ chunk-PJEEZAML.js?v=7b00c059:19137
+renderRootSync @ chunk-PJEEZAML.js?v=7b00c059:19116
+recoverFromConcurrentError @ chunk-PJEEZAML.js?v=7b00c059:18736
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=7b00c059:18684
+workLoop @ chunk-PJEEZAML.js?v=7b00c059:197
+flushWork @ chunk-PJEEZAML.js?v=7b00c059:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=7b00c059:384Understand this error
+chunk-PJEEZAML.js?v=7b00c059:14032 The above error occurred in the <Expenses> component:
+
+    at Expenses (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/src/pages/expenses.tsx:34:29)
+    at div
+    at main
+    at div
+    at div
+    at div
+    at ProtectedRoute (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/src/App.tsx:54:27)
+    at component
+    at Route (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/node_modules/.vite/deps/wouter.js?v=7b00c059:257:16)
+    at Switch (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/node_modules/.vite/deps/wouter.js?v=7b00c059:297:17)
+    at Router (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/src/App.tsx:239:21)
+    at AuthProvider (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/src/context/AuthContext.tsx:21:32)
+    at TooltipProvider (https://63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev/src/components/ui/tooltip.tsx:17:35)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-PJEEZAML.js?v=7b00c059:14032
+update.callback @ chunk-PJEEZAML.js?v=7b00c059:14052
+callCallback @ chunk-PJEEZAML.js?v=7b00c059:11248
+commitUpdateQueue @ chunk-PJEEZAML.js?v=7b00c059:11265
+commitLayoutEffectOnFiber @ chunk-PJEEZAML.js?v=7b00c059:17093
+commitLayoutMountEffects_complete @ chunk-PJEEZAML.js?v=7b00c059:17980
+commitLayoutEffects_begin @ chunk-PJEEZAML.js?v=7b00c059:17969
+commitLayoutEffects @ chunk-PJEEZAML.js?v=7b00c059:17920
+commitRootImpl @ chunk-PJEEZAML.js?v=7b00c059:19353
+commitRoot @ chunk-PJEEZAML.js?v=7b00c059:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=7b00c059:18760
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=7b00c059:18718
+workLoop @ chunk-PJEEZAML.js?v=7b00c059:197
+flushWork @ chunk-PJEEZAML.js?v=7b00c059:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=7b00c059:384Understand this error
+chunk-PJEEZAML.js?v=7b00c059:19413 Uncaught ReferenceError: Select is not defined
+    at Expenses (expenses.tsx:333:18)
+    at renderWithHooks (chunk-PJEEZAML.js?v=7b00c059:11548:26)
+    at updateFunctionComponent (chunk-PJEEZAML.js?v=7b00c059:14582:28)
+    at beginWork (chunk-PJEEZAML.js?v=7b00c059:15924:22)
+    at beginWork$1 (chunk-PJEEZAML.js?v=7b00c059:19753:22)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=7b00c059:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js?v=7b00c059:19137:13)
+    at renderRootSync (chunk-PJEEZAML.js?v=7b00c059:19116:15)
+    at recoverFromConcurrentError (chunk-PJEEZAML.js?v=7b00c059:18736:28)
+    at performConcurrentWorkOnRoot (chunk-PJEEZAML.js?v=7b00c059:18684:30)
+Expenses @ expenses.tsx:333
+renderWithHooks @ chunk-PJEEZAML.js?v=7b00c059:11548
+updateFunctionComponent @ chunk-PJEEZAML.js?v=7b00c059:14582
+beginWork @ chunk-PJEEZAML.js?v=7b00c059:15924
+beginWork$1 @ chunk-PJEEZAML.js?v=7b00c059:19753
+performUnitOfWork @ chunk-PJEEZAML.js?v=7b00c059:19198
+workLoopSync @ chunk-PJEEZAML.js?v=7b00c059:19137
+renderRootSync @ chunk-PJEEZAML.js?v=7b00c059:19116
+recoverFromConcurrentError @ chunk-PJEEZAML.js?v=7b00c059:18736
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=7b00c059:18684
+workLoop @ chunk-PJEEZAML.js?v=7b00c059:197
+flushWork @ chunk-PJEEZAML.js?v=7b00c059:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=7b00c059:384Understand this error

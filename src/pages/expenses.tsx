@@ -407,48 +407,43 @@ export default function Expenses() {
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">R$</span>
                         <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={item.precoUnitario > 0 ? item.precoUnitario.toFixed(2).replace('.', ',') : ''}
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={formatCurrency(item.precoUnitario).replace('R$', '').trim()}
                           onChange={(e) => {
-                            let value = e.target.value;
+                            // Remove tudo que não é número
+                            const numericValue = e.target.value.replace(/\D/g, '');
                             
-                            // Remove caracteres que não são números, vírgula ou ponto
-                            value = value.replace(/[^0-9,\.]/g, '');
-                            
-                            // Substitui pontos por vírgulas para facilitar a digitação BR
-                            value = value.replace(/\./g, ',');
-                            
-                            // Permite apenas uma vírgula
-                            const parts = value.split(',');
-                            if (parts.length > 2) {
-                              value = parts[0] + ',' + parts.slice(1).join('');
+                            // Se vazio, define como 0
+                            if (numericValue === '') {
+                              updateItem(index, 'precoUnitario', 0);
+                              return;
                             }
                             
-                            // Limita a 2 casas decimais
-                            if (parts[1] && parts[1].length > 2) {
-                              value = parts[0] + ',' + parts[1].substring(0, 2);
+                            // Converte centavos para reais (divide por 100)
+                            const valueInReais = parseInt(numericValue) / 100;
+                            
+                            // Limita a 999999.99 (R$ 999.999,99)
+                            if (valueInReais <= 999999.99) {
+                              updateItem(index, 'precoUnitario', valueInReais);
                             }
-                            
-                            // Converte para formato americano para cálculo
-                            const numericValue = value.replace(',', '.');
-                            const numValue = parseFloat(numericValue) || 0;
-                            
-                            // Atualiza o valor no estado
-                            updateItem(index, 'precoUnitario', numValue);
-                            
-                            // Atualiza o campo com o valor formatado brasileiro
-                            e.target.value = value;
                           }}
-                          onBlur={(e) => {
-                            const value = e.target.value.replace(',', '.');
-                            const numValue = parseFloat(value) || 0;
-                            updateItem(index, 'precoUnitario', Math.max(0, numValue));
-                          }}
-                          onFocus={(e) => {
-                            if (item.precoUnitario === 0) {
-                              e.target.value = '';
+                          onKeyDown={(e) => {
+                            // Permite: números, backspace, delete, tab, escape, enter
+                            if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                                // Permite: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                                (e.keyCode === 65 && e.ctrlKey === true) ||
+                                (e.keyCode === 67 && e.ctrlKey === true) ||
+                                (e.keyCode === 86 && e.ctrlKey === true) ||
+                                (e.keyCode === 88 && e.ctrlKey === true) ||
+                                // Permite: números do teclado principal e numérico
+                                (e.keyCode >= 48 && e.keyCode <= 57) ||
+                                (e.keyCode >= 96 && e.keyCode <= 105)) {
+                              return;
                             }
+                            // Para outros, cancela
+                            e.preventDefault();
                           }}
                           placeholder="0,00"
                           className="text-center text-lg font-medium pl-12 pr-4"
@@ -456,6 +451,9 @@ export default function Expenses() {
                           autoCorrect="off"
                           spellCheck="false"
                         />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 text-center">
+                        Digite apenas números (centavos)
                       </div>
                     </div>
 

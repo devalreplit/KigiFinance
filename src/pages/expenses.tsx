@@ -132,6 +132,10 @@ export default function Expenses() {
     return items.some(item => item.produtoId > 0 && item.precoUnitario > 0);
   };
 
+  const hasInvalidItems = () => {
+    return items.some(item => item.produtoId === 0 || item.precoUnitario === 0);
+  };
+
   const handleBarcodeScanned = async (barcode: string) => {
     if (scanningIndex === null) return;
 
@@ -393,8 +397,15 @@ export default function Expenses() {
                 ))}
               </div>
 
-              <div className="mt-4">
-                <Button type="button" onClick={addItem} variant="outline" size="sm">
+              <div className="mt-4 flex justify-center">
+                <Button 
+                  type="button" 
+                  onClick={addItem} 
+                  variant="outline" 
+                  size="sm"
+                  disabled={hasInvalidItems()}
+                  className="bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Item
                 </Button>

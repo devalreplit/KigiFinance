@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Autocomplete, AutocompleteOption } from "@/components/ui/autocomplete";
 import { formatCurrency } from "@/lib/utils";
 import { authService } from "@/service/apiService";
 import { userService, productService, companyService, expenseService } from "@/service/apiService";
@@ -24,6 +24,7 @@ export default function Expenses() {
   const [scanningIndex, setScanningIndex] = useState<number | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [showObservacao, setShowObservacao] = useState(false);
+  const [productSearchLoading, setProductSearchLoading] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -136,6 +137,26 @@ export default function Expenses() {
     return items.some(item => item.produtoId === 0 || item.precoUnitario === 0);
   };
 
+  const handleProductSearch = async (query: string) => {
+    if (!query || query.length < 2) return;
+    
+    try {
+      setProductSearchLoading(true);
+      // Em um cenário real, você faria uma chamada para buscar produtos
+      // baseado na query. Por agora, vamos filtrar os produtos locais
+      // mas mantemos a estrutura para futuras integrações com API
+      
+      // Exemplo de como seria a chamada real:
+      // const searchResults = await productService.search(query);
+      // setProducts(searchResults);
+      
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
+    } finally {
+      setProductSearchLoading(false);
+    }
+  };
+
   const handleBarcodeScanned = async (barcode: string) => {
     if (scanningIndex === null) return;
 
@@ -234,6 +255,13 @@ export default function Expenses() {
     setShowObservacao(false);
   };
 
+  // Converter produtos para o formato do autocomplete
+  const productOptions: AutocompleteOption[] = products.map(product => ({
+    value: product.id.toString(),
+    label: product.nome,
+    id: product.id
+  }));
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -329,21 +357,16 @@ export default function Expenses() {
                     <div className="md:col-span-2">
                       <Label>Produto *</Label>
                       <div className="flex gap-2">
-                        <Select 
-                          value={item.produtoId.toString()} 
-                          onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value))}
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecione o produto" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {products.map((product) => (
-                              <SelectItem key={product.id} value={product.id.toString()}>
-                                {product.nome}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Autocomplete
+                          options={productOptions}
+                          value={item.produtoId > 0 ? item.produtoId.toString() : ""}
+                          onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value) || 0)}
+                          placeholder="Digite o nome do produto..."
+                          onSearch={handleProductSearch}
+                          loading={productSearchLoading}
+                          emptyMessage="Nenhum produto encontrado"
+                          className="flex-1"
+                        />
                         <Button
                           type="button"
                           variant="outline"

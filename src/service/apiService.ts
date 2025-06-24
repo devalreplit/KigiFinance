@@ -124,6 +124,11 @@ const realProductService = {
     return response.data;
   },
 
+  search: async (query: string): Promise<Produto[]> => {
+    const response = await api.get(`/produtos/search?q=${encodeURIComponent(query)}`);
+    return response.data;
+  },
+
   create: async (productData: ProdutoInput): Promise<Produto> => {
     const response = await api.post('/produtos', productData);
     return response.data;

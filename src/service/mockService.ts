@@ -145,7 +145,7 @@ const generateInitialIncomes = (): Entrada[] => {
   const hoje = new Date();
   const mesCorrente = hoje.getMonth() + 1;
   const anoCorrente = hoje.getFullYear();
-  
+
   // Calcular mês anterior
   let mesAnterior = mesCorrente - 1;
   let anoAnterior = anoCorrente;
@@ -192,7 +192,7 @@ const generateInitialIncomes = (): Entrada[] => {
       valor: 800.00,
       empresaPagadoraId: 1,
     },
-    
+
     // Entradas do mês anterior
     {
       id: 5,
@@ -230,7 +230,7 @@ const generateInitialIncomes = (): Entrada[] => {
       valor: 600.00,
       empresaPagadoraId: 2,
     },
-    
+
     // Algumas entradas de meses mais antigos para testar filtros
     {
       id: 9,
@@ -537,6 +537,18 @@ export const mockProductService = {
     const product = products.find(p => p.codigoBarras === barcode && p.ativo);
     if (!product) throw new Error('Produto não encontrado');
     return product;
+  },
+
+  search: async (query: string): Promise<Produto[]> => {
+    await mockDelay(300); // Simular delay da API
+
+    const products = MockStorage.get<Produto>('products', initialProducts);
+    const normalizedQuery = query.toLowerCase();
+    return products.filter(product =>
+      product.nome.toLowerCase().includes(normalizedQuery) ||
+      (product.classificacao && product.classificacao.toLowerCase().includes(normalizedQuery)) ||
+      (product.codigoBarras && product.codigoBarras.includes(query))
+    );
   },
 
   create: async (productData: ProdutoInput): Promise<Produto> => {

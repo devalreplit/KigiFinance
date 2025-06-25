@@ -139,7 +139,7 @@ export default function Expenses() {
   };
 
   const handleProductSearch = async (query: string) => {
-    if (!query || query.length < 2) return;
+    if (!query || query.length < 3) return;
     
     try {
       setProductSearchLoading(true);

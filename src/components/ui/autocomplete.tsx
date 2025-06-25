@@ -44,19 +44,21 @@ export function Autocomplete({
   // Encontrar o item selecionado
   const selectedOption = options.find(option => option.value === value);
 
-  // Filtrar opções baseado na busca
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtrar opções baseado na busca (mínimo 3 caracteres)
+  const filteredOptions = searchQuery.length >= 3 
+    ? options.filter(option =>
+        option.label.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   // Resetar índice destacado quando as opções mudarem
   useEffect(() => {
     setHighlightedIndex(-1);
   }, [filteredOptions]);
 
-  // Gerenciar busca
+  // Gerenciar busca (mínimo 3 caracteres)
   useEffect(() => {
-    if (onSearch && searchQuery) {
+    if (onSearch && searchQuery && searchQuery.length >= 3) {
       const debounceTimer = setTimeout(() => {
         onSearch(searchQuery);
       }, 300);
@@ -203,6 +205,10 @@ export function Autocomplete({
             {loading ? (
               <li className="px-3 py-2 text-sm text-muted-foreground">
                 Carregando...
+              </li>
+            ) : searchQuery.length < 3 ? (
+              <li className="px-3 py-2 text-sm text-muted-foreground">
+                Digite pelo menos 3 caracteres para buscar...
               </li>
             ) : filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (

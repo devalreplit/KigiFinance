@@ -39,6 +39,18 @@ export default function Expenses() {
     dataPrimeiraParcela: new Date().toISOString().split('T')[0],
   });
 
+  // Observador para resetar parcelas quando necessário
+  useEffect(() => {
+    if (formData.temParcelas && !hasValidItems()) {
+      setFormData(prev => ({ 
+        ...prev, 
+        temParcelas: false,
+        quantidadeParcelas: 1,
+        dataPrimeiraParcela: new Date().toISOString().split('T')[0]
+      }));
+    }
+  }, [formData.temParcelas, items]);
+
   const [items, setItems] = useState<ItemSaidaInput[]>([
     {
       produtoId: 0,
@@ -75,11 +87,18 @@ export default function Expenses() {
 
   // Funções para gerenciar seleção de usuários
   const toggleUserSelection = (userId: number) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
+    setSelectedUsers(prev => {
+      const newSelection = prev.includes(userId) 
         ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
+        : [...prev, userId];
+      
+      // Se não há usuários selecionados, limpar empresa
+      if (newSelection.length === 0) {
+        setFormData(prevForm => ({ ...prevForm, empresaId: "" }));
+      }
+      
+      return newSelection;
+    });
   };
 
   const toggleFamiliaSelection = () => {
@@ -87,6 +106,7 @@ export default function Expenses() {
     if (selectedUsers.length === allUserIds.length) {
       // Se todos estão selecionados, desmarcar todos
       setSelectedUsers([]);
+      setFormData(prev => ({ ...prev, empresaId: "" }));
     } else {
       // Se nem todos estão selecionados, selecionar todos
       setSelectedUsers(allUserIds);
@@ -274,15 +294,13 @@ export default function Expenses() {
   return (
     <div className="space-y-6 w-full">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
-            Registrar Saída
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Registre gastos e compras familiares
-          </p>
-        </div>
+      <div className="text-center">
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+          Registrar Saída
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Registre gastos e compras familiares
+        </p>
       </div>
 
       {/* Form */}
@@ -292,7 +310,7 @@ export default function Expenses() {
             {/* Basic Info */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Responsáveis *</Label>
                 </div>
@@ -333,14 +351,18 @@ export default function Expenses() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <Label htmlFor="empresaId" className="text-sm font-semibold text-green-800 dark:text-green-300">Empresa *</Label>
                 </div>
-                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
-                  <Select value={formData.empresaId} onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: value }))}>
-                    <SelectTrigger className="border-green-200 focus:border-green-400 focus:ring-green-400">
-                      <SelectValue placeholder="Selecione a empresa" />
+                <div className={`p-3 rounded-lg border ${selectedUsers.length > 0 ? 'bg-white dark:bg-gray-800 border-green-100 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'}`}>
+                  <Select 
+                    value={formData.empresaId} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: value }))}
+                    disabled={selectedUsers.length === 0}
+                  >
+                    <SelectTrigger className={`${selectedUsers.length > 0 ? 'border-green-200 focus:border-green-400 focus:ring-green-400' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 cursor-not-allowed'}`}>
+                      <SelectValue placeholder={selectedUsers.length === 0 ? "Primeiro selecione os responsáveis" : "Selecione a empresa"} />
                     </SelectTrigger>
                     <SelectContent>
                       {companies.map((company) => (
@@ -427,7 +449,7 @@ export default function Expenses() {
                           type="button"
                           className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => item.quantidade < 20 && updateItem(index, 'quantidade', item.quantidade + 1)}
-                          disabled={item.quantidade >= 20}
+                          disabled={item.quantidade >= 20 || !formData.empresaId}
                         >
                           +
                         </button>
@@ -482,6 +504,7 @@ export default function Expenses() {
                           autoComplete="off"
                           autoCorrect="off"
                           spellCheck="false"
+                          disabled={!formData.empresaId}
                         />
                       </div>
                       <div className="text-xs text-gray-500 mt-1 text-center">
@@ -512,7 +535,7 @@ export default function Expenses() {
                   onClick={addItem} 
                   variant="outline" 
                   size="sm"
-                  disabled={hasInvalidItems()}
+                  disabled={hasInvalidItems() || !formData.empresaId}
                   className="bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -523,7 +546,7 @@ export default function Expenses() {
 
             {/* Payment Options */}
             <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
+              <div className={`p-4 rounded-xl border ${hasValidItems() ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 border-green-200 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'}`}>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -531,8 +554,9 @@ export default function Expenses() {
                       checked={formData.temParcelas}
                       onCheckedChange={(checked) => setFormData(prev => ({ ...prev, temParcelas: !!checked }))}
                       className="w-5 h-5"
+                      disabled={!hasValidItems()}
                     />
-                    <Label htmlFor="temParcelas" className="text-sm font-semibold text-green-800 dark:text-green-300 cursor-pointer">
+                    <Label htmlFor="temParcelas" className={`text-sm font-semibold cursor-pointer ${hasValidItems() ? 'text-green-800 dark:text-green-300' : 'text-gray-500 dark:text-gray-400'}`}>
                       💳 Pagamento Parcelado
                     </Label>
                   </div>
@@ -544,6 +568,11 @@ export default function Expenses() {
                     </div>
                   )}
                 </div>
+                {!hasValidItems() && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Adicione itens válidos para habilitar o parcelamento
+                  </p>
+                )}
               </div>
 
               {formData.temParcelas && (
@@ -707,7 +736,7 @@ export default function Expenses() {
             {/* Observations */}
             <div className="space-y-3">
               <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center gap-3">
                   <Button
                     type="button"
                     variant="ghost"

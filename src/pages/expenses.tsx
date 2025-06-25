@@ -515,30 +515,47 @@ export default function Expenses() {
 
             {/* Payment Options */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="temParcelas"
-                  checked={formData.temParcelas}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, temParcelas: !!checked }))}
-                />
-                <Label htmlFor="temParcelas">Parcelado</Label>
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-blue-200 dark:border-gray-600">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="temParcelas"
+                      checked={formData.temParcelas}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, temParcelas: !!checked }))}
+                      className="w-5 h-5"
+                    />
+                    <Label htmlFor="temParcelas" className="text-sm font-semibold text-blue-800 dark:text-blue-300 cursor-pointer">
+                      💳 Pagamento Parcelado
+                    </Label>
+                  </div>
+                  {formData.temParcelas && (
+                    <div className="ml-auto">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {formData.quantidadeParcelas}x
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {formData.temParcelas && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <Label>Quantidade de Parcelas</Label>
-                    <div className="flex items-center gap-3 mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-blue-200 dark:border-gray-600 shadow-sm">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <Label className="text-sm font-semibold text-blue-800 dark:text-blue-300">Quantidade de Parcelas</Label>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-600">
                       <button
                         type="button"
-                        className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xl font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         onClick={() => formData.quantidadeParcelas > 1 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas - 1 }))}
                         disabled={formData.quantidadeParcelas <= 1}
                       >
                         -
                       </button>
                       
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center flex-1">
                         <Input
                           type="text"
                           inputMode="numeric"
@@ -551,17 +568,17 @@ export default function Expenses() {
                               setFormData(prev => ({ ...prev, quantidadeParcelas: numValue }));
                             }
                           }}
-                          className="w-20 text-center text-xl font-bold"
+                          className="w-full text-center text-xl font-bold border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                           autoComplete="off"
                           autoCorrect="off"
                           spellCheck="false"
                         />
-                        <span className="text-xs text-gray-500 mt-1">1-60</span>
+                        <span className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">1 a 60 parcelas</span>
                       </div>
                       
                       <button
                         type="button"
-                        className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xl font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         onClick={() => formData.quantidadeParcelas < 60 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas + 1 }))}
                         disabled={formData.quantidadeParcelas >= 60}
                       >
@@ -570,21 +587,30 @@ export default function Expenses() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="dataPrimeiraParcela">Data da Primeira Parcela</Label>
-                    <Input
-                      id="dataPrimeiraParcela"
-                      type="date"
-                      value={formData.dataPrimeiraParcela}
-                      onChange={(e) => setFormData(prev => ({ ...prev, dataPrimeiraParcela: e.target.value }))}
-                    />
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <Label htmlFor="dataPrimeiraParcela" className="text-sm font-semibold text-blue-800 dark:text-blue-300">Data da Primeira Parcela</Label>
+                    </div>
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-600">
+                      <Input
+                        id="dataPrimeiraParcela"
+                        type="date"
+                        value={formData.dataPrimeiraParcela}
+                        onChange={(e) => setFormData(prev => ({ ...prev, dataPrimeiraParcela: e.target.value }))}
+                        className="border-blue-200 focus:border-blue-400 focus:ring-blue-400 text-center font-medium"
+                      />
+                    </div>
                   </div>
 
                   <div className="md:col-span-2">
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        Valor por parcela: <span className="font-semibold">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
-                      </p>
+                    <div className="space-y-4">
+                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-600">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Valor por parcela:</span>
+                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
+                        </div>
+                      </div>
                       
                       {/* Preview das parcelas */}
                       <div className="mt-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">

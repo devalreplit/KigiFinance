@@ -13,7 +13,7 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5000,
     allowedHosts: [
-      "63a19b32-161b-4bf1-a9f3-2e8cec03d246-00-2uo3w07japhc7.worf.replit.dev",
+      "d6f78b63-0140-43d6-bd81-f817565b20b0-00-2623re3ti7sle.picard.replit.dev",
     ],
   },
   build: {

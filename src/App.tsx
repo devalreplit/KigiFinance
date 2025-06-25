@@ -156,7 +156,7 @@ function App() {
     <TooltipProvider>
       <AuthProvider>
         <Router />
-        <Toaster />
+              <Toaster />
       </AuthProvider>
     </TooltipProvider>
   );

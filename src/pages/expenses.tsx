@@ -6,14 +6,39 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Autocomplete, AutocompleteOption } from "@/components/ui/autocomplete";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
 import { authService } from "@/service/apiService";
-import { userService, productService, companyService, expenseService } from "@/service/apiService";
+import {
+  userService,
+  productService,
+  companyService,
+  expenseService,
+} from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ShoppingCart, Search, Loader2, QrCode, MessageCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  ShoppingCart,
+  Search,
+  Loader2,
+  QrCode,
+  MessageCircle,
+} from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
-import { Usuario, Produto, Empresa, SaidaInput, ItemSaidaInput } from "../../types";
+import {
+  Usuario,
+  Produto,
+  Empresa,
+  SaidaInput,
+  ItemSaidaInput,
+} from "../../types";
 
 export default function Expenses() {
   const [users, setUsers] = useState<Usuario[]>([]);
@@ -36,7 +61,7 @@ export default function Expenses() {
     observacoes: "",
     temParcelas: false,
     quantidadeParcelas: 1,
-    dataPrimeiraParcela: new Date().toISOString().split('T')[0],
+    dataPrimeiraParcela: new Date().toISOString().split("T")[0],
   });
 
   const [items, setItems] = useState<ItemSaidaInput[]>([
@@ -49,18 +74,17 @@ export default function Expenses() {
 
   // Observador para resetar parcelas quando necessário
   useEffect(() => {
-    const hasValidItemsCheck = items.some(item => 
-      item.produtoId !== 0 && 
-      item.quantidade > 0 && 
-      item.precoUnitario > 0
+    const hasValidItemsCheck = items.some(
+      (item) =>
+        item.produtoId !== 0 && item.quantidade > 0 && item.precoUnitario > 0,
     );
-    
+
     if (formData.temParcelas && !hasValidItemsCheck) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         temParcelas: false,
         quantidadeParcelas: 1,
-        dataPrimeiraParcela: new Date().toISOString().split('T')[0]
+        dataPrimeiraParcela: new Date().toISOString().split("T")[0],
       }));
     }
   }, [formData.temParcelas, items]);
@@ -93,26 +117,26 @@ export default function Expenses() {
 
   // Funções para gerenciar seleção de usuários
   const toggleUserSelection = (userId: number) => {
-    setSelectedUsers(prev => {
-      const newSelection = prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
+    setSelectedUsers((prev) => {
+      const newSelection = prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
         : [...prev, userId];
-      
+
       // Se não há usuários selecionados, limpar empresa
       if (newSelection.length === 0) {
-        setFormData(prevForm => ({ ...prevForm, empresaId: "" }));
+        setFormData((prevForm) => ({ ...prevForm, empresaId: "" }));
       }
-      
+
       return newSelection;
     });
   };
 
   const toggleFamiliaSelection = () => {
-    const allUserIds = users.map(user => user.id);
+    const allUserIds = users.map((user) => user.id);
     if (selectedUsers.length === allUserIds.length) {
       // Se todos estão selecionados, desmarcar todos
       setSelectedUsers([]);
-      setFormData(prev => ({ ...prev, empresaId: "" }));
+      setFormData((prev) => ({ ...prev, empresaId: "" }));
     } else {
       // Se nem todos estão selecionados, selecionar todos
       setSelectedUsers(allUserIds);
@@ -125,28 +149,29 @@ export default function Expenses() {
   };
 
   // Verificar se deve mostrar observação baseado no texto
-  const shouldShowObservacao = showObservacao || formData.observacoes.length > 0;
+  const shouldShowObservacao =
+    showObservacao || formData.observacoes.length > 0;
 
   // Função para verificar se produto já existe na lista
   const isProductInList = (productId: number) => {
-    return items.some(item => item.produtoId === productId && productId !== 0);
+    return items.some(
+      (item) => item.produtoId === productId && productId !== 0,
+    );
   };
 
   // Função para verificar se há itens válidos
   const hasValidItems = () => {
-    return items.some(item => 
-      item.produtoId !== 0 && 
-      item.quantidade > 0 && 
-      item.precoUnitario > 0
+    return items.some(
+      (item) =>
+        item.produtoId !== 0 && item.quantidade > 0 && item.precoUnitario > 0,
     );
   };
 
   // Função para verificar se há itens inválidos
   const hasInvalidItems = () => {
-    return items.some(item => 
-      item.produtoId === 0 || 
-      item.quantidade <= 0 || 
-      item.precoUnitario <= 0
+    return items.some(
+      (item) =>
+        item.produtoId === 0 || item.quantidade <= 0 || item.precoUnitario <= 0,
     );
   };
 
@@ -160,16 +185,17 @@ export default function Expenses() {
       });
       return;
     }
-    
+
     if (hasInvalidItems()) {
       toast({
         title: "Complete os itens atuais",
-        description: "Complete todos os campos dos itens existentes antes de adicionar novos",
+        description:
+          "Complete todos os campos dos itens existentes antes de adicionar novos",
         variant: "destructive",
       });
       return;
     }
-    
+
     // Adiciona um novo item vazio à lista (sem produto selecionado)
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
@@ -178,16 +204,18 @@ export default function Expenses() {
     if (items.length > 1) {
       const newItems = items.filter((_, i) => i !== index);
       setItems(newItems);
-      
+
       // Se não há mais itens válidos, resetar parcelas
-      const hasValidItemsAfterRemoval = newItems.some(item => item.produtoId !== 0);
+      const hasValidItemsAfterRemoval = newItems.some(
+        (item) => item.produtoId !== 0,
+      );
       if (!hasValidItemsAfterRemoval) {
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData((prev) => ({
+          ...prev,
           valorTotal: 0,
           temParcelas: false,
           quantidadeParcelas: 1,
-          dataPrimeiraParcela: new Date().toISOString().split('T')[0]
+          dataPrimeiraParcela: new Date().toISOString().split("T")[0],
         }));
       } else {
         updateTotalValue(newItems);
@@ -195,16 +223,25 @@ export default function Expenses() {
     }
   };
 
-  const updateItem = (index: number, field: keyof ItemSaidaInput, value: any) => {
+  const updateItem = (
+    index: number,
+    field: keyof ItemSaidaInput,
+    value: any,
+  ) => {
     const newItems = [...items];
-    
+    console.log("Updating item index:", index);
+    console.log("Updating item field:", field);
+    console.log("Updating item value:", value);
+    console.log("Current items:", newItems);
     // Se está atualizando o produto, verificar se já existe em OUTROS itens
-    if (field === 'produtoId' && value !== 0) {
+    if (field === "produtoId" && value !== 0) {
       // Verifica se o produto já existe em outros itens (excluindo o item atual)
-      const productExistsInOtherItems = items.some((item, i) => 
-        i !== index && item.produtoId === value && item.produtoId !== 0
+      const productExistsInOtherItems = items.some(
+        (item, i) =>
+          i !== index && item.produtoId === value && item.produtoId !== 0,
       );
-      
+      console.log("Product exists in other items:", productExistsInOtherItems);
+
       if (productExistsInOtherItems) {
         toast({
           title: "Produto já está na lista",
@@ -214,32 +251,34 @@ export default function Expenses() {
         return;
       }
     }
-    
+
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
     updateTotalValue(newItems);
   };
 
   const updateTotalValue = (currentItems: ItemSaidaInput[]) => {
-    const total = currentItems.reduce((sum, item) => sum + (item.quantidade * item.precoUnitario), 0);
-    setFormData(prev => ({ ...prev, valorTotal: total }));
+    const total = currentItems.reduce(
+      (sum, item) => sum + item.quantidade * item.precoUnitario,
+      0,
+    );
+    setFormData((prev) => ({ ...prev, valorTotal: total }));
   };
 
   // Removido - função duplicada já existe acima
 
   const handleProductSearch = async (query: string) => {
     if (!query || query.length < 3) return;
-    
+
     try {
       setProductSearchLoading(true);
       // Em um cenário real, você faria uma chamada para buscar produtos
       // baseado na query. Por agora, vamos filtrar os produtos locais
       // mas mantemos a estrutura para futuras integrações com API
-      
+
       // Exemplo de como seria a chamada real:
       // const searchResults = await productService.search(query);
       // setProducts(searchResults);
-      
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
     } finally {
@@ -249,17 +288,20 @@ export default function Expenses() {
 
   const handleBarcodeScanned = async (barcode: string) => {
     if (scanningIndex === null) return;
-    
+
     try {
       setProductSearchLoading(true);
       const product = await productService.getByBarcode(barcode);
-      
+
       if (product) {
         // Verificar se o produto já está na lista em outros itens (excluindo o item atual)
-        const productExistsInOtherItems = items.some((item, i) => 
-          i !== scanningIndex && item.produtoId === product.id && item.produtoId !== 0
+        const productExistsInOtherItems = items.some(
+          (item, i) =>
+            i !== scanningIndex &&
+            item.produtoId === product.id &&
+            item.produtoId !== 0,
         );
-        
+
         if (productExistsInOtherItems) {
           toast({
             title: "Produto já está na lista",
@@ -268,10 +310,10 @@ export default function Expenses() {
           });
           return;
         }
-        
-        updateItem(scanningIndex, 'produtoId', product.id);
-        updateItem(scanningIndex, 'precoUnitario', product.precoUnitario);
-        
+
+        updateItem(scanningIndex, "produtoId", product.id);
+        updateItem(scanningIndex, "precoUnitario", product.precoUnitario);
+
         toast({
           title: "Produto encontrado",
           description: `${product.nome} adicionado à lista`,
@@ -299,7 +341,7 @@ export default function Expenses() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (items.length === 0 || items.some(item => item.produtoId === 0)) {
+    if (items.length === 0 || items.some((item) => item.produtoId === 0)) {
       toast({
         title: "Erro de validação",
         description: "Todos os itens devem ter um produto selecionado",
@@ -320,16 +362,20 @@ export default function Expenses() {
     try {
       setSubmitting(true);
       const currentUser = await authService.getCurrentUser();
-      
+
       const expenseData: SaidaInput = {
         usuarioRegistroId: currentUser?.id || 1,
-        dataSaida: new Date().toISOString().split('T')[0],
+        dataSaida: new Date().toISOString().split("T")[0],
         empresaId: parseInt(formData.empresaId),
         tipoPagamento: formData.temParcelas ? "parcelado" : "avista",
         usuariosTitularesIds: selectedUsers,
         itens: items,
-        numeroParcelas: formData.temParcelas ? formData.quantidadeParcelas : undefined,
-        dataPrimeiraParcela: formData.temParcelas ? formData.dataPrimeiraParcela : undefined,
+        numeroParcelas: formData.temParcelas
+          ? formData.quantidadeParcelas
+          : undefined,
+        dataPrimeiraParcela: formData.temParcelas
+          ? formData.dataPrimeiraParcela
+          : undefined,
         observacao: formData.observacoes,
       };
 
@@ -344,7 +390,8 @@ export default function Expenses() {
     } catch (error: any) {
       toast({
         title: "Erro ao registrar saída",
-        description: error.response?.data?.message || "Não foi possível registrar a saída",
+        description:
+          error.response?.data?.message || "Não foi possível registrar a saída",
         variant: "destructive",
       });
     } finally {
@@ -361,22 +408,24 @@ export default function Expenses() {
       observacoes: "",
       temParcelas: false,
       quantidadeParcelas: 1,
-      dataPrimeiraParcela: new Date().toISOString().split('T')[0],
+      dataPrimeiraParcela: new Date().toISOString().split("T")[0],
     });
-    setItems([{
-      produtoId: 0,
-      quantidade: 1,
-      precoUnitario: 0,
-    }]);
+    setItems([
+      {
+        produtoId: 0,
+        quantidade: 1,
+        precoUnitario: 0,
+      },
+    ]);
     setSelectedUsers([]);
     setShowObservacao(false);
   };
 
   // Converter produtos para o formato do autocomplete
-  const productOptions: AutocompleteOption[] = products.map(product => ({
+  const productOptions: AutocompleteOption[] = products.map((product) => ({
     value: product.id.toString(),
     label: product.nome,
-    id: product.id
+    id: product.id,
   }));
 
   if (loading) {
@@ -408,13 +457,18 @@ export default function Expenses() {
               <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Responsáveis *</Label>
+                  <Label className="text-sm font-semibold text-green-800 dark:text-green-300">
+                    Responsáveis *
+                  </Label>
                 </div>
                 <div className="space-y-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
                   {/* Lista de usuários - 2 por linha */}
                   <div className="grid grid-cols-2 gap-3">
                     {users.map((user) => (
-                      <div key={user.id} className="flex items-center space-x-3 p-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow">
+                      <div
+                        key={user.id}
+                        className="flex items-center space-x-3 p-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow"
+                      >
                         <Checkbox
                           checked={selectedUsers.includes(user.id)}
                           onCheckedChange={() => toggleUserSelection(user.id)}
@@ -426,15 +480,18 @@ export default function Expenses() {
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Separador */}
                   <div className="border-t border-green-200 dark:border-gray-600"></div>
-                  
+
                   {/* Opção Família - centralizada */}
                   <div className="flex justify-center">
                     <div className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow">
                       <Checkbox
-                        checked={selectedUsers.length === users.length && users.length > 0}
+                        checked={
+                          selectedUsers.length === users.length &&
+                          users.length > 0
+                        }
                         onCheckedChange={toggleFamiliaSelection}
                         className="w-4 h-4"
                       />
@@ -449,20 +506,40 @@ export default function Expenses() {
               <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <Label htmlFor="empresaId" className="text-sm font-semibold text-green-800 dark:text-green-300">Empresa *</Label>
+                  <Label
+                    htmlFor="empresaId"
+                    className="text-sm font-semibold text-green-800 dark:text-green-300"
+                  >
+                    Empresa *
+                  </Label>
                 </div>
-                <div className={`p-3 rounded-lg border ${selectedUsers.length > 0 ? 'bg-white dark:bg-gray-800 border-green-100 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'}`}>
-                  <Select 
-                    value={formData.empresaId} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: value }))}
+                <div
+                  className={`p-3 rounded-lg border ${selectedUsers.length > 0 ? "bg-white dark:bg-gray-800 border-green-100 dark:border-gray-600" : "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
+                >
+                  <Select
+                    value={formData.empresaId}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, empresaId: value }))
+                    }
                     disabled={selectedUsers.length === 0}
                   >
-                    <SelectTrigger className={`${selectedUsers.length > 0 ? 'border-green-200 focus:border-green-400 focus:ring-green-400' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 cursor-not-allowed'}`}>
-                      <SelectValue placeholder={selectedUsers.length === 0 ? "Primeiro selecione os responsáveis" : "Selecione a empresa"} />
+                    <SelectTrigger
+                      className={`${selectedUsers.length > 0 ? "border-green-200 focus:border-green-400 focus:ring-green-400" : "bg-gray-100 dark:bg-gray-700 border-gray-300 cursor-not-allowed"}`}
+                    >
+                      <SelectValue
+                        placeholder={
+                          selectedUsers.length === 0
+                            ? "Primeiro selecione os responsáveis"
+                            : "Selecione a empresa"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id.toString()}>
+                        <SelectItem
+                          key={company.id}
+                          value={company.id.toString()}
+                        >
                           {company.nome}
                         </SelectItem>
                       ))}
@@ -476,21 +553,33 @@ export default function Expenses() {
             <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
               <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Itens da Compra *</Label>
+                <Label className="text-sm font-semibold text-green-800 dark:text-green-300">
+                  Itens da Compra *
+                </Label>
               </div>
-
 
               <div className="space-y-3">
                 {items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg">
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
+                  >
                     <div className="md:col-span-2">
                       <Label>Produto *</Label>
                       <div className="flex gap-2">
                         <Autocomplete
                           options={productOptions}
-                          value={item.produtoId > 0 ? item.produtoId.toString() : ""}
-                          onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value) || 0)}
-                          placeholder={!formData.empresaId ? "Primeiro selecione uma empresa" : "Digite o nome do produto..."}
+                          value={
+                            item.produtoId > 0 ? item.produtoId.toString() : ""
+                          }
+                          onValueChange={(value) =>
+                            updateItem(index, "produtoId", parseInt(value) || 0)
+                          }
+                          placeholder={
+                            !formData.empresaId
+                              ? "Primeiro selecione uma empresa"
+                              : "Digite o nome do produto..."
+                          }
                           onSearch={handleProductSearch}
                           loading={productSearchLoading}
                           emptyMessage="Nenhum produto encontrado"
@@ -505,7 +594,8 @@ export default function Expenses() {
                             if (!formData.empresaId) {
                               toast({
                                 title: "Selecione uma empresa",
-                                description: "Primeiro selecione uma empresa antes de usar o scanner",
+                                description:
+                                  "Primeiro selecione uma empresa antes de usar o scanner",
                                 variant: "destructive",
                               });
                               return;
@@ -526,12 +616,15 @@ export default function Expenses() {
                         <button
                           type="button"
                           className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => item.quantidade > 0 && updateItem(index, 'quantidade', item.quantidade - 1)}
+                          onClick={() =>
+                            item.quantidade > 0 &&
+                            updateItem(index, "quantidade", item.quantidade - 1)
+                          }
                           disabled={item.quantidade <= 0 || !formData.empresaId}
                         >
                           -
                         </button>
-                        
+
                         <div className="flex flex-col items-center">
                           <Input
                             type="tel"
@@ -542,15 +635,19 @@ export default function Expenses() {
                               if (!formData.empresaId) {
                                 toast({
                                   title: "Selecione uma empresa",
-                                  description: "Primeiro selecione uma empresa antes de alterar quantidades",
+                                  description:
+                                    "Primeiro selecione uma empresa antes de alterar quantidades",
                                   variant: "destructive",
                                 });
                                 return;
                               }
-                              const value = e.target.value.replace(/[^0-9]/g, '');
+                              const value = e.target.value.replace(
+                                /[^0-9]/g,
+                                "",
+                              );
                               const numValue = parseInt(value) || 0;
                               if (numValue >= 0 && numValue <= 20) {
-                                updateItem(index, 'quantidade', numValue);
+                                updateItem(index, "quantidade", numValue);
                               }
                             }}
                             className="w-20 text-center text-xl font-bold"
@@ -559,14 +656,21 @@ export default function Expenses() {
                             spellCheck="false"
                             disabled={!formData.empresaId}
                           />
-                          <span className="text-xs text-gray-500 mt-1">0-20</span>
+                          <span className="text-xs text-gray-500 mt-1">
+                            0-20
+                          </span>
                         </div>
-                        
+
                         <button
                           type="button"
                           className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => item.quantidade < 20 && updateItem(index, 'quantidade', item.quantidade + 1)}
-                          disabled={item.quantidade >= 20 || !formData.empresaId}
+                          onClick={() =>
+                            item.quantidade < 20 &&
+                            updateItem(index, "quantidade", item.quantidade + 1)
+                          }
+                          disabled={
+                            item.quantidade >= 20 || !formData.empresaId
+                          }
                         >
                           +
                         </button>
@@ -574,52 +678,64 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-green-700 dark:text-green-300">Preço Unitário *</Label>
+                      <Label className="text-sm font-medium text-green-700 dark:text-green-300">
+                        Preço Unitário *
+                      </Label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">R$</span>
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">
+                          R$
+                        </span>
                         <Input
                           type="tel"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          value={formatCurrency(item.precoUnitario).replace('R$', '').trim()}
+                          value={formatCurrency(item.precoUnitario)
+                            .replace("R$", "")
+                            .trim()}
                           onChange={(e) => {
                             if (!formData.empresaId) {
                               toast({
                                 title: "Selecione uma empresa",
-                                description: "Primeiro selecione uma empresa antes de definir preços",
+                                description:
+                                  "Primeiro selecione uma empresa antes de definir preços",
                                 variant: "destructive",
                               });
                               return;
                             }
-                            
+
                             // Remove tudo que não é número
-                            const numericValue = e.target.value.replace(/\D/g, '');
-                            
+                            const numericValue = e.target.value.replace(
+                              /\D/g,
+                              "",
+                            );
+
                             // Se vazio, define como 0
-                            if (numericValue === '') {
-                              updateItem(index, 'precoUnitario', 0);
+                            if (numericValue === "") {
+                              updateItem(index, "precoUnitario", 0);
                               return;
                             }
-                            
+
                             // Converte centavos para reais (divide por 100)
                             const valueInReais = parseInt(numericValue) / 100;
-                            
+
                             // Limita a 999999.99 (R$ 999.999,99)
                             if (valueInReais <= 999999.99) {
-                              updateItem(index, 'precoUnitario', valueInReais);
+                              updateItem(index, "precoUnitario", valueInReais);
                             }
                           }}
                           onKeyDown={(e) => {
                             // Permite: números, backspace, delete, tab, escape, enter
-                            if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
-                                // Permite: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-                                (e.keyCode === 65 && e.ctrlKey === true) ||
-                                (e.keyCode === 67 && e.ctrlKey === true) ||
-                                (e.keyCode === 86 && e.ctrlKey === true) ||
-                                (e.keyCode === 88 && e.ctrlKey === true) ||
-                                // Permite: números do teclado principal e numérico
-                                (e.keyCode >= 48 && e.keyCode <= 57) ||
-                                (e.keyCode >= 96 && e.keyCode <= 105)) {
+                            if (
+                              [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                              // Permite: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                              (e.keyCode === 65 && e.ctrlKey === true) ||
+                              (e.keyCode === 67 && e.ctrlKey === true) ||
+                              (e.keyCode === 86 && e.ctrlKey === true) ||
+                              (e.keyCode === 88 && e.ctrlKey === true) ||
+                              // Permite: números do teclado principal e numérico
+                              (e.keyCode >= 48 && e.keyCode <= 57) ||
+                              (e.keyCode >= 96 && e.keyCode <= 105)
+                            ) {
                               return;
                             }
                             // Para outros, cancela
@@ -648,7 +764,8 @@ export default function Expenses() {
                             if (!formData.empresaId) {
                               toast({
                                 title: "Selecione uma empresa",
-                                description: "Primeiro selecione uma empresa antes de remover itens",
+                                description:
+                                  "Primeiro selecione uma empresa antes de remover itens",
                                 variant: "destructive",
                               });
                               return;
@@ -667,10 +784,10 @@ export default function Expenses() {
               </div>
 
               <div className="mt-4 flex justify-center">
-                <Button 
-                  type="button" 
-                  onClick={addItem} 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  onClick={addItem}
+                  variant="outline"
                   size="sm"
                   disabled={hasInvalidItems() || !formData.empresaId}
                   className="bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
@@ -683,17 +800,27 @@ export default function Expenses() {
 
             {/* Payment Options */}
             <div className="space-y-4">
-              <div className={`p-4 rounded-xl border ${hasValidItems() ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 border-green-200 dark:border-gray-600' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'}`}>
+              <div
+                className={`p-4 rounded-xl border ${hasValidItems() ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 border-green-200 dark:border-gray-600" : "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="temParcelas"
                       checked={formData.temParcelas}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, temParcelas: !!checked }))}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          temParcelas: !!checked,
+                        }))
+                      }
                       className="w-5 h-5"
                       disabled={!hasValidItems()}
                     />
-                    <Label htmlFor="temParcelas" className={`text-sm font-semibold cursor-pointer ${hasValidItems() ? 'text-green-800 dark:text-green-300' : 'text-gray-500 dark:text-gray-400'}`}>
+                    <Label
+                      htmlFor="temParcelas"
+                      className={`text-sm font-semibold cursor-pointer ${hasValidItems() ? "text-green-800 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}
+                    >
                       💳 Pagamento Parcelado
                     </Label>
                   </div>
@@ -717,18 +844,26 @@ export default function Expenses() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Quantidade de Parcelas</Label>
+                      <Label className="text-sm font-semibold text-green-800 dark:text-green-300">
+                        Quantidade de Parcelas
+                      </Label>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                       <button
                         type="button"
                         className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xl font-bold text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                        onClick={() => formData.quantidadeParcelas > 1 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas - 1 }))}
+                        onClick={() =>
+                          formData.quantidadeParcelas > 1 &&
+                          setFormData((prev) => ({
+                            ...prev,
+                            quantidadeParcelas: prev.quantidadeParcelas - 1,
+                          }))
+                        }
                         disabled={formData.quantidadeParcelas <= 1}
                       >
                         -
                       </button>
-                      
+
                       <div className="flex flex-col items-center flex-1">
                         <Input
                           type="text"
@@ -736,10 +871,13 @@ export default function Expenses() {
                           pattern="[0-9]*"
                           value={formData.quantidadeParcelas.toString()}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            const value = e.target.value.replace(/[^0-9]/g, "");
                             const numValue = parseInt(value) || 1;
                             if (numValue >= 1 && numValue <= 60) {
-                              setFormData(prev => ({ ...prev, quantidadeParcelas: numValue }));
+                              setFormData((prev) => ({
+                                ...prev,
+                                quantidadeParcelas: numValue,
+                              }));
                             }
                           }}
                           className="w-full text-center text-xl font-bold border-green-200 focus:border-green-400 focus:ring-green-400"
@@ -747,13 +885,21 @@ export default function Expenses() {
                           autoCorrect="off"
                           spellCheck="false"
                         />
-                        <span className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">1 a 60 parcelas</span>
+                        <span className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+                          1 a 60 parcelas
+                        </span>
                       </div>
-                      
+
                       <button
                         type="button"
                         className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xl font-bold text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                        onClick={() => formData.quantidadeParcelas < 60 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas + 1 }))}
+                        onClick={() =>
+                          formData.quantidadeParcelas < 60 &&
+                          setFormData((prev) => ({
+                            ...prev,
+                            quantidadeParcelas: prev.quantidadeParcelas + 1,
+                          }))
+                        }
                         disabled={formData.quantidadeParcelas >= 60}
                       >
                         +
@@ -764,14 +910,24 @@ export default function Expenses() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <Label htmlFor="dataPrimeiraParcela" className="text-sm font-semibold text-green-800 dark:text-green-300">Data da Primeira Parcela</Label>
+                      <Label
+                        htmlFor="dataPrimeiraParcela"
+                        className="text-sm font-semibold text-green-800 dark:text-green-300"
+                      >
+                        Data da Primeira Parcela
+                      </Label>
                     </div>
                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                       <Input
                         id="dataPrimeiraParcela"
                         type="date"
                         value={formData.dataPrimeiraParcela}
-                        onChange={(e) => setFormData(prev => ({ ...prev, dataPrimeiraParcela: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            dataPrimeiraParcela: e.target.value,
+                          }))
+                        }
                         className="border-green-200 focus:border-green-400 focus:ring-green-400 text-center font-medium"
                       />
                     </div>
@@ -781,85 +937,138 @@ export default function Expenses() {
                     <div className="space-y-4">
                       <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-green-700 dark:text-green-300">Valor por parcela:</span>
-                          <span className="text-lg font-bold text-green-600 dark:text-green-400">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
+                          <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                            Valor por parcela:
+                          </span>
+                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                            {formatCurrency(
+                              formData.valorTotal / formData.quantidadeParcelas,
+                            )}
+                          </span>
                         </div>
                       </div>
-                      
+
                       {/* Preview das parcelas */}
                       <div className="mt-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <h4 className="text-sm font-semibold text-green-800 dark:text-green-300">Preview das Parcelas</h4>
+                          <h4 className="text-sm font-semibold text-green-800 dark:text-green-300">
+                            Preview das Parcelas
+                          </h4>
                         </div>
-                        
+
                         {/* Desktop Layout */}
                         <div className="hidden md:block">
                           <div className="grid grid-cols-3 gap-4 mb-3 px-3 py-2 bg-green-100 dark:bg-gray-700 rounded-lg">
-                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Parcela</div>
-                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Vencimento</div>
-                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide text-right">Valor</div>
+                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">
+                              Parcela
+                            </div>
+                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">
+                              Vencimento
+                            </div>
+                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide text-right">
+                              Valor
+                            </div>
                           </div>
                           <div className="space-y-2 max-h-40 overflow-y-auto">
-                            {Array.from({ length: formData.quantidadeParcelas }, (_, index) => {
-                              const parcelaDate = new Date(formData.dataPrimeiraParcela);
-                              parcelaDate.setMonth(parcelaDate.getMonth() + index);
-                              const valorParcela = formData.valorTotal / formData.quantidadeParcelas;
-                              
-                              return (
-                                <div key={index} className="grid grid-cols-3 gap-4 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow">
-                                  <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                    {String(index + 1).padStart(2, '0')}ª
+                            {Array.from(
+                              { length: formData.quantidadeParcelas },
+                              (_, index) => {
+                                const parcelaDate = new Date(
+                                  formData.dataPrimeiraParcela,
+                                );
+                                parcelaDate.setMonth(
+                                  parcelaDate.getMonth() + index,
+                                );
+                                const valorParcela =
+                                  formData.valorTotal /
+                                  formData.quantidadeParcelas;
+
+                                return (
+                                  <div
+                                    key={index}
+                                    className="grid grid-cols-3 gap-4 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow"
+                                  >
+                                    <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                      {String(index + 1).padStart(2, "0")}ª
+                                    </div>
+                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                      {parcelaDate.toLocaleDateString("pt-BR")}
+                                    </div>
+                                    <div className="text-sm font-semibold text-green-600 dark:text-green-400 text-right">
+                                      {formatCurrency(valorParcela)}
+                                    </div>
                                   </div>
-                                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                                    {parcelaDate.toLocaleDateString('pt-BR')}
-                                  </div>
-                                  <div className="text-sm font-semibold text-green-600 dark:text-green-400 text-right">
-                                    {formatCurrency(valorParcela)}
-                                  </div>
-                                </div>
-                              );
-                            })}
+                                );
+                              },
+                            )}
                           </div>
                         </div>
 
                         {/* Mobile Layout */}
                         <div className="md:hidden space-y-3 max-h-48 overflow-y-auto">
-                          {Array.from({ length: formData.quantidadeParcelas }, (_, index) => {
-                            const parcelaDate = new Date(formData.dataPrimeiraParcela);
-                            parcelaDate.setMonth(parcelaDate.getMonth() + index);
-                            const valorParcela = formData.valorTotal / formData.quantidadeParcelas;
-                            
-                            return (
-                              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-100 dark:border-gray-600 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                      <span className="text-xs font-bold text-white">{index + 1}</span>
+                          {Array.from(
+                            { length: formData.quantidadeParcelas },
+                            (_, index) => {
+                              const parcelaDate = new Date(
+                                formData.dataPrimeiraParcela,
+                              );
+                              parcelaDate.setMonth(
+                                parcelaDate.getMonth() + index,
+                              );
+                              const valorParcela =
+                                formData.valorTotal /
+                                formData.quantidadeParcelas;
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-100 dark:border-gray-600 shadow-sm"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                        <span className="text-xs font-bold text-white">
+                                          {index + 1}
+                                        </span>
+                                      </div>
+                                      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                        Parcela{" "}
+                                        {String(index + 1).padStart(2, "0")}
+                                      </span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                      Parcela {String(index + 1).padStart(2, '0')}
+                                    <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                                      {formatCurrency(valorParcela)}
                                     </span>
                                   </div>
-                                  <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                                    {formatCurrency(valorParcela)}
-                                  </span>
+                                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg
+                                      className="w-3 h-3"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                    Vence em{" "}
+                                    {parcelaDate.toLocaleDateString("pt-BR")}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                  </svg>
-                                  Vence em {parcelaDate.toLocaleDateString('pt-BR')}
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            },
+                          )}
                         </div>
-                        
+
                         {formData.quantidadeParcelas > 6 && (
                           <div className="mt-3 pt-3 border-t border-green-200 dark:border-gray-600">
                             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                              {formData.quantidadeParcelas} parcela(s) • Role para ver todas
+                              {formData.quantidadeParcelas} parcela(s) • Role
+                              para ver todas
                             </p>
                           </div>
                         )}
@@ -885,17 +1094,24 @@ export default function Expenses() {
                   </Button>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Observações</Label>
+                    <Label className="text-sm font-semibold text-green-800 dark:text-green-300">
+                      Observações
+                    </Label>
                   </div>
                 </div>
               </div>
-              
+
               {shouldShowObservacao && (
                 <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                   <Textarea
                     id="observacoes"
                     value={formData.observacoes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        observacoes: e.target.value,
+                      }))
+                    }
                     placeholder="Observações adicionais sobre a saída"
                     rows={3}
                     className="border-green-200 focus:border-green-400 focus:ring-green-400"
@@ -909,9 +1125,13 @@ export default function Expenses() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-lg font-semibold text-green-800 dark:text-green-200">Total da Saída:</span>
+                  <span className="text-lg font-semibold text-green-800 dark:text-green-200">
+                    Total da Saída:
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(formData.valorTotal)}</span>
+                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {formatCurrency(formData.valorTotal)}
+                </span>
               </div>
             </div>
 
@@ -931,11 +1151,7 @@ export default function Expenses() {
                   "Registrar Saída"
                 )}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClear}
-              >
+              <Button type="button" variant="outline" onClick={handleClear}>
                 Limpar
               </Button>
             </div>

@@ -170,6 +170,7 @@ export default function Expenses() {
       return;
     }
     
+    // Adiciona um novo item vazio à lista (sem produto selecionado)
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
 
@@ -197,12 +198,17 @@ export default function Expenses() {
   const updateItem = (index: number, field: keyof ItemSaidaInput, value: any) => {
     const newItems = [...items];
     
-    // Se está atualizando o produto, verificar se já existe
+    // Se está atualizando o produto, verificar se já existe em OUTROS itens
     if (field === 'produtoId' && value !== 0) {
-      if (isProductInList(value)) {
+      // Verifica se o produto já existe em outros itens (excluindo o item atual)
+      const productExistsInOtherItems = items.some((item, i) => 
+        i !== index && item.produtoId === value && item.produtoId !== 0
+      );
+      
+      if (productExistsInOtherItems) {
         toast({
-          title: "Item já está na lista",
-          description: "Item já está na lista, altere a quantidade",
+          title: "Produto já está na lista",
+          description: "Produto já está na lista, altere a quantidade",
           variant: "destructive",
         });
         return;
@@ -249,11 +255,15 @@ export default function Expenses() {
       const product = await productService.getByBarcode(barcode);
       
       if (product) {
-        // Verificar se o produto já está na lista
-        if (isProductInList(product.id)) {
+        // Verificar se o produto já está na lista em outros itens (excluindo o item atual)
+        const productExistsInOtherItems = items.some((item, i) => 
+          i !== scanningIndex && item.produtoId === product.id && item.produtoId !== 0
+        );
+        
+        if (productExistsInOtherItems) {
           toast({
-            title: "Item já está na lista",
-            description: "Item já está na lista, altere a quantidade",
+            title: "Produto já está na lista",
+            description: "Produto já está na lista, altere a quantidade",
             variant: "destructive",
           });
           return;

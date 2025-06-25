@@ -127,6 +127,29 @@ export default function Expenses() {
   // Verificar se deve mostrar observação baseado no texto
   const shouldShowObservacao = showObservacao || formData.observacoes.length > 0;
 
+  // Função para verificar se produto já existe na lista
+  const isProductInList = (productId: number) => {
+    return items.some(item => item.produtoId === productId && productId !== 0);
+  };
+
+  // Função para verificar se há itens válidos
+  const hasValidItems = () => {
+    return items.some(item => 
+      item.produtoId !== 0 && 
+      item.quantidade > 0 && 
+      item.precoUnitario > 0
+    );
+  };
+
+  // Função para verificar se há itens inválidos
+  const hasInvalidItems = () => {
+    return items.some(item => 
+      item.produtoId === 0 || 
+      item.quantidade <= 0 || 
+      item.precoUnitario <= 0
+    );
+  };
+
   const addItem = () => {
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
@@ -135,18 +158,39 @@ export default function Expenses() {
     if (items.length > 1) {
       const newItems = items.filter((_, i) => i !== index);
       setItems(newItems);
-      updateTotalValue(newItems);
+      
+      // Se não há mais itens válidos, resetar parcelas
+      const hasValidItemsAfterRemoval = newItems.some(item => item.produtoId !== 0);
+      if (!hasValidItemsAfterRemoval) {
+        setFormData(prev => ({ 
+          ...prev, 
+          valorTotal: 0,
+          temParcelas: false,
+          quantidadeParcelas: 1,
+          dataPrimeiraParcela: new Date().toISOString().split('T')[0]
+        }));
+      } else {
+        updateTotalValue(newItems);
+      }
     }
   };
 
-  const updateItem = (index: number, field: keyof ItemSaidaInput, value: string | number) => {
-    const newItems = items.map((item, i) => {
-      if (i === index) {
-        const updatedItem = { ...item, [field]: value };
-        return updatedItem;
+  const updateItem = (index: number, field: keyof ItemSaidaInput, value: any) => {
+    const newItems = [...items];
+    
+    // Se está atualizando o produto, verificar se já existe
+    if (field === 'produtoId' && value !== 0) {
+      if (isProductInList(value)) {
+        toast({
+          title: "Item já está na lista",
+          description: "Item já está na lista, altere a quantidade",
+          variant: "destructive",
+        });
+        return;
       }
-      return item;
-    });
+    }
+    
+    newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
     updateTotalValue(newItems);
   };
@@ -156,13 +200,7 @@ export default function Expenses() {
     setFormData(prev => ({ ...prev, valorTotal: total }));
   };
 
-  const hasValidItems = () => {
-    return items.some(item => item.produtoId > 0 && item.precoUnitario > 0);
-  };
-
-  const hasInvalidItems = () => {
-    return items.some(item => item.produtoId === 0 || item.precoUnitario === 0);
-  };
+  // Removido - função duplicada já existe acima
 
   const handleProductSearch = async (query: string) => {
     if (!query || query.length < 3) return;
@@ -186,23 +224,46 @@ export default function Expenses() {
 
   const handleBarcodeScanned = async (barcode: string) => {
     if (scanningIndex === null) return;
-
+    
     try {
+      setProductSearchLoading(true);
       const product = await productService.getByBarcode(barcode);
-      updateItem(scanningIndex, 'produtoId', product.id);
-      setShowScanner(false);
-      setScanningIndex(null);
-
-      toast({
-        title: "Produto encontrado",
-        description: `${product.nome} adicionado ao item`,
-      });
+      
+      if (product) {
+        // Verificar se o produto já está na lista
+        if (isProductInList(product.id)) {
+          toast({
+            title: "Item já está na lista",
+            description: "Item já está na lista, altere a quantidade",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        updateItem(scanningIndex, 'produtoId', product.id);
+        updateItem(scanningIndex, 'precoUnitario', product.precoUnitario);
+        
+        toast({
+          title: "Produto encontrado",
+          description: `${product.nome} adicionado à lista`,
+        });
+      } else {
+        toast({
+          title: "Produto não encontrado",
+          description: "Nenhum produto encontrado com este código de barras",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
-        title: "Produto não encontrado",
-        description: "Código de barras não encontrado no sistema",
+        title: "Erro ao buscar produto",
+        description: "Não foi possível buscar o produto pelo código de barras",
         variant: "destructive",
       });
+    } finally {
+      setProductSearchLoading(false);
+      setShowScanner(false);
+      setScanningIndex(null);
     }
   };
 
@@ -316,7 +377,7 @@ export default function Expenses() {
             {/* Basic Info */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Responsáveis *</Label>
                 </div>
@@ -357,7 +418,7 @@ export default function Expenses() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <Label htmlFor="empresaId" className="text-sm font-semibold text-green-800 dark:text-green-300">Empresa *</Label>
                 </div>
@@ -383,7 +444,11 @@ export default function Expenses() {
             </div>
 
             {/* Items */}
-            <div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Itens da Compra *</Label>
+              </div>
               <div className="mb-4">
                 <Label className="text-lg font-semibold">Itens da Compra</Label>
               </div>
@@ -742,15 +807,15 @@ export default function Expenses() {
             {/* Observations */}
             <div className="space-y-3">
               <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-3 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={toggleObservacao}
-                    className="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-full"
+                    className="p-2 h-8 w-8 bg-green-200 dark:bg-green-800 hover:bg-green-300 dark:hover:bg-green-700 rounded-full"
                   >
-                    <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-300" />
+                    <MessageCircle className="h-3 w-3 text-green-600 dark:text-green-300" />
                   </Button>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>

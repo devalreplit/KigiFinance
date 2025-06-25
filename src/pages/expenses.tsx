@@ -291,19 +291,22 @@ export default function Expenses() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Responsáveis *</Label>
-                <div className="space-y-3 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Responsáveis *</Label>
+                </div>
+                <div className="space-y-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
                   {/* Lista de usuários - 2 por linha */}
                   <div className="grid grid-cols-2 gap-3">
                     {users.map((user) => (
-                      <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div key={user.id} className="flex items-center space-x-3 p-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow">
                         <Checkbox
                           checked={selectedUsers.includes(user.id)}
                           onCheckedChange={() => toggleUserSelection(user.id)}
                           className="w-4 h-4"
                         />
-                        <Label className="cursor-pointer text-sm">
+                        <Label className="cursor-pointer text-sm font-medium text-gray-800 dark:text-gray-200">
                           {user.nome}
                         </Label>
                       </div>
@@ -311,17 +314,17 @@ export default function Expenses() {
                   </div>
                   
                   {/* Separador */}
-                  <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                  <div className="border-t border-green-200 dark:border-gray-600"></div>
                   
                   {/* Opção Família - centralizada */}
                   <div className="flex justify-center">
-                    <div className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <div className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow">
                       <Checkbox
                         checked={selectedUsers.length === users.length && users.length > 0}
                         onCheckedChange={toggleFamiliaSelection}
                         className="w-4 h-4"
                       />
-                      <Label className="font-medium text-blue-600 dark:text-blue-400 cursor-pointer">
+                      <Label className="font-semibold text-green-600 dark:text-green-400 cursor-pointer">
                         👨‍👩‍👧‍👦 Família
                       </Label>
                     </div>
@@ -329,20 +332,25 @@ export default function Expenses() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="empresaId">Empresa *</Label>
-                <Select value={formData.empresaId} onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id.toString()}>
-                        {company.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <Label htmlFor="empresaId" className="text-sm font-semibold text-green-800 dark:text-green-300">Empresa *</Label>
+                </div>
+                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
+                  <Select value={formData.empresaId} onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: value }))}>
+                    <SelectTrigger className="border-green-200 focus:border-green-400 focus:ring-green-400">
+                      <SelectValue placeholder="Selecione a empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id.toString()}>
+                          {company.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
@@ -427,7 +435,7 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label>Preço Unitário *</Label>
+                      <Label className="text-sm font-medium text-green-700 dark:text-green-300">Preço Unitário *</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">R$</span>
                         <Input
@@ -515,7 +523,7 @@ export default function Expenses() {
 
             {/* Payment Options */}
             <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-blue-200 dark:border-gray-600">
+              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -524,13 +532,13 @@ export default function Expenses() {
                       onCheckedChange={(checked) => setFormData(prev => ({ ...prev, temParcelas: !!checked }))}
                       className="w-5 h-5"
                     />
-                    <Label htmlFor="temParcelas" className="text-sm font-semibold text-blue-800 dark:text-blue-300 cursor-pointer">
+                    <Label htmlFor="temParcelas" className="text-sm font-semibold text-green-800 dark:text-green-300 cursor-pointer">
                       💳 Pagamento Parcelado
                     </Label>
                   </div>
                   {formData.temParcelas && (
                     <div className="ml-auto">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         {formData.quantidadeParcelas}x
                       </span>
                     </div>
@@ -539,16 +547,16 @@ export default function Expenses() {
               </div>
 
               {formData.temParcelas && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-blue-200 dark:border-gray-600 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <Label className="text-sm font-semibold text-blue-800 dark:text-blue-300">Quantidade de Parcelas</Label>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Quantidade de Parcelas</Label>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-600">
+                    <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                       <button
                         type="button"
-                        className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xl font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xl font-bold text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         onClick={() => formData.quantidadeParcelas > 1 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas - 1 }))}
                         disabled={formData.quantidadeParcelas <= 1}
                       >
@@ -568,17 +576,17 @@ export default function Expenses() {
                               setFormData(prev => ({ ...prev, quantidadeParcelas: numValue }));
                             }
                           }}
-                          className="w-full text-center text-xl font-bold border-blue-200 focus:border-blue-400 focus:ring-blue-400"
+                          className="w-full text-center text-xl font-bold border-green-200 focus:border-green-400 focus:ring-green-400"
                           autoComplete="off"
                           autoCorrect="off"
                           spellCheck="false"
                         />
-                        <span className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">1 a 60 parcelas</span>
+                        <span className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">1 a 60 parcelas</span>
                       </div>
                       
                       <button
                         type="button"
-                        className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xl font-bold text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xl font-bold text-green-600 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         onClick={() => formData.quantidadeParcelas < 60 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas + 1 }))}
                         disabled={formData.quantidadeParcelas >= 60}
                       >
@@ -589,26 +597,26 @@ export default function Expenses() {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <Label htmlFor="dataPrimeiraParcela" className="text-sm font-semibold text-blue-800 dark:text-blue-300">Data da Primeira Parcela</Label>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <Label htmlFor="dataPrimeiraParcela" className="text-sm font-semibold text-green-800 dark:text-green-300">Data da Primeira Parcela</Label>
                     </div>
-                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-600">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                       <Input
                         id="dataPrimeiraParcela"
                         type="date"
                         value={formData.dataPrimeiraParcela}
                         onChange={(e) => setFormData(prev => ({ ...prev, dataPrimeiraParcela: e.target.value }))}
-                        className="border-blue-200 focus:border-blue-400 focus:ring-blue-400 text-center font-medium"
+                        className="border-green-200 focus:border-green-400 focus:ring-green-400 text-center font-medium"
                       />
                     </div>
                   </div>
 
                   <div className="md:col-span-2">
                     <div className="space-y-4">
-                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-gray-600">
+                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Valor por parcela:</span>
-                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
+                          <span className="text-sm font-medium text-green-700 dark:text-green-300">Valor por parcela:</span>
+                          <span className="text-lg font-bold text-green-600 dark:text-green-400">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
                         </div>
                       </div>
                       
@@ -697,37 +705,47 @@ export default function Expenses() {
             </div>
 
             {/* Observations */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleObservacao}
-                  className="p-1 h-8 w-8"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-                <Label className="text-sm font-medium">Observações</Label>
+            <div className="space-y-3">
+              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleObservacao}
+                    className="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-full"
+                  >
+                    <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-300" />
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Observações</Label>
+                  </div>
+                </div>
               </div>
               
               {shouldShowObservacao && (
-                <Textarea
-                  id="observacoes"
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
-                  placeholder="Observações adicionais sobre a saída"
-                  rows={3}
-                  className="mt-2"
-                />
+                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600">
+                  <Textarea
+                    id="observacoes"
+                    value={formData.observacoes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                    placeholder="Observações adicionais sobre a saída"
+                    rows={3}
+                    className="border-green-200 focus:border-green-400 focus:ring-green-400"
+                  />
+                </div>
               )}
             </div>
 
             {/* Total */}
-            <div className="p-4 bg-muted/50 rounded-lg">
+            <div className="p-6 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-xl border border-green-300 dark:border-green-600 shadow-sm">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">Total:</span>
-                <span className="text-2xl font-bold text-primary">{formatCurrency(formData.valorTotal)}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-lg font-semibold text-green-800 dark:text-green-200">Total da Saída:</span>
+                </div>
+                <span className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(formData.valorTotal)}</span>
               </div>
             </div>
 

@@ -39,9 +39,23 @@ export default function Expenses() {
     dataPrimeiraParcela: new Date().toISOString().split('T')[0],
   });
 
+  const [items, setItems] = useState<ItemSaidaInput[]>([
+    {
+      produtoId: 0,
+      quantidade: 1,
+      precoUnitario: 0,
+    },
+  ]);
+
   // Observador para resetar parcelas quando necessário
   useEffect(() => {
-    if (formData.temParcelas && !hasValidItems()) {
+    const hasValidItemsCheck = items.some(item => 
+      item.produtoId !== 0 && 
+      item.quantidade > 0 && 
+      item.precoUnitario > 0
+    );
+    
+    if (formData.temParcelas && !hasValidItemsCheck) {
       setFormData(prev => ({ 
         ...prev, 
         temParcelas: false,
@@ -50,14 +64,6 @@ export default function Expenses() {
       }));
     }
   }, [formData.temParcelas, items]);
-
-  const [items, setItems] = useState<ItemSaidaInput[]>([
-    {
-      produtoId: 0,
-      quantidade: 1,
-      precoUnitario: 0,
-    },
-  ]);
 
   useEffect(() => {
     loadData();

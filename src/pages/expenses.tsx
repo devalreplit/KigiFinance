@@ -587,21 +587,82 @@ export default function Expenses() {
                       </p>
                       
                       {/* Preview das parcelas */}
-                      <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Preview das Parcelas:</h4>
-                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="mt-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <h4 className="text-sm font-semibold text-green-800 dark:text-green-300">Preview das Parcelas</h4>
+                        </div>
+                        
+                        {/* Desktop Layout */}
+                        <div className="hidden md:block">
+                          <div className="grid grid-cols-3 gap-4 mb-3 px-3 py-2 bg-green-100 dark:bg-gray-700 rounded-lg">
+                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Parcela</div>
+                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Vencimento</div>
+                            <div className="text-xs font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide text-right">Valor</div>
+                          </div>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {Array.from({ length: formData.quantidadeParcelas }, (_, index) => {
+                              const parcelaDate = new Date(formData.dataPrimeiraParcela);
+                              parcelaDate.setMonth(parcelaDate.getMonth() + index);
+                              const valorParcela = formData.valorTotal / formData.quantidadeParcelas;
+                              
+                              return (
+                                <div key={index} className="grid grid-cols-3 gap-4 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100 dark:border-gray-600 hover:shadow-sm transition-shadow">
+                                  <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                    {String(index + 1).padStart(2, '0')}ª
+                                  </div>
+                                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                                    {parcelaDate.toLocaleDateString('pt-BR')}
+                                  </div>
+                                  <div className="text-sm font-semibold text-green-600 dark:text-green-400 text-right">
+                                    {formatCurrency(valorParcela)}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Mobile Layout */}
+                        <div className="md:hidden space-y-3 max-h-48 overflow-y-auto">
                           {Array.from({ length: formData.quantidadeParcelas }, (_, index) => {
                             const parcelaDate = new Date(formData.dataPrimeiraParcela);
                             parcelaDate.setMonth(parcelaDate.getMonth() + index);
                             const valorParcela = formData.valorTotal / formData.quantidadeParcelas;
                             
                             return (
-                              <div key={index} className="text-xs text-gray-600 dark:text-gray-400 font-mono">
-                                {String(index + 1).padStart(2, '0')} | {parcelaDate.toLocaleDateString('pt-BR')} | {formatCurrency(valorParcela)}
+                              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-100 dark:border-gray-600 shadow-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                      <span className="text-xs font-bold text-white">{index + 1}</span>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                      Parcela {String(index + 1).padStart(2, '0')}
+                                    </span>
+                                  </div>
+                                  <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                                    {formatCurrency(valorParcela)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                  Vence em {parcelaDate.toLocaleDateString('pt-BR')}
+                                </div>
                               </div>
                             );
                           })}
                         </div>
+                        
+                        {formData.quantidadeParcelas > 6 && (
+                          <div className="mt-3 pt-3 border-t border-green-200 dark:border-gray-600">
+                            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                              {formData.quantidadeParcelas} parcela(s) • Role para ver todas
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

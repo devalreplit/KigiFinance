@@ -395,7 +395,7 @@ export default function Expenses() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-3">
+              <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Responsáveis *</Label>
@@ -436,7 +436,7 @@ export default function Expenses() {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <Label htmlFor="empresaId" className="text-sm font-semibold text-green-800 dark:text-green-300">Empresa *</Label>
@@ -463,14 +463,12 @@ export default function Expenses() {
             </div>
 
             {/* Items */}
-            <div className="space-y-3">
+            <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
               <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <Label className="text-sm font-semibold text-green-800 dark:text-green-300">Itens da Compra *</Label>
               </div>
-              <div className="mb-4">
-                <Label className="text-lg font-semibold">Itens da Compra</Label>
-              </div>
+
 
               <div className="space-y-3">
                 {items.map((item, index) => (
@@ -574,6 +572,33 @@ export default function Expenses() {
                           inputMode="numeric"
                           pattern="[0-9]*"
                           value={formatCurrency(item.precoUnitario).replace('R$', '').trim()}
+                          onChange={(e) => {
+                            if (!formData.empresaId) {
+                              toast({
+                                title: "Selecione uma empresa",
+                                description: "Primeiro selecione uma empresa antes de definir preços",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // Remove tudo que não é número
+                            const numericValue = e.target.value.replace(/\D/g, '');
+                            
+                            // Se vazio, define como 0
+                            if (numericValue === '') {
+                              updateItem(index, 'precoUnitario', 0);
+                              return;
+                            }
+                            
+                            // Converte centavos para reais (divide por 100)
+                            const valueInReais = parseInt(numericValue) / 100;
+                            
+                            // Limita a 999999.99 (R$ 999.999,99)
+                            if (valueInReais <= 999999.99) {
+                              updateItem(index, 'precoUnitario', valueInReais);
+                            }
+                          }}
                           onKeyDown={(e) => {
                             // Permite: números, backspace, delete, tab, escape, enter
                             if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
@@ -836,8 +861,8 @@ export default function Expenses() {
             </div>
 
             {/* Observations */}
-            <div className="space-y-3">
-              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
+            <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600">
                 <div className="flex items-center justify-center gap-3 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <Button
                     type="button"

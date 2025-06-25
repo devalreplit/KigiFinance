@@ -151,6 +151,25 @@ export default function Expenses() {
   };
 
   const addItem = () => {
+    // Só adiciona se empresa foi selecionada e não há itens inválidos
+    if (!formData.empresaId) {
+      toast({
+        title: "Selecione uma empresa",
+        description: "Primeiro selecione uma empresa antes de adicionar itens",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (hasInvalidItems()) {
+      toast({
+        title: "Complete os itens atuais",
+        description: "Complete todos os campos dos itens existentes antes de adicionar novos",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
 
@@ -463,20 +482,30 @@ export default function Expenses() {
                           options={productOptions}
                           value={item.produtoId > 0 ? item.produtoId.toString() : ""}
                           onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value) || 0)}
-                          placeholder="Digite o nome do produto..."
+                          placeholder={!formData.empresaId ? "Primeiro selecione uma empresa" : "Digite o nome do produto..."}
                           onSearch={handleProductSearch}
                           loading={productSearchLoading}
                           emptyMessage="Nenhum produto encontrado"
                           className="flex-1"
+                          disabled={!formData.empresaId}
                         />
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => {
+                            if (!formData.empresaId) {
+                              toast({
+                                title: "Selecione uma empresa",
+                                description: "Primeiro selecione uma empresa antes de usar o scanner",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
                             setScanningIndex(index);
                             setShowScanner(true);
                           }}
+                          disabled={!formData.empresaId}
                         >
                           <QrCode className="h-4 w-4" />
                         </Button>
@@ -490,7 +519,7 @@ export default function Expenses() {
                           type="button"
                           className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => item.quantidade > 0 && updateItem(index, 'quantidade', item.quantidade - 1)}
-                          disabled={item.quantidade <= 0}
+                          disabled={item.quantidade <= 0 || !formData.empresaId}
                         >
                           -
                         </button>
@@ -502,6 +531,14 @@ export default function Expenses() {
                             pattern="[0-9]*"
                             value={item.quantidade.toString()}
                             onChange={(e) => {
+                              if (!formData.empresaId) {
+                                toast({
+                                  title: "Selecione uma empresa",
+                                  description: "Primeiro selecione uma empresa antes de alterar quantidades",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
                               const value = e.target.value.replace(/[^0-9]/g, '');
                               const numValue = parseInt(value) || 0;
                               if (numValue >= 0 && numValue <= 20) {
@@ -512,6 +549,7 @@ export default function Expenses() {
                             autoComplete="off"
                             autoCorrect="off"
                             spellCheck="false"
+                            disabled={!formData.empresaId}
                           />
                           <span className="text-xs text-gray-500 mt-1">0-20</span>
                         </div>
@@ -536,24 +574,6 @@ export default function Expenses() {
                           inputMode="numeric"
                           pattern="[0-9]*"
                           value={formatCurrency(item.precoUnitario).replace('R$', '').trim()}
-                          onChange={(e) => {
-                            // Remove tudo que não é número
-                            const numericValue = e.target.value.replace(/\D/g, '');
-                            
-                            // Se vazio, define como 0
-                            if (numericValue === '') {
-                              updateItem(index, 'precoUnitario', 0);
-                              return;
-                            }
-                            
-                            // Converte centavos para reais (divide por 100)
-                            const valueInReais = parseInt(numericValue) / 100;
-                            
-                            // Limita a 999999.99 (R$ 999.999,99)
-                            if (valueInReais <= 999999.99) {
-                              updateItem(index, 'precoUnitario', valueInReais);
-                            }
-                          }}
                           onKeyDown={(e) => {
                             // Permite: números, backspace, delete, tab, escape, enter
                             if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
@@ -589,8 +609,19 @@ export default function Expenses() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => removeItem(index)}
+                          onClick={() => {
+                            if (!formData.empresaId) {
+                              toast({
+                                title: "Selecione uma empresa",
+                                description: "Primeiro selecione uma empresa antes de remover itens",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            removeItem(index);
+                          }}
                           className="text-red-600 hover:text-red-700"
+                          disabled={!formData.empresaId}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

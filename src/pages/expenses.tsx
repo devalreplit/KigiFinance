@@ -527,15 +527,47 @@ export default function Expenses() {
               {formData.temParcelas && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <Label htmlFor="quantidadeParcelas">Quantidade de Parcelas</Label>
-                    <Input
-                      id="quantidadeParcelas"
-                      type="number"
-                      min="1"
-                      max="60"
-                      value={formData.quantidadeParcelas}
-                      onChange={(e) => setFormData(prev => ({ ...prev, quantidadeParcelas: parseInt(e.target.value) || 1 }))}
-                    />
+                    <Label>Quantidade de Parcelas</Label>
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        type="button"
+                        className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => formData.quantidadeParcelas > 1 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas - 1 }))}
+                        disabled={formData.quantidadeParcelas <= 1}
+                      >
+                        -
+                      </button>
+                      
+                      <div className="flex flex-col items-center">
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={formData.quantidadeParcelas.toString()}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            const numValue = parseInt(value) || 1;
+                            if (numValue >= 1 && numValue <= 60) {
+                              setFormData(prev => ({ ...prev, quantidadeParcelas: numValue }));
+                            }
+                          }}
+                          className="w-20 text-center text-xl font-bold"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          spellCheck="false"
+                        />
+                        <span className="text-xs text-gray-500 mt-1">1-60</span>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => formData.quantidadeParcelas < 60 && setFormData(prev => ({ ...prev, quantidadeParcelas: prev.quantidadeParcelas + 1 }))}
+                        disabled={formData.quantidadeParcelas >= 60}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -549,9 +581,29 @@ export default function Expenses() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <p className="text-sm text-muted-foreground">
-                      Valor por parcela: <span className="font-semibold">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
-                    </p>
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Valor por parcela: <span className="font-semibold">{formatCurrency(formData.valorTotal / formData.quantidadeParcelas)}</span>
+                      </p>
+                      
+                      {/* Preview das parcelas */}
+                      <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border">
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Preview das Parcelas:</h4>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {Array.from({ length: formData.quantidadeParcelas }, (_, index) => {
+                            const parcelaDate = new Date(formData.dataPrimeiraParcela);
+                            parcelaDate.setMonth(parcelaDate.getMonth() + index);
+                            const valorParcela = formData.valorTotal / formData.quantidadeParcelas;
+                            
+                            return (
+                              <div key={index} className="text-xs text-gray-600 dark:text-gray-400 font-mono">
+                                {String(index + 1).padStart(2, '0')} | {parcelaDate.toLocaleDateString('pt-BR')} | {formatCurrency(valorParcela)}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

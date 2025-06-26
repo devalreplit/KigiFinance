@@ -1,3 +1,4 @@
+
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,7 +60,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Login />;
+    return <LoginWithAuth />;
   }
 
   // Obter iniciais e papel do usuário logado
@@ -133,7 +134,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Router() {
+// Componente Login que usa o AuthContext
+function LoginWithAuth() {
   const { login } = useAuth();
   
   const handleLogin = async (loginValue: string, senha: string): Promise<boolean> => {
@@ -148,9 +150,13 @@ function Router() {
     }
   };
 
+  return <Login onLogin={handleLogin} />;
+}
+
+function Router() {
   return (
     <Switch>
-      <Route path="/login" component={() => <Login onLogin={handleLogin} />} />
+      <Route path="/login" component={LoginWithAuth} />
       <Route path="/" component={() => <ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/users" component={() => <ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/income" component={() => <ProtectedRoute><Income /></ProtectedRoute>} />
@@ -169,7 +175,7 @@ function App() {
     <TooltipProvider>
       <AuthProvider>
         <Router />
-              <Toaster />
+        <Toaster />
       </AuthProvider>
     </TooltipProvider>
   );

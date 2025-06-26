@@ -138,10 +138,12 @@ function Router() {
   
   const handleLogin = async (loginValue: string, senha: string): Promise<boolean> => {
     try {
+      console.log('App.tsx handleLogin: Iniciando login para:', loginValue);
       await login(loginValue, senha);
+      console.log('App.tsx handleLogin: Login realizado com sucesso');
       return true;
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('App.tsx handleLogin: Erro no login:', error);
       return false;
     }
   };

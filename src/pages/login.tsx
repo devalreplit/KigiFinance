@@ -9,7 +9,7 @@ import { authService } from "@/service/apiService";
 import { Loader2, LogIn } from "lucide-react";
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (login: string, senha: string) => Promise<boolean>;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -64,21 +64,13 @@ export default function Login({ onLogin }: LoginProps) {
       setIsLoading(true);
       console.log("Tentando fazer login com:", { login: formData.login, senha: formData.senha });
 
-      const response = await authService.login(formData.login, formData.senha);
-      setUser(response.user);
-
-      toast({
-        title: "Login realizado",
-        description: "Bem-vindo ao sistema KIGI!",
-      });
-
       if (typeof onLogin === 'function') {
         const success = await onLogin(formData.login, formData.senha);
 
         if (success) {
           toast({
             title: "Login realizado com sucesso",
-            description: "Bem-vindo de volta!",
+            description: "Bem-vindo ao sistema KIGI!",
           });
         } else {
           toast({

@@ -135,9 +135,20 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function Router() {
   const { login } = useAuth();
+  
+  const handleLogin = async (loginValue: string, senha: string): Promise<boolean> => {
+    try {
+      await login(loginValue, senha);
+      return true;
+    } catch (error) {
+      console.error('Erro no login:', error);
+      return false;
+    }
+  };
+
   return (
     <Switch>
-      <Route path="/login" component={() => <Login onLogin={login} />} />
+      <Route path="/login" component={() => <Login onLogin={handleLogin} />} />
       <Route path="/" component={() => <ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/users" component={() => <ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/income" component={() => <ProtectedRoute><Income /></ProtectedRoute>} />

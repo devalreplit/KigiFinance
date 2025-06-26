@@ -158,6 +158,13 @@ export function Autocomplete({
     }
   }, [selectedOption, searchQuery]);
 
+  // Limpar searchQuery quando value for resetado para vazio
+  useEffect(() => {
+    if (!value || value === "" || value === "0") {
+      setSearchQuery("");
+    }
+  }, [value]);
+
   return (
     <div className={cn("relative", className)}>
       <div className="relative">

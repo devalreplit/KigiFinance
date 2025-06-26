@@ -590,7 +590,32 @@ export default function Expenses() {
                     className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
                   >
                     <div className="md:col-span-2">
-                      <Label>Produto *</Label>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-center flex-1 md:text-left">Produto *</Label>
+                        {items.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (!formData.empresaId) {
+                                toast({
+                                  title: "Selecione uma empresa",
+                                  description:
+                                    "Primeiro selecione uma empresa antes de remover itens",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              removeItem(index);
+                            }}
+                            className="text-red-600 hover:text-red-700 md:hidden"
+                            disabled={!formData.empresaId}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         <Autocomplete
                           key={`autocomplete-${index}-${item.produtoId}-${Date.now()}`}
@@ -637,7 +662,7 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label>Quantidade * (0-20)</Label>
+                      <Label className="text-center block mb-2 md:text-left">Quantidade * (0-20)</Label>
                       <div className="flex items-center justify-center gap-4 py-2">
                         <button
                           type="button"
@@ -704,7 +729,7 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-green-700 dark:text-green-300">
+                      <Label className="text-center block mb-2 md:text-left text-sm font-medium text-green-700 dark:text-green-300">
                         Preço Unitário *
                       </Label>
                       <div className="relative">
@@ -780,7 +805,7 @@ export default function Expenses() {
                       </div>
                     </div>
 
-                    <div className="flex items-end">
+                    <div className="hidden md:flex items-end">
                       {items.length > 1 && (
                         <Button
                           type="button"

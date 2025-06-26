@@ -67,11 +67,27 @@ export function Autocomplete({
     }
   }, [searchQuery, onSearch]);
 
+  // Effect para sincronizar o valor selecionado com o searchQuery
+  useEffect(() => {
+    if (selectedOption && selectedOption.label !== searchQuery) {
+      setSearchQuery(selectedOption.label);
+    }
+  }, [selectedOption]);
+
+  // Effect crítico para limpar searchQuery quando value for resetado
+  useEffect(() => {
+    if (!value || value === "" || value === "0") {
+      setSearchQuery("");
+      setIsOpen(false);
+      setHighlightedIndex(-1);
+    }
+  }, [value]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     
-    if (!isOpen) {
+    if (!isOpen && query) {
       setIsOpen(true);
     }
 
@@ -96,7 +112,9 @@ export function Autocomplete({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) {
       if (e.key === "ArrowDown" || e.key === "Enter") {
-        setIsOpen(true);
+        if (searchQuery.length >= 3) {
+          setIsOpen(true);
+        }
         return;
       }
     }
@@ -133,10 +151,26 @@ export function Autocomplete({
 
   const handleClear = () => {
     setSearchQuery("");
+    setIsOpen(false);
+    setHighlightedIndex(-1);
     if (onValueChange) {
       onValueChange("");
     }
     inputRef.current?.focus();
+  };
+
+  const handleInputFocus = () => {
+    if (searchQuery.length >= 3) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Delay para permitir clique em opções
+    setTimeout(() => {
+      setIsOpen(false);
+      setHighlightedIndex(-1);
+    }, 200);
   };
 
   // Scroll para item destacado
@@ -151,20 +185,6 @@ export function Autocomplete({
     }
   }, [highlightedIndex]);
 
-  // Definir valor inicial do input
-  useEffect(() => {
-    if (selectedOption && !searchQuery) {
-      setSearchQuery(selectedOption.label);
-    }
-  }, [selectedOption, searchQuery]);
-
-  // Limpar searchQuery quando value for resetado para vazio
-  useEffect(() => {
-    if (!value || value === "" || value === "0") {
-      setSearchQuery("");
-    }
-  }, [value]);
-
   return (
     <div className={cn("relative", className)}>
       <div className="relative">
@@ -174,7 +194,8 @@ export function Autocomplete({
           value={searchQuery}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => setIsOpen(true)}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
           placeholder={placeholder}
           disabled={disabled}
           className="pr-20"
@@ -199,7 +220,13 @@ export function Autocomplete({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 hover:bg-muted"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => {
+              if (searchQuery.length >= 3) {
+                setIsOpen(!isOpen);
+              } else {
+                inputRef.current?.focus();
+              }
+            }}
           >
             <ChevronDown className={cn("h-3 w-3 transition-transform", isOpen && "rotate-180")} />
           </Button>

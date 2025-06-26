@@ -229,10 +229,7 @@ export default function Expenses() {
     value: any,
   ) => {
     const newItems = [...items];
-    console.log("Updating item index:", index);
-    console.log("Updating item field:", field);
-    console.log("Updating item value:", value);
-    console.log("Current items:", newItems);
+    
     // Se está atualizando o produto, verificar se já existe em OUTROS itens
     if (field === "produtoId" && value !== 0) {
       // Verifica se o produto já existe em outros itens (excluindo o item atual)
@@ -240,7 +237,6 @@ export default function Expenses() {
         (item, i) =>
           i !== index && item.produtoId === value && item.produtoId !== 0,
       );
-      console.log("Product exists in other items:", productExistsInOtherItems);
 
       if (productExistsInOtherItems) {
         toast({
@@ -248,9 +244,20 @@ export default function Expenses() {
           description: "Produto já está na lista, altere a quantidade",
           variant: "destructive",
         });
-        // Limpar a seleção do produto no componente atual
-        newItems[index] = { ...newItems[index], produtoId: 0 };
+        
+        // Forçar limpeza completa do item
+        newItems[index] = { 
+          produtoId: 0, 
+          quantidade: 1, 
+          precoUnitario: 0 
+        };
         setItems(newItems);
+        
+        // Forçar re-render do componente para garantir limpeza visual
+        setTimeout(() => {
+          setItems([...newItems]);
+        }, 10);
+        
         return;
       }
     }
@@ -311,10 +318,21 @@ export default function Expenses() {
             description: "Produto já está na lista, altere a quantidade",
             variant: "destructive",
           });
-          // Limpar a seleção do produto no item atual
+          
+          // Forçar limpeza completa do item
           const newItems = [...items];
-          newItems[scanningIndex] = { ...newItems[scanningIndex], produtoId: 0 };
+          newItems[scanningIndex] = { 
+            produtoId: 0, 
+            quantidade: 1, 
+            precoUnitario: 0 
+          };
           setItems(newItems);
+          
+          // Forçar re-render do componente para garantir limpeza visual
+          setTimeout(() => {
+            setItems([...newItems]);
+          }, 10);
+          
           return;
         }
 
@@ -575,6 +593,7 @@ export default function Expenses() {
                       <Label>Produto *</Label>
                       <div className="flex gap-2">
                         <Autocomplete
+                          key={`autocomplete-${index}-${item.produtoId}-${Date.now()}`}
                           options={productOptions}
                           value={
                             item.produtoId > 0 ? item.produtoId.toString() : ""

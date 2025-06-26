@@ -248,6 +248,9 @@ export default function Expenses() {
           description: "Produto já está na lista, altere a quantidade",
           variant: "destructive",
         });
+        // Limpar a seleção do produto no componente atual
+        newItems[index] = { ...newItems[index], produtoId: 0 };
+        setItems(newItems);
         return;
       }
     }
@@ -308,6 +311,10 @@ export default function Expenses() {
             description: "Produto já está na lista, altere a quantidade",
             variant: "destructive",
           });
+          // Limpar a seleção do produto no item atual
+          const newItems = [...items];
+          newItems[scanningIndex] = { ...newItems[scanningIndex], produtoId: 0 };
+          setItems(newItems);
           return;
         }
 

@@ -607,7 +607,7 @@ export default function Expenses() {
                 {items.map((item, index) => (
                   <div
                     key={index}
-                    className="relative grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 border rounded-lg"
+                    className="relative grid grid-cols-1 sm:grid-cols-12 gap-4 p-4 border rounded-lg"
                     style={{ backgroundColor: '#f0fdf4' }}
                   >
                     {/* Botão de excluir no canto superior direito - desktop */}
@@ -635,7 +635,7 @@ export default function Expenses() {
                       </Button>
                     )}
 
-                    <div className="sm:col-span-2">
+                    <div className="sm:col-span-5">
                       <div className="flex items-center justify-between mb-2">
                         <Label className="text-center flex-1 sm:text-left">Produto *</Label>
                         {items.length > 1 && (
@@ -708,7 +708,7 @@ export default function Expenses() {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-3">
                       <Label className="text-center block mb-2 sm:text-left">Quantidade * (0-20)</Label>
                       <div className="flex items-center justify-center gap-4 py-2">
                         <button
@@ -775,7 +775,7 @@ export default function Expenses() {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-3">
                       <Label className="text-center block mb-2 sm:text-left text-sm font-medium text-green-700 dark:text-green-300">
                         Preço Unitário *
                       </Label>
@@ -851,7 +851,7 @@ export default function Expenses() {
                       </div>
                     </div>
 
-                    <div className="hidden sm:flex items-end">
+                    <div className="hidden sm:flex items-end sm:col-span-1">
                       {items.length > 1 && (
                         <Button
                           type="button"

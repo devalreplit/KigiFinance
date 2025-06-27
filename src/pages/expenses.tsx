@@ -251,7 +251,6 @@ export default function Expenses() {
             <table className="w-full">
               <thead className="bg-green-50 border-b border-green-200">
                 <tr>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">RESPONSÁVEIS</th>
                   <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">EMPRESA</th>
                   <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">DATA</th>
                   <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">VALOR</th>
@@ -272,11 +271,8 @@ export default function Expenses() {
                           <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
                             <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
                           </div>
-                          <span className="font-medium text-foreground">{getTitularesNames(saida.usuariosTitularesIds)}</span>
+                          <span className="font-medium text-foreground">{getEmpresaName(saida.empresaId)}</span>
                         </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-muted-foreground">{getEmpresaName(saida.empresaId)}</span>
                       </td>
                       <td className="py-4 px-6">
                         <span className="text-muted-foreground">{formatDate(saida.dataSaida)}</span>
@@ -303,7 +299,7 @@ export default function Expenses() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center">
+                    <td colSpan={5} className="py-8 text-center">
                       <div className="flex flex-col items-center">
                         <ShoppingCart className="h-12 w-12 text-muted-foreground mb-4" />
                         <p className="text-muted-foreground">
@@ -346,11 +342,8 @@ export default function Expenses() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                        {getTitularesNames(saida.usuariosTitularesIds)}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {getEmpresaName(saida.empresaId)}
-                      </p>
+                      </h3>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">

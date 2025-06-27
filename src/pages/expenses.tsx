@@ -709,7 +709,7 @@ export default function Expenses() {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <Label className="text-center block mb-2 sm:text-left">Quantidade * (0-20)</Label>
+                      <Label className="text-center block mb-2 sm:text-center">Quantidade * (0-20)</Label>
                       <div className="flex items-center justify-center gap-4 py-2">
                         <button
                           type="button"
@@ -776,7 +776,7 @@ export default function Expenses() {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <Label className="text-center block mb-2 sm:text-left text-sm font-medium text-green-700 dark:text-green-300">
+                      <Label className="text-center block mb-2 sm:text-right text-sm font-medium text-green-700 dark:text-green-300">
                         Preço Unitário *
                       </Label>
                       <div className="relative">

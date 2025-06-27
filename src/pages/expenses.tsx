@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,10 +52,6 @@ export default function Expenses() {
   const [showObservacao, setShowObservacao] = useState(false);
   const [productSearchLoading, setProductSearchLoading] = useState(false);
   const { toast } = useToast();
-  
-  // Referências para controle de scroll em mobile
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const productInputRefs = useRef<(HTMLElement | null)[]>([]);
 
   const [formData, setFormData] = useState({
     descricao: "",
@@ -76,27 +72,6 @@ export default function Expenses() {
     },
   ]);
 
-  // Função para verificar se é dispositivo móvel
-  const isMobile = useCallback(() => {
-    return window.innerWidth <= 768; // Tailwind MD breakpoint
-  }, []);
-
-  // Função para fazer scroll suave para o elemento em dispositivos móveis
-  const scrollToElementOnMobile = useCallback((element: HTMLElement | null, offset: number = 120) => {
-    if (!element || !isMobile()) return;
-    
-    setTimeout(() => {
-      const elementRect = element.getBoundingClientRect();
-      const absoluteElementTop = elementRect.top + window.pageYOffset;
-      const scrollPosition = Math.max(0, absoluteElementTop - offset);
-      
-      window.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-      });
-    }, 100); // Pequeno delay para garantir que o DOM seja renderizado
-  }, [isMobile]);
-
   // Observador para resetar parcelas quando necessário
   useEffect(() => {
     const hasValidItemsCheck = items.some(
@@ -113,47 +88,6 @@ export default function Expenses() {
       }));
     }
   }, [formData.temParcelas, items]);
-
-  // Atualizar as referências dos itens quando a lista mudar
-  useEffect(() => {
-    itemRefs.current = itemRefs.current.slice(0, items.length);
-    productInputRefs.current = productInputRefs.current.slice(0, items.length);
-  }, [items.length]);
-
-  // Função para lidar com foco no campo de produto
-  const handleProductFocus = useCallback((index: number) => {
-    if (!isMobile()) return;
-    
-    // Delay maior para aguardar o teclado virtual aparecer no mobile
-    setTimeout(() => {
-      const itemElement = itemRefs.current[index];
-      // Offset maior para garantir que o campo fique visível acima do teclado
-      scrollToElementOnMobile(itemElement, 200);
-    }, 400);
-  }, [scrollToElementOnMobile, isMobile]);
-
-  // Função para lidar com clique no scanner
-  const handleScannerClick = useCallback((index: number) => {
-    if (!formData.empresaId) {
-      toast({
-        title: "Selecione uma empresa",
-        description: "Primeiro selecione uma empresa antes de usar o scanner",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setScanningIndex(index);
-    setShowScanner(true);
-    
-    // Fazer scroll para o item atual em dispositivos móveis
-    if (isMobile()) {
-      setTimeout(() => {
-        const itemElement = itemRefs.current[index];
-        scrollToElementOnMobile(itemElement);
-      }, 100);
-    }
-  }, [formData.empresaId, toast, isMobile, scrollToElementOnMobile]);
 
   useEffect(() => {
     loadData();
@@ -263,15 +197,7 @@ export default function Expenses() {
     }
 
     // Adiciona um novo item vazio à lista (sem produto selecionado)
-    const newItems = [...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }];
-    setItems(newItems);
-    
-    // Fazer scroll para o novo item em dispositivos móveis
-    setTimeout(() => {
-      const newItemIndex = newItems.length - 1;
-      const newItemElement = itemRefs.current[newItemIndex];
-      scrollToElementOnMobile(newItemElement);
-    }, 150);
+    setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
 
   const removeItem = (index: number) => {
@@ -412,12 +338,6 @@ export default function Expenses() {
 
         updateItem(scanningIndex, "produtoId", product.id);
         updateItem(scanningIndex, "precoUnitario", product.precoUnitario);
-
-        // Fazer scroll para o item preenchido em dispositivos móveis
-        setTimeout(() => {
-          const itemElement = itemRefs.current[scanningIndex];
-          scrollToElementOnMobile(itemElement);
-        }, 150);
 
         toast({
           title: "Produto encontrado",
@@ -685,7 +605,6 @@ export default function Expenses() {
                 {items.map((item, index) => (
                   <div
                     key={index}
-                    ref={(el) => (itemRefs.current[index] = el)}
                     className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
                     style={{ backgroundColor: '#f0fdf4' }}
                   >
@@ -736,13 +655,25 @@ export default function Expenses() {
                           emptyMessage="Nenhum produto encontrado"
                           className="flex-1"
                           disabled={!formData.empresaId}
-                          onFocus={() => handleProductFocus(index)}
+
                         />
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleScannerClick(index)}
+                          onClick={() => {
+                            if (!formData.empresaId) {
+                              toast({
+                                title: "Selecione uma empresa",
+                                description:
+                                  "Primeiro selecione uma empresa antes de usar o scanner",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            setScanningIndex(index);
+                            setShowScanner(true);
+                          }}
                           disabled={!formData.empresaId}
                         >
                           <QrCode className="h-4 w-4" />

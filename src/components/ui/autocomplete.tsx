@@ -22,7 +22,7 @@ interface AutocompleteProps {
   onSearch?: (query: string) => void;
   loading?: boolean;
   emptyMessage?: string;
-  onFocus?: () => void;
+
 }
 
 export function Autocomplete({
@@ -35,7 +35,6 @@ export function Autocomplete({
   onSearch,
   loading = false,
   emptyMessage = "Nenhum resultado encontrado",
-  onFocus,
 }: AutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -164,10 +163,6 @@ export function Autocomplete({
   const handleInputFocus = () => {
     if (searchQuery.length >= 3) {
       setIsOpen(true);
-    }
-    // Chama a função onFocus se fornecida
-    if (onFocus) {
-      onFocus();
     }
   };
 

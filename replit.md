@@ -15,6 +15,13 @@ KIGI é um sistema financeiro familiar desenvolvido em React + TypeScript, focad
 - **Build Tool**: Vite
 - **Icons**: Lucide React
 
+### Database Architecture
+- **Database**: Oracle 11G (production target)
+- **Schema**: Complete relational design with 8 main tables
+- **Data Integrity**: Foreign keys, constraints, and validation triggers
+- **Performance**: Optimized indexes and sequences for auto-increment IDs
+- **Scripts**: Full DDL scripts available in `database_oracle_scripts.sql`
+
 ### Design System
 - **Theme**: Green-based color scheme with CSS variables
 - **Components**: shadcn/ui design system with custom adaptations
@@ -117,6 +124,9 @@ Preferred communication style: Simple, everyday language.
 - January 22, 2025: Verified all dependencies are installed and working correctly  
 - January 22, 2025: Confirmed application runs without errors on Vite development server
 - January 22, 2025: Validated authentication system and mock data persistence working properly
+- January 22, 2025: Removed installments management page - integrated into expense details modal
+- January 22, 2025: Removed price unit from products management - kept only in expense registration
+- January 22, 2025: Created comprehensive Oracle 11G database scripts with complete schema design
 
 ## Changelog
 

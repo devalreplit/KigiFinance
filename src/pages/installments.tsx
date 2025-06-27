@@ -98,11 +98,11 @@ export default function Installments() {
         </div>
       </div>
 
-      <Card className="border-gray-100 shadow-sm">
+      <Card className="border-green-100 shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-green-50 border-b border-green-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Parcela
@@ -123,10 +123,10 @@ export default function Installments() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {parcelas.map((parcela) => (
-                  <tr key={parcela.id} className="hover:bg-gray-50">
+                  <tr key={parcela.id} className="hover:bg-green-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <Calendar className="h-5 w-5 text-gray-400 mr-2" />
+                        <Calendar className="h-5 w-5 text-green-500 mr-2" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
                             Parcela {parcela.numeroParcela}

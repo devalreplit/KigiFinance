@@ -112,7 +112,7 @@ export default function Products() {
             Gerencie produtos e preços
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} className="mt-4 lg:mt-0">
+        <Button onClick={() => setIsModalOpen(true)} className="bg-green-500 hover:bg-green-600 text-white mt-4 lg:mt-0">
           <Plus className="h-4 w-4 mr-2" />
           Novo Produto
         </Button>
@@ -134,27 +134,27 @@ export default function Products() {
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <Card>
+        <Card className="border-green-100 shadow-sm">
           <CardContent className="p-0">
             <table className="w-full table-fixed">
-              <thead className="bg-muted/30">
-                <tr className="border-b border-border">
-                  <th className="w-[25%] px-4 py-4 text-left font-semibold text-foreground">
+              <thead className="bg-green-50 border-b border-green-200">
+                <tr>
+                  <th className="w-[25%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     PRODUTO
                   </th>
-                  <th className="w-[20%] px-4 py-4 text-left font-semibold text-foreground">
+                  <th className="w-[20%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     CATEGORIA
                   </th>
-                  <th className="w-[15%] px-4 py-4 text-left font-semibold text-foreground">
+                  <th className="w-[15%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     PREÇO
                   </th>
-                  <th className="w-[15%] px-4 py-4 text-left font-semibold text-foreground">
+                  <th className="w-[15%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     ESTOQUE
                   </th>
-                  <th className="w-[10%] px-4 py-4 text-left font-semibold text-foreground">
+                  <th className="w-[10%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     STATUS
                   </th>
-                  <th className="w-[15%] px-4 py-4 text-left font-semibold text-foreground">
+                  <th className="w-[15%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     AÇÕES
                   </th>
                 </tr>
@@ -162,11 +162,11 @@ export default function Products() {
               <tbody>
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <tr key={product.id} className="border-b border-border hover:bg-accent/30 transition-colors">
+                    <tr key={product.id} className="border-b border-gray-200 hover:bg-green-50 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
-                            <Package className="h-5 w-5 text-primary" />
+                          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center border border-green-200">
+                            <Package className="h-5 w-5 text-green-600" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="text-sm font-medium text-foreground truncate">{product.nome}</div>
@@ -247,7 +247,8 @@ export default function Products() {
       <div className="lg:hidden space-y-4">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <Card key={product.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <Card key={product.id} className="border-green-200 shadow-sm hover:shadow-md transition-shadow"
+              style={{ backgroundColor: '#f0fdf4' }}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">
@@ -320,7 +321,7 @@ export default function Products() {
               <div className="mt-6">
                 <Button
                   onClick={() => setIsModalOpen(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-green-500 hover:bg-green-600 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Produto

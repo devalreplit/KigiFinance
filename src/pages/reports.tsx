@@ -87,7 +87,7 @@ export default function Reports() {
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Relatórios Financeiros</h2>
           <p className="text-gray-600">Análise detalhada do desempenho financeiro</p>
         </div>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">
+        <Button className="bg-green-500 hover:bg-green-600 text-white">
           <Download className="h-4 w-4 mr-2" />
           Exportar Relatório
         </Button>

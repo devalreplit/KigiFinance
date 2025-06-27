@@ -98,55 +98,55 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">Saldo Familiar</h3>
-              <Wallet className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-medium text-green-700">Saldo Familiar</h3>
+              <Wallet className="h-5 w-5 text-green-600" />
             </div>
-            <p className="text-2xl font-bold text-foreground mt-2">
+            <p className="text-2xl font-bold text-green-800 mt-2">
               {formatCurrency(resumo?.saldoFamiliar || 0)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Saldo atual da família</p>
+            <p className="text-xs text-green-600 mt-1">Saldo atual da família</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">Total Entradas</h3>
+              <h3 className="text-sm font-medium text-green-700">Total Entradas</h3>
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <p className="text-2xl font-bold text-green-600 mt-2">
               {formatCurrency(resumo?.totalEntradas || 0)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Receitas do período</p>
+            <p className="text-xs text-green-600 mt-1">Receitas do período</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">Total Saídas</h3>
+              <h3 className="text-sm font-medium text-green-700">Total Saídas</h3>
               <TrendingDown className="h-5 w-5 text-red-600" />
             </div>
             <p className="text-2xl font-bold text-red-600 mt-2">
               {formatCurrency(resumo?.totalSaidas || 0)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Gastos do período</p>
+            <p className="text-xs text-green-600 mt-1">Gastos do período</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-muted-foreground">Parcelas Pendentes</h3>
+              <h3 className="text-sm font-medium text-green-700">Parcelas Pendentes</h3>
               <Calendar className="h-5 w-5 text-orange-600" />
             </div>
             <p className="text-2xl font-bold text-orange-600 mt-2">
               {formatCurrency(resumo?.totalPendentes || 0)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">A pagar</p>
+            <p className="text-xs text-green-600 mt-1">A pagar</p>
           </CardContent>
         </Card>
       </div>
@@ -154,9 +154,9 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Vendas Diárias */}
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Gastos da Semana</h3>
+            <h3 className="text-lg font-semibold mb-4 text-green-800">Gastos da Semana</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={vendasDiarias}>
@@ -172,9 +172,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Distribuição por Categoria */}
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Gastos por Categoria</h3>
+            <h3 className="text-lg font-semibold mb-4 text-green-800">Gastos por Categoria</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -203,9 +203,9 @@ export default function Dashboard() {
       {/* Recent Activity */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Transações Recentes */}
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Transações Recentes</h3>
+            <h3 className="text-lg font-semibold mb-4 text-green-800">Transações Recentes</h3>
             {transacoes.length > 0 ? (
               <div className="space-y-4">
                 {transacoes.slice(0, 5).map((transacao) => (
@@ -248,9 +248,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Quick Stats */}
-        <Card>
+        <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Resumo Rápido</h3>
+            <h3 className="text-lg font-semibold mb-4 text-green-800">Resumo Rápido</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">

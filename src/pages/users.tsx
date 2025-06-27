@@ -102,7 +102,7 @@ export default function Users() {
             Controle os membros da família e suas permissões
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} className="mt-4 lg:mt-0">
+        <Button onClick={() => setIsModalOpen(true)} className="bg-green-500 hover:bg-green-600 text-white mt-4 lg:mt-0">
           <Plus className="h-4 w-4 mr-2" />
           Novo Usuário
         </Button>
@@ -110,26 +110,26 @@ export default function Users() {
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <Card>
+        <Card className="border-green-100 shadow-sm">
           <CardContent className="p-0">
             <table className="w-full">
-              <thead className="bg-muted/30">
-                <tr className="border-b border-border">
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">USUÁRIO</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">LOGIN</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">FUNÇÃO</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">STATUS</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">AÇÕES</th>
+              <thead className="bg-green-50 border-b border-green-200">
+                <tr>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">USUÁRIO</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">LOGIN</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">FUNÇÃO</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">STATUS</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">AÇÕES</th>
                 </tr>
               </thead>
               <tbody>
                 {users.length > 0 ? (
                   users.map((user) => (
-                    <tr key={user.id} className="border-b border-border hover:bg-accent/30 transition-colors">
+                    <tr key={user.id} className="border-b border-gray-200 hover:bg-green-50 transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-primary/15 rounded-full flex items-center justify-center border border-primary/20">
-                            <UsersIcon className="h-4 w-4 text-primary" />
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center border border-green-200">
+                            <UsersIcon className="h-4 w-4 text-green-600" />
                           </div>
                           <span className="font-medium text-foreground">{user.nome}</span>
                         </div>
@@ -197,7 +197,8 @@ export default function Users() {
       <div className="lg:hidden space-y-4">
         {users.length > 0 ? (
           users.map((user) => (
-            <Card key={user.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <Card key={user.id} className="border-green-200 shadow-sm hover:shadow-md transition-shadow"
+              style={{ backgroundColor: '#f0fdf4' }}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">

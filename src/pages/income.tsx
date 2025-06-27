@@ -148,14 +148,14 @@ export default function Income() {
             }
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} className="mt-4 lg:mt-0">
+        <Button onClick={() => setIsModalOpen(true)} className="bg-green-500 hover:bg-green-600 text-white mt-4 lg:mt-0">
           <Plus className="h-4 w-4 mr-2" />
           Nova Entrada
         </Button>
       </div>
 
       {/* Filtros de Período */}
-      <Card>
+      <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
@@ -221,22 +221,22 @@ export default function Income() {
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <Card>
+        <Card className="border-green-100 shadow-sm">
           <CardContent className="p-0">
             <table className="w-full">
-              <thead className="bg-muted/30">
-                <tr className="border-b border-border">
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">TITULAR</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">EMPRESA</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">DATA</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">VALOR</th>
-                  <th className="text-left py-4 px-6 font-semibold text-foreground">REGISTRO</th>
+              <thead className="bg-green-50 border-b border-green-200">
+                <tr>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">TITULAR</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">EMPRESA</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">DATA</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">VALOR</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">REGISTRO</th>
                 </tr>
               </thead>
               <tbody>
                 {entradas.length > 0 ? (
                   entradas.map((entrada) => (
-                    <tr key={entrada.id} className="border-b border-border hover:bg-accent/30 transition-colors">
+                    <tr key={entrada.id} className="border-b border-gray-200 hover:bg-green-50 transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
@@ -285,7 +285,8 @@ export default function Income() {
       <div className="lg:hidden space-y-4">
         {entradas.length > 0 ? (
           entradas.map((entrada) => (
-            <Card key={entrada.id} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <Card key={entrada.id} className="border-green-200 shadow-sm hover:shadow-md transition-shadow"
+              style={{ backgroundColor: '#f0fdf4' }}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">

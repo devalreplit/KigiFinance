@@ -496,7 +496,8 @@ export default function Expenses() {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              {/* Responsáveis - Largura completa */}
               <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -546,6 +547,7 @@ export default function Expenses() {
                 </div>
               </div>
 
+              {/* Empresa - Largura completa */}
               <div className="space-y-3 border-2 border-green-200 dark:border-green-700 rounded-xl p-4">
                 <div className="flex items-center justify-center gap-2 bg-green-100 dark:bg-green-900 py-2 px-4 rounded-lg">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>

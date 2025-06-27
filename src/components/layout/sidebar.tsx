@@ -21,7 +21,6 @@ const menuItems = [
   { name: "Saídas", path: "/expenses", icon: TrendingDown },
   { name: "Produtos", path: "/products", icon: Package },
   { name: "Empresas", path: "/companies", icon: Building },
-  { name: "Parcelas", path: "/installments", icon: Calendar },
   { name: "Relatórios", path: "/reports", icon: BarChart3 },
 ];
 

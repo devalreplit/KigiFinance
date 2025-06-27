@@ -10,7 +10,7 @@ import Expenses from "@/pages/expenses";
 import ExpenseForm from "@/pages/expense-form";
 import Products from "@/pages/products";
 import Companies from "@/pages/companies";
-import Installments from "@/pages/installments";
+
 import Reports from "@/pages/reports";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -165,7 +165,7 @@ function Router() {
       <Route path="/expenses/new" component={() => <ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
       <Route path="/products" component={() => <ProtectedRoute><Products /></ProtectedRoute>} />
       <Route path="/companies" component={() => <ProtectedRoute><Companies /></ProtectedRoute>} />
-      <Route path="/installments" component={() => <ProtectedRoute><Installments /></ProtectedRoute>} />
+
       <Route path="/reports" component={() => <ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route component={NotFound} />
     </Switch>

@@ -151,7 +151,7 @@ export default function Expenses() {
       </div>
 
       {/* Filtros de Período */}
-      <Card className="border-red-200" style={{ backgroundColor: '#fef2f2' }}>
+      <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
@@ -204,7 +204,7 @@ export default function Expenses() {
                   onClick={handleVoltarMesCorrente}
                   variant="outline"
                   disabled={loading}
-                  className="text-red-600 border-red-600 hover:bg-red-50"
+                  className="text-green-600 border-green-600 hover:bg-green-50"
                 >
                   <Calendar className="h-4 w-4 mr-2" />
                   Mês Corrente
@@ -217,23 +217,23 @@ export default function Expenses() {
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <Card className="border-red-100 shadow-sm">
+        <Card className="border-green-100 shadow-sm">
           <CardContent className="p-0">
             <table className="w-full">
-              <thead className="bg-red-50 border-b border-red-200">
+              <thead className="bg-green-50 border-b border-green-200">
                 <tr>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-red-700 uppercase tracking-wider">RESPONSÁVEIS</th>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-red-700 uppercase tracking-wider">EMPRESA</th>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-red-700 uppercase tracking-wider">DATA</th>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-red-700 uppercase tracking-wider">VALOR</th>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-red-700 uppercase tracking-wider">TIPO</th>
-                  <th className="text-left py-4 px-6 text-xs font-medium text-red-700 uppercase tracking-wider">REGISTRO</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">RESPONSÁVEIS</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">EMPRESA</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">DATA</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">VALOR</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">TIPO</th>
+                  <th className="text-left py-4 px-6 text-xs font-medium text-green-700 uppercase tracking-wider">REGISTRO</th>
                 </tr>
               </thead>
               <tbody>
                 {saidas.length > 0 ? (
                   saidas.map((saida) => (
-                    <tr key={saida.id} className="border-b border-gray-200 hover:bg-red-50 transition-colors">
+                    <tr key={saida.id} className="border-b border-gray-200 hover:bg-green-50 transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
@@ -287,8 +287,8 @@ export default function Expenses() {
       <div className="lg:hidden space-y-4">
         {saidas.length > 0 ? (
           saidas.map((saida) => (
-            <Card key={saida.id} className="border-red-200 shadow-sm hover:shadow-md transition-shadow"
-              style={{ backgroundColor: '#fef2f2' }}>
+            <Card key={saida.id} className="border-green-200 shadow-sm hover:shadow-md transition-shadow"
+              style={{ backgroundColor: '#f0fdf4' }}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">

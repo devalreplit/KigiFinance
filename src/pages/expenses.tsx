@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -328,7 +329,7 @@ export default function Expenses() {
               </p>
             </CardContent>
           </Card>
-        )}</old_str>
+        )}
         {saidas.length > 0 ? (
           saidas.map((saida) => (
             <Card 

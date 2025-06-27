@@ -38,7 +38,6 @@ export interface Produto {
   nome: string;
   unidade: string;
   classificacao: string;
-  precoUnitario: number;
   ativo?: boolean;
   criadoEm?: string;
   atualizadoEm?: string;
@@ -49,7 +48,6 @@ export interface ProdutoInput {
   nome: string;
   unidade: string;
   classificacao: string;
-  precoUnitario: number;
 }
 
 export interface Entrada {

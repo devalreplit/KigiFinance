@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
+
 import { productService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog } from "@/components/ui/alert-dialog";
@@ -109,7 +109,7 @@ export default function Products() {
             Gestão de Produtos
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Gerencie produtos e preços
+            Gerencie produtos da família
           </p>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="bg-green-500 hover:bg-green-600 text-white mt-4 lg:mt-0">
@@ -145,9 +145,7 @@ export default function Products() {
                   <th className="w-[20%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     CATEGORIA
                   </th>
-                  <th className="w-[15%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                    PREÇO
-                  </th>
+
                   <th className="w-[15%] px-4 py-4 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                     ESTOQUE
                   </th>
@@ -181,11 +179,7 @@ export default function Products() {
                           {product.classificacao || 'Não categorizado'}
                         </span>
                       </td>
-                      <td className="px-4 py-4">
-                        <span className="text-sm font-medium text-foreground">
-                          {formatCurrency(product.precoUnitario)}
-                        </span>
-                      </td>
+
                       <td className="px-4 py-4">
                         <span className="text-sm text-muted-foreground">
                           0 unidades
@@ -298,10 +292,7 @@ export default function Products() {
                     <span className="font-medium">Categoria:</span>
                     <span>{product.classificacao || "Não categorizado"}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Preço:</span>
-                    <span className="font-semibold text-green-600">{formatCurrency(product.precoUnitario)}</span>
-                  </div>
+
                   <div className="flex justify-between">
                     <span className="font-medium">Unidade:</span>
                     <span>{product.unidade}</span>

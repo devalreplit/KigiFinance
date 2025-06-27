@@ -27,7 +27,6 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
     codigoBarras: product?.codigoBarras || "",
     unidade: product?.unidade || "un",
     classificacao: product?.classificacao || "",
-    precoUnitario: product?.precoUnitario ? product.precoUnitario.toString() : "",
   });
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
         codigoBarras: product.codigoBarras || "",
         unidade: product.unidade || "un",
         classificacao: product.classificacao || "",
-        precoUnitario: product.precoUnitario ? product.precoUnitario.toString() : "",
       });
     } else {
       setFormData({
@@ -45,7 +43,6 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
         codigoBarras: "",
         unidade: "un",
         classificacao: "",
-        precoUnitario: "",
       });
     }
   }, [product]);
@@ -53,19 +50,10 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.nome.trim() || !formData.precoUnitario.trim()) {
+    if (!formData.nome.trim()) {
       toast({
         title: "Campos obrigatórios",
-        description: "Nome e preço unitário são obrigatórios",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (isNaN(parseFloat(formData.precoUnitario)) || parseFloat(formData.precoUnitario) <= 0) {
-      toast({
-        title: "Preço inválido",
-        description: "O preço deve ser um número maior que zero",
+        description: "Nome é obrigatório",
         variant: "destructive",
       });
       return;
@@ -79,7 +67,6 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
         codigoBarras: formData.codigoBarras || undefined,
         unidade: formData.unidade,
         classificacao: formData.classificacao,
-        precoUnitario: parseFloat(formData.precoUnitario),
       };
 
       if (product) {
@@ -168,31 +155,15 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="unidade">Unidade *</Label>
-                <Input
-                  id="unidade"
-                  value={formData.unidade}
-                  onChange={(e) => handleInputChange("unidade", e.target.value)}
-                  placeholder="Ex: kg, un, lt"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="precoUnitario">Preço Unitário *</Label>
-                <Input
-                  id="precoUnitario"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.precoUnitario}
-                  onChange={(e) => handleInputChange("precoUnitario", e.target.value)}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="unidade">Unidade *</Label>
+              <Input
+                id="unidade"
+                value={formData.unidade}
+                onChange={(e) => handleInputChange("unidade", e.target.value)}
+                placeholder="Ex: kg, un, lt"
+                required
+              />
             </div>
 
             <div className="space-y-2">

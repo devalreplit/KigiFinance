@@ -9,6 +9,7 @@ import {
   EntradaInput,
   Saida,
   SaidaInput,
+  Parcela,
 } from '../../types';
 
 // Sistema de storage local persistente
@@ -799,22 +800,43 @@ export const mockInstallmentService = {
     await mockDelay();
     // Gerar parcelas dinamicamente baseado nas saídas parceladas
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    const installments: any[] = [];
+    const installments: Parcela[] = [];
 
     expenses.filter(e => e.tipoPagamento === 'parcelado').forEach(expense => {
-      // Simular 3 parcelas para cada saída parcelada
-      for (let i = 1; i <= 3; i++) {
-        const dueDate = new Date();
-        dueDate.setMonth(dueDate.getMonth() + i);
+      const numeroParcelas = expense.numeroParcelas || 3;
+      const valorParcela = expense.valorTotal / numeroParcelas;
+      
+      // Usar a data da primeira parcela se disponível, senão usar data da saída + 1 mês
+      const baseDate = expense.dataPrimeiraParcela 
+        ? new Date(expense.dataPrimeiraParcela)
+        : new Date(expense.dataSaida);
+      
+      if (expense.dataPrimeiraParcela) {
+        baseDate.setDate(baseDate.getDate() + 1); // Ajustar timezone
+      } else {
+        baseDate.setMonth(baseDate.getMonth() + 1);
+      }
+
+      for (let i = 1; i <= numeroParcelas; i++) {
+        const dueDate = new Date(baseDate);
+        dueDate.setMonth(dueDate.getMonth() + (i - 1));
+
+        // Determinar status baseado na data
+        const today = new Date();
+        let status: 'paga' | 'vencida' | 'a vencer' = 'a vencer';
+        
+        if (dueDate < today) {
+          status = i === 1 ? 'paga' : 'vencida'; // Primeira parcela paga, outras vencidas
+        }
 
         installments.push({
-          id: expense.id * 10 + i,
+          id: expense.id * 100 + i, // ID único mais robusto
           saidaOriginalId: expense.id,
           numeroParcela: i,
           dataVencimento: dueDate.toISOString().split('T')[0],
-          valorParcela: expense.valorTotal / 3,
-          status: i === 1 ? 'paga' : 'a vencer',
-          dataPagamento: i === 1 ? new Date().toISOString().split('T')[0] : undefined,
+          valorParcela: valorParcela,
+          status: status,
+          dataPagamento: status === 'paga' ? new Date().toISOString().split('T')[0] : undefined,
         });
       }
     });

@@ -23,6 +23,7 @@ import {
   productService,
   companyService,
   expenseService,
+  installmentService,
 } from "@/service/apiService";
 import {
   Edit3,
@@ -46,6 +47,7 @@ import {
   Saida,
   ItemSaidaInput,
   SaidaInput,
+  Parcela,
 } from "../../../types";
 
 interface ExpenseDetailsModalProps {
@@ -67,6 +69,8 @@ export default function ExpenseDetailsModal({
   const [users, setUsers] = useState<Usuario[]>([]);
   const [companies, setCompanies] = useState<Empresa[]>([]);
   const [products, setProducts] = useState<Produto[]>([]);
+  const [installments, setInstallments] = useState<Parcela[]>([]);
+  const [loadingInstallments, setLoadingInstallments] = useState(false);
   const { toast } = useToast();
 
   // Estados para edição
@@ -90,6 +94,9 @@ export default function ExpenseDetailsModal({
   useEffect(() => {
     if (expense && users.length > 0) {
       initializeFormData();
+      if (expense.tipoPagamento === 'parcelado') {
+        loadInstallments();
+      }
     }
   }, [expense, users]);
 
@@ -112,6 +119,29 @@ export default function ExpenseDetailsModal({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadInstallments = async () => {
+    if (!expense || expense.tipoPagamento !== 'parcelado') return;
+    
+    try {
+      setLoadingInstallments(true);
+      // Carrega todas as parcelas e filtra as relacionadas a esta saída
+      const allInstallments = await installmentService.getAll();
+      const expenseInstallments = allInstallments.filter(
+        installment => installment.saidaOriginalId === expense.id
+      );
+      setInstallments(expenseInstallments);
+    } catch (error) {
+      console.error('Erro ao carregar parcelas:', error);
+      toast({
+        title: "Erro ao carregar parcelas",
+        description: "Não foi possível carregar as parcelas desta saída",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingInstallments(false);
     }
   };
 
@@ -138,6 +168,11 @@ export default function ExpenseDetailsModal({
     }
 
     setShowObservacao(Boolean(expense.observacao));
+  };
+
+  const getProductName = (produtoId: number) => {
+    const product = products.find(p => p.id === produtoId);
+    return product?.nome || `Produto ID: ${produtoId}`;
   };
 
   const getTitularesNames = (usuariosTitularesIds: number[]) => {
@@ -246,14 +281,25 @@ export default function ExpenseDetailsModal({
     try {
       setSaving(true);
 
-      const updatedExpenseData: Partial<SaidaInput> = {
+      // Converter itens para o formato correto incluindo nomeProduto e total
+      const updatedItems = items.map(item => {
+        const product = products.find(p => p.id === item.produtoId);
+        return {
+          ...item,
+          nomeProduto: product?.nome || 'Produto não encontrado',
+          total: item.quantidade * item.precoUnitario,
+        };
+      });
+
+      const updatedExpenseData: Partial<Saida> = {
         empresaId: parseInt(formData.empresaId),
         usuariosTitularesIds: selectedUsers,
-        itens: items,
+        itens: updatedItems,
         observacao: formData.observacoes,
         tipoPagamento: formData.temParcelas ? "parcelado" : "avista",
         numeroParcelas: formData.temParcelas ? formData.quantidadeParcelas : undefined,
         dataPrimeiraParcela: formData.temParcelas ? formData.dataPrimeiraParcela : undefined,
+        valorTotal: updatedItems.reduce((sum, item) => sum + item.total, 0),
       };
 
       await expenseService.update(expense.id, updatedExpenseData);
@@ -495,7 +541,7 @@ export default function ExpenseDetailsModal({
                       <div className="sm:col-span-5">
                         <Label className="text-sm font-medium">Produto</Label>
                         {!isEditing ? (
-                          <p className="mt-1">{item.nomeProduto || `Produto ID: ${item.produtoId}`}</p>
+                          <p className="mt-1">{getProductName(item.produtoId)}</p>
                         ) : (
                           <Autocomplete
                             options={productOptions}
@@ -625,6 +671,75 @@ export default function ExpenseDetailsModal({
                 )}
               </CardContent>
             </Card>
+
+            {/* Parcelas - Mostrar apenas se for pagamento parcelado */}
+            {expense.tipoPagamento === "parcelado" && (
+              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="h-4 w-4 text-green-600" />
+                    <Label className="font-semibold text-green-800">Parcelas</Label>
+                  </div>
+                  
+                  {loadingInstallments ? (
+                    <div className="flex justify-center items-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span className="text-sm">Carregando parcelas...</span>
+                    </div>
+                  ) : installments.length > 0 ? (
+                    <div className="space-y-3">
+                      {installments.map((installment) => (
+                        <div
+                          key={installment.id}
+                          className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-bold text-green-600">
+                                {installment.numeroParcela}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">
+                                Parcela {installment.numeroParcela}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Vencimento: {new Date(installment.dataVencimento).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-green-600">
+                              {formatCurrency(installment.valorParcela)}
+                            </p>
+                            <Badge
+                              variant={
+                                installment.status === 'paga' 
+                                  ? 'default' 
+                                  : installment.status === 'vencida' 
+                                  ? 'destructive' 
+                                  : 'secondary'
+                              }
+                              className="text-xs"
+                            >
+                              {installment.status === 'paga' 
+                                ? 'Paga' 
+                                : installment.status === 'vencida' 
+                                ? 'Vencida' 
+                                : 'A Vencer'}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Nenhuma parcela encontrada para esta saída.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Observações */}
             {(expense.observacao || isEditing) && (

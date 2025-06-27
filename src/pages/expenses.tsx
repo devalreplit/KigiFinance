@@ -505,8 +505,8 @@ export default function Expenses() {
                   </Label>
                 </div>
                 <div className="space-y-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
-                  {/* Lista de usuários - 2 por linha */}
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Lista de usuários - 2 por linha no mobile, horizontal no desktop */}
+                  <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-3">
                     {users.map((user) => (
                       <div
                         key={user.id}
@@ -557,7 +557,7 @@ export default function Expenses() {
                   </Label>
                 </div>
                 <div
-                  className={`p-3 rounded-lg border ${selectedUsers.length > 0 ? "bg-white dark:bg-gray-800 border-green-100 dark:border-gray-600" : "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
+                  className={`p-3 rounded-lg border w-full ${selectedUsers.length > 0 ? "bg-white dark:bg-gray-800 border-green-100 dark:border-gray-600" : "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
                 >
                   <Select
                     value={formData.empresaId}
@@ -567,7 +567,7 @@ export default function Expenses() {
                     disabled={selectedUsers.length === 0}
                   >
                     <SelectTrigger
-                      className={`${selectedUsers.length > 0 ? "border-green-200 focus:border-green-400 focus:ring-green-400" : "bg-gray-100 dark:bg-gray-700 border-gray-300 cursor-not-allowed"}`}
+                      className={`w-full ${selectedUsers.length > 0 ? "border-green-200 focus:border-green-400 focus:ring-green-400" : "bg-gray-100 dark:bg-gray-700 border-gray-300 cursor-not-allowed"}`}
                     >
                       <SelectValue
                         placeholder={
@@ -605,9 +605,34 @@ export default function Expenses() {
                 {items.map((item, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
+                    className="relative grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
                     style={{ backgroundColor: '#f0fdf4' }}
                   >
+                    {/* Botão de excluir no canto superior direito - desktop */}
+                    {items.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (!formData.empresaId) {
+                            toast({
+                              title: "Selecione uma empresa",
+                              description:
+                                "Primeiro selecione uma empresa antes de remover itens",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          removeItem(index);
+                        }}
+                        className="absolute top-2 right-2 text-red-600 hover:text-red-700 hidden md:flex z-10"
+                        disabled={!formData.empresaId}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+
                     <div className="md:col-span-2">
                       <div className="flex items-center justify-between mb-2">
                         <Label className="text-center flex-1 md:text-left">Produto *</Label>

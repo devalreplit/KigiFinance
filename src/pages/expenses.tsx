@@ -611,56 +611,76 @@ export default function Expenses() {
                     style={{ backgroundColor: '#f0fdf4' }}
                   >
                     {/* Botão de excluir no canto superior direito - desktop */}
-                    {items.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (!formData.empresaId) {
-                            toast({
-                              title: "Selecione uma empresa",
-                              description:
-                                "Primeiro selecione uma empresa antes de remover itens",
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-                          removeItem(index);
-                        }}
-                        className="absolute top-2 right-2 text-red-600 hover:text-red-700 hidden sm:flex z-10"
-                        disabled={!formData.empresaId}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!formData.empresaId) {
+                          toast({
+                            title: "Selecione uma empresa",
+                            description:
+                              "Primeiro selecione uma empresa antes de remover itens",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        if (items.length === 1) {
+                          toast({
+                            title: "Não é possível remover",
+                            description: "Deve haver pelo menos um item na lista",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        removeItem(index);
+                      }}
+                      className={`absolute top-2 right-2 hidden sm:flex z-10 ${
+                        items.length === 1 
+                          ? "text-gray-400 hover:text-gray-400 bg-gray-100 hover:bg-gray-100 border-gray-200 cursor-not-allowed" 
+                          : "text-red-600 hover:text-red-700"
+                      }`}
+                      disabled={!formData.empresaId || items.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
 
                     <div className="sm:col-span-5">
                       <div className="flex items-center justify-between mb-2">
                         <Label className="text-center flex-1 sm:text-left">Produto *</Label>
-                        {items.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (!formData.empresaId) {
-                                toast({
-                                  title: "Selecione uma empresa",
-                                  description:
-                                    "Primeiro selecione uma empresa antes de remover itens",
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-                              removeItem(index);
-                            }}
-                            className="text-red-600 hover:text-red-700 sm:hidden"
-                            disabled={!formData.empresaId}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (!formData.empresaId) {
+                              toast({
+                                title: "Selecione uma empresa",
+                                description:
+                                  "Primeiro selecione uma empresa antes de remover itens",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            if (items.length === 1) {
+                              toast({
+                                title: "Não é possível remover",
+                                description: "Deve haver pelo menos um item na lista",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            removeItem(index);
+                          }}
+                          className={`sm:hidden ${
+                            items.length === 1 
+                              ? "text-gray-400 hover:text-gray-400 bg-gray-100 hover:bg-gray-100 border-gray-200 cursor-not-allowed" 
+                              : "text-red-600 hover:text-red-700"
+                          }`}
+                          disabled={!formData.empresaId || items.length === 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                       <div className="flex gap-2">
                         <Autocomplete

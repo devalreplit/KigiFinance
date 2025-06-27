@@ -187,8 +187,22 @@ const realIncomeService = {
 
 // Serviços de Saídas Reais
 const realExpenseService = {
-  getAll: async (): Promise<Saida[]> => {
-    const response = await api.get('/saidas');
+  // Buscar saídas com filtro opcional de mês/ano
+  getAll: async (mes?: number, ano?: number): Promise<Saida[]> => {
+    let url = '/saidas';
+    
+    // Se especificar mês/ano, adicionar como query parameters
+    if (mes && ano) {
+      url += `?mes=${mes}&ano=${ano}`;
+    }
+    
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Função específica para buscar saídas de um mês/ano específico
+  getByMonthYear: async (mes: number, ano: number): Promise<Saida[]> => {
+    const response = await api.get(`/saidas?mes=${mes}&ano=${ano}`);
     return response.data;
   },
 

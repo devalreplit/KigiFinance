@@ -691,10 +691,36 @@ export const mockIncomeService = {
 
 // Serviços de Saídas Mock
 export const mockExpenseService = {
-  getAll: async (): Promise<Saida[]> => {
+  // Buscar saídas com filtro opcional de mês/ano
+  getAll: async (mes?: number, ano?: number): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    return expenses;
+
+    // Se não especificar mês/ano, retornar todas as saídas
+    if (!mes || !ano) {
+      return expenses.sort((a, b) => 
+        new Date(b.dataSaida).getTime() - new Date(a.dataSaida).getTime()
+      );
+    }
+
+    // Filtrar saídas por mês/ano específico
+    const filteredExpenses = expenses.filter(expense => {
+      const dataExpense = new Date(expense.dataSaida);
+      const mesExpense = dataExpense.getMonth() + 1; // getMonth() retorna 0-11
+      const anoExpense = dataExpense.getFullYear();
+      
+      return mesExpense === mes && anoExpense === ano;
+    });
+
+    // Ordenar por data mais recente primeiro
+    return filteredExpenses.sort((a, b) => 
+      new Date(b.dataSaida).getTime() - new Date(a.dataSaida).getTime()
+    );
+  },
+
+  // Função específica para buscar saídas de um mês/ano específico
+  getByMonthYear: async (mes: number, ano: number): Promise<Saida[]> => {
+    return mockExpenseService.getAll(mes, ano);
   },
 
   getById: async (id: number): Promise<Saida> => {

@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import Users from "@/pages/users";
 import Income from "@/pages/income";
 import Expenses from "@/pages/expenses";
+import ExpenseForm from "@/pages/expense-form";
 import Products from "@/pages/products";
 import Companies from "@/pages/companies";
 import Installments from "@/pages/installments";
@@ -161,6 +162,7 @@ function Router() {
       <Route path="/users" component={() => <ProtectedRoute><Users /></ProtectedRoute>} />
       <Route path="/income" component={() => <ProtectedRoute><Income /></ProtectedRoute>} />
       <Route path="/expenses" component={() => <ProtectedRoute><Expenses /></ProtectedRoute>} />
+      <Route path="/expenses/new" component={() => <ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
       <Route path="/products" component={() => <ProtectedRoute><Products /></ProtectedRoute>} />
       <Route path="/companies" component={() => <ProtectedRoute><Companies /></ProtectedRoute>} />
       <Route path="/installments" component={() => <ProtectedRoute><Installments /></ProtectedRoute>} />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -655,7 +654,7 @@ export default function ExpenseForm() {
                       className={`absolute top-2 right-2 hidden sm:flex z-10 ${
                         items.length === 1 
                           ? "text-gray-400 hover:text-gray-400 bg-gray-100 hover:bg-gray-100 border-gray-200 cursor-not-allowed" 
-                          : "text-red-600 hover:text-red-700"
+                          : "text-green-600 hover:text-green-700"
                       }`}
                       disabled={!formData.empresaId || items.length === 1}
                     >
@@ -692,7 +691,7 @@ export default function ExpenseForm() {
                           className={`sm:hidden ${
                             items.length === 1 
                               ? "text-gray-400 hover:text-gray-400 bg-gray-100 hover:bg-gray-100 border-gray-200 cursor-not-allowed" 
-                              : "text-red-600 hover:text-red-700"
+                              : "text-green-600 hover:text-green-700"
                           }`}
                           disabled={!formData.empresaId || items.length === 1}
                         >

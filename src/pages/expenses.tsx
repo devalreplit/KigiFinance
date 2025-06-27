@@ -851,31 +851,7 @@ export default function Expenses() {
                       </div>
                     </div>
 
-                    <div className="hidden sm:flex items-end sm:col-span-1">
-                      {items.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (!formData.empresaId) {
-                              toast({
-                                title: "Selecione uma empresa",
-                                description:
-                                  "Primeiro selecione uma empresa antes de remover itens",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            removeItem(index);
-                          }}
-                          className="text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200 hover:border-red-300 transition-all duration-200"
-                          disabled={!formData.empresaId}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+
                   </div>
                 ))}
               </div>

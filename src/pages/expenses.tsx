@@ -132,7 +132,7 @@ export default function Expenses() {
     <div className="space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        <div>
+        <div className="text-center lg:text-left">
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
             Gerenciar Saídas
           </h1>
@@ -153,62 +153,67 @@ export default function Expenses() {
       {/* Filtros de Período */}
       <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="flex flex-col gap-4">
             <div className="flex-1">
               <Label htmlFor="mes">Consultar Período Específico</Label>
-              <div className="flex gap-2 mt-2">
-                <div className="w-32">
-                  <Select value={mesConsulta} onValueChange={setMesConsulta}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Mês" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">JAN</SelectItem>
-                      <SelectItem value="2">FEV</SelectItem>
-                      <SelectItem value="3">MAR</SelectItem>
-                      <SelectItem value="4">ABR</SelectItem>
-                      <SelectItem value="5">MAI</SelectItem>
-                      <SelectItem value="6">JUN</SelectItem>
-                      <SelectItem value="7">JUL</SelectItem>
-                      <SelectItem value="8">AGO</SelectItem>
-                      <SelectItem value="9">SET</SelectItem>
-                      <SelectItem value="10">OUT</SelectItem>
-                      <SelectItem value="11">NOV</SelectItem>
-                      <SelectItem value="12">DEZ</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <div className="flex gap-2 flex-1">
+                  <div className="w-32 sm:w-32 flex-1 sm:flex-none">
+                    <Select value={mesConsulta} onValueChange={setMesConsulta}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Mês" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">JAN</SelectItem>
+                        <SelectItem value="2">FEV</SelectItem>
+                        <SelectItem value="3">MAR</SelectItem>
+                        <SelectItem value="4">ABR</SelectItem>
+                        <SelectItem value="5">MAI</SelectItem>
+                        <SelectItem value="6">JUN</SelectItem>
+                        <SelectItem value="7">JUL</SelectItem>
+                        <SelectItem value="8">AGO</SelectItem>
+                        <SelectItem value="9">SET</SelectItem>
+                        <SelectItem value="10">OUT</SelectItem>
+                        <SelectItem value="11">NOV</SelectItem>
+                        <SelectItem value="12">DEZ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-28 sm:w-28 flex-1 sm:flex-none">
+                    <Select value={anoConsulta} onValueChange={setAnoConsulta}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ano" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: new Date().getFullYear() - 2023 }, (_, i) => 2024 + i).map((ano) => (
+                          <SelectItem key={ano} value={ano.toString()}>
+                            {ano}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    onClick={handleFiltrarPorPeriodo}
+                    variant="outline"
+                    disabled={loading}
+                    className="sm:flex-none"
+                  >
+                    <Search className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Consultar</span>
+                  </Button>
                 </div>
-                <div className="w-28">
-                  <Select value={anoConsulta} onValueChange={setAnoConsulta}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: new Date().getFullYear() - 2023 }, (_, i) => 2024 + i).map((ano) => (
-                        <SelectItem key={ano} value={ano.toString()}>
-                          {ano}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex justify-center sm:justify-start">
+                  <Button 
+                    onClick={handleVoltarMesCorrente}
+                    variant="outline"
+                    disabled={loading}
+                    className="text-green-600 border-green-600 hover:bg-green-50"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Mês Corrente
+                  </Button>
                 </div>
-                <Button 
-                  onClick={handleFiltrarPorPeriodo}
-                  variant="outline"
-                  disabled={loading}
-                >
-                  <Search className="h-4 w-4 mr-2" />
-                  Consultar
-                </Button>
-                <Button 
-                  onClick={handleVoltarMesCorrente}
-                  variant="outline"
-                  disabled={loading}
-                  className="text-green-600 border-green-600 hover:bg-green-50"
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Mês Corrente
-                </Button>
               </div>
             </div>
           </div>

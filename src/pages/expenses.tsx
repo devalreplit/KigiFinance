@@ -235,10 +235,12 @@ export default function Expenses() {
                   saidas.map((saida) => (
                     <tr key={saida.id} className="border-b border-gray-200 hover:bg-red-50 transition-colors">
                       <td className="py-4 px-6">
-                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
-                          <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
+                            <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          </div>
+                          <span className="font-medium text-foreground">{getTitularesNames(saida.usuariosTitularesIds)}</span>
                         </div>
-                        <span className="font-medium text-foreground">{getTitularesNames(saida.usuariosTitularesIds)}</span>
                       </td>
                       <td className="py-4 px-6">
                         <span className="text-muted-foreground">{getEmpresaName(saida.empresaId)}</span>

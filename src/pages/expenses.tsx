@@ -229,7 +229,7 @@ export default function Expenses() {
     value: any,
   ) => {
     const newItems = [...items];
-    
+
     // Se está atualizando o produto, verificar se já existe em OUTROS itens
     if (field === "produtoId" && value !== 0) {
       // Verifica se o produto já existe em outros itens (excluindo o item atual)
@@ -244,7 +244,7 @@ export default function Expenses() {
           description: "Produto já está na lista, altere a quantidade",
           variant: "destructive",
         });
-        
+
         // Forçar limpeza completa do item
         newItems[index] = { 
           produtoId: 0, 
@@ -252,12 +252,12 @@ export default function Expenses() {
           precoUnitario: 0 
         };
         setItems(newItems);
-        
+
         // Forçar re-render do componente para garantir limpeza visual
         setTimeout(() => {
           setItems([...newItems]);
         }, 10);
-        
+
         return;
       }
     }
@@ -318,7 +318,7 @@ export default function Expenses() {
             description: "Produto já está na lista, altere a quantidade",
             variant: "destructive",
           });
-          
+
           // Forçar limpeza completa do item
           const newItems = [...items];
           newItems[scanningIndex] = { 
@@ -327,12 +327,12 @@ export default function Expenses() {
             precoUnitario: 0 
           };
           setItems(newItems);
-          
+
           // Forçar re-render do componente para garantir limpeza visual
           setTimeout(() => {
             setItems([...newItems]);
           }, 10);
-          
+
           return;
         }
 
@@ -588,6 +588,7 @@ export default function Expenses() {
                   <div
                     key={index}
                     className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
+                    style={{ backgroundColor: '#f0fdf4' }}
                   >
                     <div className="md:col-span-2">
                       <div className="flex items-center justify-between mb-2">
@@ -823,7 +824,7 @@ export default function Expenses() {
                             }
                             removeItem(index);
                           }}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200 hover:border-red-300 transition-all duration-200"
                           disabled={!formData.empresaId}
                         >
                           <Trash2 className="h-4 w-4" />

@@ -235,12 +235,10 @@ export default function Expenses() {
                   saidas.map((saida) => (
                     <tr key={saida.id} className="border-b border-gray-200 hover:bg-red-50 transition-colors">
                       <td className="py-4 px-6">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center border border-red-200 dark:border-red-800">
-                            <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-                          </div>
-                          <span className="font-medium text-foreground">{getTitularesNames(saida.usuariosTitularesIds)}</span>
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
+                          <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
                         </div>
+                        <span className="font-medium text-foreground">{getTitularesNames(saida.usuariosTitularesIds)}</span>
                       </td>
                       <td className="py-4 px-6">
                         <span className="text-muted-foreground">{getEmpresaName(saida.empresaId)}</span>
@@ -249,7 +247,7 @@ export default function Expenses() {
                         <span className="text-muted-foreground">{formatDate(saida.dataSaida)}</span>
                       </td>
                       <td className="py-4 px-6">
-                        <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 font-medium">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium">
                           {formatCurrency(saida.valorTotal)}
                         </Badge>
                       </td>
@@ -292,8 +290,8 @@ export default function Expenses() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
-                      <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                      <TrendingDown className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
@@ -305,7 +303,7 @@ export default function Expenses() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 font-medium">
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium">
                       {formatCurrency(saida.valorTotal)}
                     </Badge>
                     <Badge variant={saida.tipoPagamento === 'parcelado' ? 'default' : 'secondary'} className="text-xs">

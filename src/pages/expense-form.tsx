@@ -493,7 +493,7 @@ export default function ExpenseForm() {
         <Button
           variant="outline"
           onClick={handleVoltar}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-green-100 hover:bg-green-200 text-green-700 border-green-300"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar

@@ -506,7 +506,7 @@ export default function Expenses() {
                 </div>
                 <div className="space-y-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-green-200 dark:border-gray-600 shadow-sm">
                   {/* Lista de usuários - 2 por linha no mobile, horizontal no desktop */}
-                  <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-3">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-3">
                     {users.map((user) => (
                       <div
                         key={user.id}
@@ -605,7 +605,7 @@ export default function Expenses() {
                 {items.map((item, index) => (
                   <div
                     key={index}
-                    className="relative grid grid-cols-1 md:grid-cols-5 gap-3 p-4 border rounded-lg"
+                    className="relative grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 border rounded-lg"
                     style={{ backgroundColor: '#f0fdf4' }}
                   >
                     {/* Botão de excluir no canto superior direito - desktop */}
@@ -626,16 +626,16 @@ export default function Expenses() {
                           }
                           removeItem(index);
                         }}
-                        className="absolute top-2 right-2 text-red-600 hover:text-red-700 hidden md:flex z-10"
+                        className="absolute top-2 right-2 text-red-600 hover:text-red-700 hidden sm:flex z-10"
                         disabled={!formData.empresaId}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
 
-                    <div className="md:col-span-2">
+                    <div className="sm:col-span-2">
                       <div className="flex items-center justify-between mb-2">
-                        <Label className="text-center flex-1 md:text-left">Produto *</Label>
+                        <Label className="text-center flex-1 sm:text-left">Produto *</Label>
                         {items.length > 1 && (
                           <Button
                             type="button"
@@ -653,7 +653,7 @@ export default function Expenses() {
                               }
                               removeItem(index);
                             }}
-                            className="text-red-600 hover:text-red-700 md:hidden"
+                            className="text-red-600 hover:text-red-700 sm:hidden"
                             disabled={!formData.empresaId}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -707,7 +707,7 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label className="text-center block mb-2 md:text-left">Quantidade * (0-20)</Label>
+                      <Label className="text-center block mb-2 sm:text-left">Quantidade * (0-20)</Label>
                       <div className="flex items-center justify-center gap-4 py-2">
                         <button
                           type="button"
@@ -774,7 +774,7 @@ export default function Expenses() {
                     </div>
 
                     <div>
-                      <Label className="text-center block mb-2 md:text-left text-sm font-medium text-green-700 dark:text-green-300">
+                      <Label className="text-center block mb-2 sm:text-left text-sm font-medium text-green-700 dark:text-green-300">
                         Preço Unitário *
                       </Label>
                       <div className="relative">
@@ -849,7 +849,7 @@ export default function Expenses() {
                       </div>
                     </div>
 
-                    <div className="hidden md:flex items-end">
+                    <div className="hidden sm:flex items-end">
                       {items.length > 1 && (
                         <Button
                           type="button"

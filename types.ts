@@ -84,12 +84,13 @@ export interface Saida {
   dataHoraRegistro: string;
   dataSaida: string;
   empresaId: number;
-  tipoPagamento: "avista" | "parcelado";
+  tipoPagamento: 'avista' | 'parcelado';
   usuariosTitularesIds: number[];
   itens: ItemSaida[];
   valorTotal: number;
   observacao?: string;
-  saidaOriginalId?: number;
+  numeroParcelas?: number;
+  dataPrimeiraParcela?: string;
 }
 
 export interface SaidaInput {

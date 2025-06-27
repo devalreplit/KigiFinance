@@ -6,15 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { userService, companyService, expenseService } from "@/service/apiService";
-import { Plus, TrendingDown, Loader2, Search, Calendar, ShoppingCart } from "lucide-react";
-import { Usuario, Empresa } from "../../types";
+import ExpenseDetailsModal from "@/components/modals/expense-details-modal";
+import { Plus, TrendingDown, Loader2, Search, Calendar, ShoppingCart, Eye } from "lucide-react";
+import { Usuario, Empresa, Saida } from "../../types";
 import { useLocation } from "wouter";
 
 export default function Expenses() {
-  const [saidas, setSaidas] = useState<any[]>([]);
+  const [saidas, setSaidas] = useState<Saida[]>([]);
   const [users, setUsers] = useState<Usuario[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedExpense, setSelectedExpense] = useState<Saida | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [, setLocation] = useLocation();
 
   // Estados para filtro de mês/ano
@@ -115,6 +118,21 @@ export default function Expenses() {
 
   const handleNovaEntrada = () => {
     setLocation('/expenses/new');
+  };
+
+  const handleViewExpenseDetails = (expense: Saida) => {
+    setSelectedExpense(expense);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedExpense(null);
+  };
+
+  const handleExpenseUpdated = () => {
+    // Recarregar dados após atualização
+    loadData(periodoAtual.mes, periodoAtual.ano);
   };
 
   if (loading) {
@@ -224,6 +242,11 @@ export default function Expenses() {
       <div className="hidden lg:block">
         <Card className="border-green-100 shadow-sm">
           <CardContent className="p-0">
+            <div className="bg-green-100 p-3 border-b border-green-200">
+              <p className="text-sm text-green-700 text-center">
+                💡 Clique em qualquer linha para ver detalhes e editar a saída
+              </p>
+            </div>
             <table className="w-full">
               <thead className="bg-green-50 border-b border-green-200">
                 <tr>
@@ -238,7 +261,11 @@ export default function Expenses() {
               <tbody>
                 {saidas.length > 0 ? (
                   saidas.map((saida) => (
-                    <tr key={saida.id} className="border-b border-gray-200 hover:bg-green-50 transition-colors">
+                    <tr 
+                      key={saida.id} 
+                      className="border-b border-gray-200 hover:bg-green-50 transition-colors cursor-pointer group"
+                      onClick={() => handleViewExpenseDetails(saida)}
+                    >
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center border border-green-200 dark:border-green-800">
@@ -264,9 +291,12 @@ export default function Expenses() {
                         </Badge>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(saida.dataHoraRegistro)}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(saida.dataHoraRegistro)}
+                          </span>
+                          <Eye className="h-4 w-4 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -290,10 +320,23 @@ export default function Expenses() {
 
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-4">
+        {saidas.length > 0 && (
+          <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+            <CardContent className="p-3">
+              <p className="text-sm text-green-700 text-center">
+                💡 Toque em qualquer card para ver detalhes e editar
+              </p>
+            </CardContent>
+          </Card>
+        )}</old_str>
         {saidas.length > 0 ? (
           saidas.map((saida) => (
-            <Card key={saida.id} className="border-green-200 shadow-sm hover:shadow-md transition-shadow"
-              style={{ backgroundColor: '#f0fdf4' }}>
+            <Card 
+              key={saida.id} 
+              className="border-green-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+              style={{ backgroundColor: '#f0fdf4' }}
+              onClick={() => handleViewExpenseDetails(saida)}
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center space-x-3">
@@ -335,6 +378,13 @@ export default function Expenses() {
                     <span className="text-xs">{formatDate(saida.dataHoraRegistro)}</span>
                   </div>
                 </div>
+
+                <div className="flex justify-end mt-3">
+                  <div className="flex items-center gap-1 text-green-600 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye className="h-4 w-4" />
+                    <span>Ver detalhes</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))
@@ -362,6 +412,14 @@ export default function Expenses() {
           </div>
         )}
       </div>
+
+      {/* Modal de Detalhes da Saída */}
+      <ExpenseDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        expense={selectedExpense}
+        onExpenseUpdated={handleExpenseUpdated}
+      />
     </div>
   );
 }

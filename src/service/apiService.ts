@@ -149,12 +149,12 @@ const realIncomeService = {
   // Buscar entradas com filtro opcional de mês/ano
   getAll: async (mes?: number, ano?: number): Promise<Entrada[]> => {
     let url = '/entradas';
-    
+
     // Se especificar mês/ano, adicionar como query parameters
     if (mes && ano) {
       url += `?mes=${mes}&ano=${ano}`;
     }
-    
+
     const response = await api.get(url);
     return response.data;
   },
@@ -190,12 +190,12 @@ const realExpenseService = {
   // Buscar saídas com filtro opcional de mês/ano
   getAll: async (mes?: number, ano?: number): Promise<Saida[]> => {
     let url = '/saidas';
-    
+
     // Se especificar mês/ano, adicionar como query parameters
     if (mes && ano) {
       url += `?mes=${mes}&ano=${ano}`;
     }
-    
+
     const response = await api.get(url);
     return response.data;
   },
@@ -266,15 +266,17 @@ const realReportService = {
   },
 };
 
-// Exportação condicional: usa mock durante desenvolvimento ou API real em produção
-export const authService = USE_MOCK ? mockAuthService : realAuthService;
-export const userService = USE_MOCK ? mockUserService : realUserService;
-export const companyService = USE_MOCK ? mockCompanyService : realCompanyService;
-export const productService = USE_MOCK ? mockProductService : realProductService;
-export const incomeService = USE_MOCK ? mockIncomeService : realIncomeService;
-export const expenseService = USE_MOCK ? mockExpenseService : realExpenseService;
-export const installmentService = USE_MOCK ? mockInstallmentService : realInstallmentService;
-export const reportService = USE_MOCK ? mockReportService : realReportService;
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK === 'true';
+
+// Configuração do serviço baseado na variável de ambiente
+export const authService = USE_MOCK_API ? mockAuthService : realAuthService;
+export const userService = USE_MOCK_API ? mockUserService : realUserService;
+export const companyService = USE_MOCK_API ? mockCompanyService : realCompanyService;
+export const productService = USE_MOCK_API ? mockProductService : realProductService;
+export const incomeService = USE_MOCK_API ? mockIncomeService : realIncomeService;
+export const expenseService = USE_MOCK_API ? mockExpenseService : realExpenseService;
+export const installmentService = USE_MOCK_API ? mockInstallmentService : realInstallmentService;
+export const reportService = USE_MOCK_API ? mockReportService : realReportService;
 
 // Log para indicar qual modo está sendo usado
 console.log(`🔧 Modo de operação: ${USE_MOCK ? 'MOCK' : 'API REAL'}`);

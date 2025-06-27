@@ -455,6 +455,24 @@ export default function Expenses() {
       return;
     }
 
+    if (items.some((item) => item.precoUnitario <= 0)) {
+      toast({
+        title: "Erro de validação",
+        description: "Todos os itens devem ter preço unitário maior que zero",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (items.some((item) => item.quantidade <= 0)) {
+      toast({
+        title: "Erro de validação",
+        description: "Todos os itens devem ter quantidade maior que zero",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (selectedUsers.length === 0) {
       toast({
         title: "Erro de validação",
@@ -808,9 +826,8 @@ export default function Expenses() {
                           R$
                         </span>
                         <Input
-                          type="tel"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
+                          type="text"
+                          inputMode="decimal"
                           value={formatCurrency(item.precoUnitario)
                             .replace("R$", "")
                             .trim()}

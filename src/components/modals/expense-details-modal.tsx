@@ -283,10 +283,9 @@ export default function ExpenseDetailsModal({
         description: "Nova parcela adicionada com sucesso",
       });
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao adicionar parcela",
         description: "Não foi possível adicionar nova parcela",
-        variant: "destructive",
       });
     } finally {
       setLoadingInstallments(false);
@@ -295,6 +294,15 @@ export default function ExpenseDetailsModal({
 
   const handleRemoveInstallment = async () => {
     if (!expense || expense.tipoSaida !== "parcelada_pai" || installments.length === 0) return;
+
+    // Verificar se não é a última parcela possível (mínimo 2 parcelas)
+    if (installments.length <= 1) {
+      toastError({
+        title: "Não é possível remover",
+        description: "É necessário manter pelo menos 2 parcelas",
+      });
+      return;
+    }
 
     try {
       setLoadingInstallments(true);
@@ -307,10 +315,9 @@ export default function ExpenseDetailsModal({
         description: "Última parcela removida com sucesso",
       });
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao remover parcela",
         description: "Não foi possível remover a parcela",
-        variant: "destructive",
       });
     } finally {
       setLoadingInstallments(false);
@@ -843,7 +850,7 @@ export default function ExpenseDetailsModal({
                             variant="outline"
                             size="sm"
                             onClick={handleRemoveInstallment}
-                            disabled={saving || installments.length === 0}
+                            disabled={saving || installments.length <= 1}
                             className="text-red-600 border-red-300 hover:bg-red-50"
                           >
                             <Minus className="h-4 w-4 mr-2" />
@@ -869,6 +876,20 @@ export default function ExpenseDetailsModal({
                       </div>
                     ) : (
                       <div className="space-y-2">
+                        {/* Primeira parcela (saída pai) */}
+                        <div className="flex justify-between items-center p-2 bg-white rounded border">
+                          <span className="text-sm">
+                            Parcela 1 de {expense.totalParcelas}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{formatDate(expense.dataSaida)}</span>
+                            <Badge variant="secondary">
+                              {formatCurrency(expense.valorTotal / (expense.totalParcelas || 1))}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {/* Parcelas filhas */}
                         {installments.map((installment, index) => (
                           <div key={installment.id} className="flex justify-between items-center p-2 bg-white rounded border">
                             <span className="text-sm">

@@ -229,6 +229,19 @@ const realExpenseService = {
   delete: async (id: number): Promise<void> => {
     await api.delete(`/saidas/${id}`);
   },
+
+  getInstallments: async (saidaPaiId: number): Promise<Saida[]> => {
+    const response = await api.get(`/saidas/${saidaPaiId}/parcelas`);
+    return response.data;
+  },
+
+  addInstallment: async (saidaPaiId: number): Promise<void> => {
+    await api.post(`/saidas/${saidaPaiId}/parcelas`);
+  },
+
+  removeInstallment: async (installmentId: number): Promise<void> => {
+    await api.delete(`/saidas/parcelas/${installmentId}`);
+  },
 };
 
 // Serviços de Parcelas Reais

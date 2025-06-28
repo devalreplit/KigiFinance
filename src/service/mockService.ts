@@ -1007,6 +1007,119 @@ export const mockExpenseService = {
   },
 
   /**
+   * FUNÇÃO GETINSTALLMENTS - BUSCAR PARCELAS DE UMA SAÍDA PAI
+   * 
+   * @param saidaPaiId - ID da saída pai
+   * @returns Promise com parcelas filhas ordenadas por número
+   */
+  getInstallments: async (saidaPaiId: number): Promise<Saida[]> => {
+    await mockDelay();
+    const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
+    return expenses
+      .filter(e => e.saidaPaiId === saidaPaiId)
+      .sort((a, b) => a.numeroParcela - b.numeroParcela);
+  },
+
+  /**
+   * FUNÇÃO ADDINSTALLMENT - ADICIONAR NOVA PARCELA
+   * 
+   * @param saidaPaiId - ID da saída pai
+   * @returns Promise void
+   */
+  addInstallment: async (saidaPaiId: number): Promise<void> => {
+    await mockDelay();
+    const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
+    
+    // Buscar saída pai
+    const saidaPai = expenses.find(e => e.id === saidaPaiId);
+    if (!saidaPai || saidaPai.tipoSaida !== 'parcelada_pai') {
+      throw new Error('Saída pai não encontrada ou não é parcelada');
+    }
+
+    // Buscar parcelas existentes
+    const parcelasExistentes = expenses.filter(e => e.saidaPaiId === saidaPaiId);
+    const proximoNumero = Math.max(...parcelasExistentes.map(p => p.numeroParcela), 1) + 1;
+
+    // Calcular nova data (um mês após a última parcela)
+    const ultimaParcela = parcelasExistentes
+      .sort((a, b) => b.numeroParcela - a.numeroParcela)[0] || saidaPai;
+    const novaData = new Date(ultimaParcela.dataSaida);
+    novaData.setMonth(novaData.getMonth() + 1);
+
+    // Criar nova parcela
+    const novaParcela: Saida = {
+      id: Math.max(...expenses.map(e => e.id), 0) + 1,
+      saidaPaiId: saidaPaiId,
+      tipoSaida: 'parcela',
+      numeroParcela: proximoNumero,
+      usuarioRegistroId: saidaPai.usuarioRegistroId,
+      dataHoraRegistro: new Date().toISOString(),
+      dataSaida: novaData.toISOString().split('T')[0],
+      empresaId: saidaPai.empresaId,
+      tipoPagamento: saidaPai.tipoPagamento,
+      usuariosTitularesIds: saidaPai.usuariosTitularesIds,
+      itens: [],
+      valorTotal: saidaPai.valorTotal / (saidaPai.totalParcelas || 1),
+      observacao: `Parcela ${proximoNumero}`,
+    };
+
+    expenses.push(novaParcela);
+
+    // Atualizar total de parcelas na saída pai
+    const saidaPaiIndex = expenses.findIndex(e => e.id === saidaPaiId);
+    if (saidaPaiIndex !== -1) {
+      expenses[saidaPaiIndex].totalParcelas = proximoNumero;
+    }
+
+    MockStorage.set('expenses', expenses);
+  },
+
+  /**
+   * FUNÇÃO REMOVEINSTALLMENT - REMOVER ÚLTIMA PARCELA
+   * 
+   * @param installmentId - ID da parcela a ser removida
+   * @returns Promise void
+   */
+  removeInstallment: async (installmentId: number): Promise<void> => {
+    await mockDelay();
+    const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
+    
+    // Buscar a parcela a ser removida
+    const parcelaIndex = expenses.findIndex(e => e.id === installmentId);
+    if (parcelaIndex === -1) {
+      throw new Error('Parcela não encontrada');
+    }
+
+    const parcela = expenses[parcelaIndex];
+    if (parcela.tipoSaida !== 'parcela') {
+      throw new Error('Não é possível remover uma saída que não seja parcela');
+    }
+
+    // Buscar saída pai
+    const saidaPai = expenses.find(e => e.id === parcela.saidaPaiId);
+    if (!saidaPai) {
+      throw new Error('Saída pai não encontrada');
+    }
+
+    // Verificar se não é a última parcela possível (mínimo 2 parcelas)
+    const parcelas = expenses.filter(e => e.saidaPaiId === parcela.saidaPaiId);
+    if (parcelas.length <= 1) {
+      throw new Error('Não é possível remover a parcela. Mínimo de 2 parcelas necessário.');
+    }
+
+    // Remover a parcela
+    expenses.splice(parcelaIndex, 1);
+
+    // Atualizar total de parcelas na saída pai
+    const saidaPaiIndex = expenses.findIndex(e => e.id === parcela.saidaPaiId);
+    if (saidaPaiIndex !== -1) {
+      expenses[saidaPaiIndex].totalParcelas = parcelas.length;
+    }
+
+    MockStorage.set('expenses', expenses);
+  },
+
+  /**
    * FUNÇÃO GETCHILDINSTALLMENTS - BUSCAR PARCELAS FILHAS
    * 
    * @param saidaPaiId - ID da saída pai
@@ -1019,6 +1132,13 @@ export const mockExpenseService = {
    * - Útil para exibir timeline de pagamentos
    */
   getChildInstallments: async (saidaPaiId: number): Promise<Saida[]> => {
+    await mockDelay();
+    const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
+    return expenses.filter(e => e.saidaPaiId === saidaPaiId).sort((a, b) => a.numeroParcela - b.numeroParcela);
+  },
+
+  /**
+   * FUNÇÃO GETChildInstallments: async (saidaPaiId: number): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     return expenses.filter(e => e.saidaPaiId === saidaPaiId).sort((a, b) => a.numeroParcela - b.numeroParcela);

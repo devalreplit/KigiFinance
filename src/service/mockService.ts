@@ -9,7 +9,6 @@ import {
   EntradaInput,
   Saida,
   SaidaInput,
-  Parcela,
 } from '../../types';
 
 // Sistema de storage local persistente
@@ -254,8 +253,11 @@ const generateInitialIncomes = (): Entrada[] => {
 const initialIncomes: Entrada[] = generateInitialIncomes();
 
 const initialExpenses: Saida[] = [
+  // Saída à vista
   {
     id: 1,
+    tipoSaida: 'normal',
+    numeroParcela: 1,
     usuarioRegistroId: 1,
     dataHoraRegistro: '2024-01-16T15:45:00.000Z',
     dataSaida: '2024-01-16',
@@ -280,6 +282,31 @@ const initialExpenses: Saida[] = [
     ],
     valorTotal: 57.48,
     observacao: 'Compras do mês',
+  },
+  
+  // Saída parcelada - 1ª parcela (saída pai)
+  {
+    id: 2,
+    tipoSaida: 'parcelada_pai',
+    numeroParcela: 1,
+    totalParcelas: 3,
+    usuarioRegistroId: 1,
+    dataHoraRegistro: '2024-01-20T10:30:00.000Z',
+    dataSaida: '2024-01-20',
+    empresaId: 2,
+    tipoPagamento: 'parcelado',
+    usuariosTitularesIds: [1],
+    itens: [
+      {
+        produtoId: 3,
+        nomeProduto: 'Óleo de Soja 900ml',
+        quantidade: 10,
+        precoUnitario: 15.00,
+        total: 150.00,
+      },
+    ],
+    valorTotal: 150.00,
+    observacao: 'Compra parcelada em 3x',
   },
 ];
 
@@ -689,26 +716,28 @@ export const mockIncomeService = {
 
 // Serviços de Saídas Mock
 export const mockExpenseService = {
-  // Buscar saídas com filtro opcional de mês/ano
-  getAll: async (mes?: number, ano?: number): Promise<Saida[]> => {
+  // Buscar saídas com filtro opcional de mês/ano - Por padrão não retorna parcelas filhas
+  getAll: async (mes?: number, ano?: number, incluirParcelas?: boolean): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
 
-    // Se não especificar mês/ano, retornar todas as saídas
-    if (!mes || !ano) {
-      return expenses.sort((a, b) => 
-        new Date(b.dataSaida).getTime() - new Date(a.dataSaida).getTime()
-      );
+    let filteredExpenses = expenses;
+
+    // Filtrar por mês/ano se especificado
+    if (mes && ano) {
+      filteredExpenses = expenses.filter(expense => {
+        const dataExpense = new Date(expense.dataSaida);
+        const mesExpense = dataExpense.getMonth() + 1; // getMonth() retorna 0-11
+        const anoExpense = dataExpense.getFullYear();
+        
+        return mesExpense === mes && anoExpense === ano;
+      });
     }
 
-    // Filtrar saídas por mês/ano específico
-    const filteredExpenses = expenses.filter(expense => {
-      const dataExpense = new Date(expense.dataSaida);
-      const mesExpense = dataExpense.getMonth() + 1; // getMonth() retorna 0-11
-      const anoExpense = dataExpense.getFullYear();
-      
-      return mesExpense === mes && anoExpense === ano;
-    });
+    // Por padrão, não incluir parcelas filhas na listagem principal
+    if (!incluirParcelas) {
+      filteredExpenses = filteredExpenses.filter(expense => expense.tipoSaida !== 'parcela');
+    }
 
     // Ordenar por data mais recente primeiro
     return filteredExpenses.sort((a, b) => 
@@ -732,7 +761,14 @@ export const mockExpenseService = {
   getWithInstallments: async (): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    return expenses.filter(e => e.tipoPagamento === 'parcelado');
+    return expenses.filter(e => e.tipoSaida === 'parcelada_pai');
+  },
+
+  // Buscar parcelas filhas de uma saída parcelada
+  getChildInstallments: async (saidaPaiId: number): Promise<Saida[]> => {
+    await mockDelay();
+    const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
+    return expenses.filter(e => e.saidaPaiId === saidaPaiId).sort((a, b) => a.numeroParcela - b.numeroParcela);
   },
 
   create: async (expenseData: SaidaInput): Promise<Saida> => {
@@ -740,8 +776,14 @@ export const mockExpenseService = {
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     const products = MockStorage.get<Produto>('products', initialProducts);
 
+    const valorTotal = expenseData.itens.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0);
+
     const newExpense: Saida = {
       id: Math.max(...expenses.map(e => e.id), 0) + 1,
+      saidaPaiId: expenseData.saidaPaiId,
+      tipoSaida: expenseData.tipoSaida || (expenseData.tipoPagamento === 'avista' ? 'normal' : 'parcelada_pai'),
+      numeroParcela: expenseData.numeroParcela || 1,
+      totalParcelas: expenseData.totalParcelas,
       usuarioRegistroId: expenseData.usuarioRegistroId,
       dataHoraRegistro: new Date().toISOString(),
       dataSaida: expenseData.dataSaida,
@@ -756,11 +798,41 @@ export const mockExpenseService = {
           total: item.quantidade * item.precoUnitario,
         };
       }),
-      valorTotal: expenseData.itens.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0),
+      valorTotal: valorTotal,
       observacao: expenseData.observacao,
     };
 
     expenses.push(newExpense);
+
+    // Se for saída parcelada (parcelada_pai), criar as parcelas filhas
+    if (newExpense.tipoSaida === 'parcelada_pai' && expenseData.totalParcelas && expenseData.totalParcelas > 1) {
+      const valorParcela = valorTotal / expenseData.totalParcelas;
+      const baseDateSaida = new Date(expenseData.dataSaida);
+
+      for (let i = 2; i <= expenseData.totalParcelas; i++) {
+        const dataParcelaFilha = new Date(baseDateSaida);
+        dataParcelaFilha.setMonth(dataParcelaFilha.getMonth() + (i - 1));
+
+        const parcelaFilha: Saida = {
+          id: Math.max(...expenses.map(e => e.id), newExpense.id) + 1,
+          saidaPaiId: newExpense.id,
+          tipoSaida: 'parcela',
+          numeroParcela: i,
+          usuarioRegistroId: expenseData.usuarioRegistroId,
+          dataHoraRegistro: new Date().toISOString(),
+          dataSaida: dataParcelaFilha.toISOString().split('T')[0],
+          empresaId: expenseData.empresaId,
+          tipoPagamento: expenseData.tipoPagamento,
+          usuariosTitularesIds: expenseData.usuariosTitularesIds,
+          itens: [], // Parcelas filhas não têm itens
+          valorTotal: valorParcela,
+          observacao: `Parcela ${i}/${expenseData.totalParcelas}`,
+        };
+
+        expenses.push(parcelaFilha);
+      }
+    }
+
     MockStorage.set('expenses', expenses);
     return newExpense;
   },
@@ -791,70 +863,7 @@ export const mockExpenseService = {
   },
 };
 
-// Serviços de Parcelas Mock
-export const mockInstallmentService = {
-  getAll: async () => {
-    await mockDelay();
-    // Gerar parcelas dinamicamente baseado nas saídas parceladas
-    const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    const installments: Parcela[] = [];
 
-    expenses.filter(e => e.tipoPagamento === 'parcelado').forEach(expense => {
-      const numeroParcelas = expense.numeroParcelas || 3;
-      const valorParcela = expense.valorTotal / numeroParcelas;
-      
-      // Usar a data da primeira parcela se disponível, senão usar data da saída + 1 mês
-      const baseDate = expense.dataPrimeiraParcela 
-        ? new Date(expense.dataPrimeiraParcela)
-        : new Date(expense.dataSaida);
-      
-      if (expense.dataPrimeiraParcela) {
-        baseDate.setDate(baseDate.getDate() + 1); // Ajustar timezone
-      } else {
-        baseDate.setMonth(baseDate.getMonth() + 1);
-      }
-
-      for (let i = 1; i <= numeroParcelas; i++) {
-        const dueDate = new Date(baseDate);
-        dueDate.setMonth(dueDate.getMonth() + (i - 1));
-
-        // Determinar status baseado na data
-        const today = new Date();
-        let status: 'paga' | 'vencida' | 'a vencer' = 'a vencer';
-        
-        if (dueDate < today) {
-          status = i === 1 ? 'paga' : 'vencida'; // Primeira parcela paga, outras vencidas
-        }
-
-        installments.push({
-          id: expense.id * 100 + i, // ID único mais robusto
-          saidaOriginalId: expense.id,
-          numeroParcela: i,
-          dataVencimento: dueDate.toISOString().split('T')[0],
-          valorParcela: valorParcela,
-          status: status,
-          dataPagamento: status === 'paga' ? new Date().toISOString().split('T')[0] : undefined,
-        });
-      }
-    });
-
-    return installments;
-  },
-
-  getById: async (id: number) => {
-    await mockDelay();
-    const installments = await mockInstallmentService.getAll();
-    const installment = installments.find(i => i.id === id);
-    if (!installment) throw new Error('Parcela não encontrada');
-    return installment;
-  },
-
-  markAsPaid: async (id: number, paymentDate: string): Promise<void> => {
-    await mockDelay();
-    // Simulação de marcar como paga
-    console.log(`Parcela ${id} marcada como paga em ${paymentDate}`);
-  },
-};
 
 // Serviços de Relatórios Mock
 export const mockReportService = {

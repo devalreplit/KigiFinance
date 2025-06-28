@@ -4,7 +4,6 @@ import {
   Produto,
   Entrada,
   Saida,
-  Parcela,
   ResumoFinanceiro,
   Transacao,
 } from '../../types';
@@ -179,8 +178,11 @@ const generateMockIncomes = (): Entrada[] => {
 export const mockIncomes: Entrada[] = generateMockIncomes();
 
 export const mockExpenses: Saida[] = [
+  // Saída à vista
   {
     id: 1,
+    tipoSaida: 'normal',
+    numeroParcela: 1,
     usuarioRegistroId: 1,
     dataHoraRegistro: '2024-01-16T15:45:00.000Z',
     dataSaida: '2024-01-16',
@@ -206,25 +208,64 @@ export const mockExpenses: Saida[] = [
     valorTotal: 57.48,
     observacao: 'Compras do mês',
   },
-];
-
-export const mockInstallments: Parcela[] = [
-  {
-    id: 1,
-    saidaOriginalId: 1,
-    numeroParcela: 1,
-    dataVencimento: '2024-02-15',
-    valorParcela: 150.00,
-    status: 'paga',
-    dataPagamento: '2024-02-14',
-  },
+  
+  // Saída parcelada - 1ª parcela (saída pai)
   {
     id: 2,
-    saidaOriginalId: 1,
+    tipoSaida: 'parcelada_pai',
+    numeroParcela: 1,
+    totalParcelas: 3,
+    usuarioRegistroId: 1,
+    dataHoraRegistro: '2024-01-20T10:30:00.000Z',
+    dataSaida: '2024-01-20',
+    empresaId: 2,
+    tipoPagamento: 'parcelado',
+    usuariosTitularesIds: [1],
+    itens: [
+      {
+        produtoId: 3,
+        nomeProduto: 'Óleo de Soja 900ml',
+        quantidade: 10,
+        precoUnitario: 15.00,
+        total: 150.00,
+      },
+    ],
+    valorTotal: 150.00,
+    observacao: 'Compra parcelada em 3x',
+  },
+  
+  // 2ª parcela da saída parcelada
+  {
+    id: 3,
+    saidaPaiId: 2,
+    tipoSaida: 'parcela',
     numeroParcela: 2,
-    dataVencimento: '2024-03-15',
-    valorParcela: 150.00,
-    status: 'a vencer',
+    usuarioRegistroId: 1,
+    dataHoraRegistro: '2024-02-20T10:30:00.000Z',
+    dataSaida: '2024-02-20',
+    empresaId: 2,
+    tipoPagamento: 'parcelado',
+    usuariosTitularesIds: [1],
+    itens: [],
+    valorTotal: 150.00,
+    observacao: 'Parcela 2/3',
+  },
+  
+  // 3ª parcela da saída parcelada
+  {
+    id: 4,
+    saidaPaiId: 2,
+    tipoSaida: 'parcela',
+    numeroParcela: 3,
+    usuarioRegistroId: 1,
+    dataHoraRegistro: '2024-03-20T10:30:00.000Z',
+    dataSaida: '2024-03-20',
+    empresaId: 2,
+    tipoPagamento: 'parcelado',
+    usuariosTitularesIds: [1],
+    itens: [],
+    valorTotal: 150.00,
+    observacao: 'Parcela 3/3',
   },
 ];
 

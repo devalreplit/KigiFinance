@@ -275,7 +275,6 @@ export const companyService = USE_MOCK_API ? mockCompanyService : realCompanySer
 export const productService = USE_MOCK_API ? mockProductService : realProductService;
 export const incomeService = USE_MOCK_API ? mockIncomeService : realIncomeService;
 export const expenseService = USE_MOCK_API ? mockExpenseService : realExpenseService;
-export const installmentService = USE_MOCK_API ? mockInstallmentService : realInstallmentService;
 export const reportService = USE_MOCK_API ? mockReportService : realReportService;
 
 // Log para indicar qual modo está sendo usado

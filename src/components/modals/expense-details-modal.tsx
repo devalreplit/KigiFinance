@@ -244,6 +244,7 @@ export default function ExpenseDetailsModal({
         toast({
           title: "Produto encontrado",
           description: `${product.nome} adicionado à lista`,
+          className: "bg-green-600 text-white border-green-600",
         });
       } else {
         toast({
@@ -280,6 +281,7 @@ export default function ExpenseDetailsModal({
       toast({
         title: "Parcela adicionada",
         description: "Nova parcela adicionada com sucesso",
+        className: "bg-green-600 text-white border-green-600",
       });
     } catch (error) {
       toast({
@@ -304,6 +306,7 @@ export default function ExpenseDetailsModal({
       toast({
         title: "Parcela removida",
         description: "Última parcela removida com sucesso",
+        className: "bg-green-600 text-white border-green-600",
       });
     } catch (error) {
       toast({
@@ -368,11 +371,19 @@ export default function ExpenseDetailsModal({
     try {
       setSaving(true);
 
+      const updatedItems = items.map(item => ({
+        produtoId: item.produtoId,
+        nomeProduto: getProductName(item.produtoId),
+        quantidade: item.quantidade,
+        precoUnitario: item.precoUnitario,
+        total: item.quantidade * item.precoUnitario,
+      }));
+
       const updatedExpense = {
         ...expense,
         empresaId: parseInt(formData.empresaId),
         usuariosTitularesIds: selectedUsers,
-        itens: items,
+        itens: updatedItems,
         observacao: formData.observacao,
         valorTotal: calculateTotal(),
       };
@@ -382,6 +393,8 @@ export default function ExpenseDetailsModal({
       toast({
         title: "Saída atualizada",
         description: "Saída atualizada com sucesso",
+        variant: "default",
+        className: "bg-green-600 text-white border-green-600",
       });
 
       setIsEditing(false);
@@ -407,6 +420,7 @@ export default function ExpenseDetailsModal({
       toast({
         title: "Saída excluída",
         description: "Saída excluída com sucesso",
+        className: "bg-green-600 text-white border-green-600",
       });
 
       setShowDeleteDialog(false);

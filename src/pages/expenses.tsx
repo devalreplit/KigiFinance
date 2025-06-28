@@ -341,38 +341,37 @@ export default function Expenses() {
               onClick={() => handleViewExpenseDetails(saida)}
             >
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                      <TrendingDown className="h-5 w-5 text-green-600 dark:text-green-400" />
+                
+                <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                            {getEmpresaName(saida.empresaId) || "Empresa não encontrada"}
+                          </h3>
+                          <Badge variant={saida.tipoPagamento === "avista" ? "secondary" : "default"}>
+                            {saida.tipoPagamento === "avista" ? "À Vista" : `${saida.totalParcelas || 1}x`}
+                          </Badge>
+                          {saida.tipoSaida === 'parcelada_pai' && (
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                              Parcelado
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {formatDate(saida.dataSaida)}
+                        </p>
+                        
+                      </div>
+                      <div className="text-right">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium">
+                          {formatCurrency(saida.valorTotal)}
+                        </Badge>
+                        
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                        {getEmpresaName(saida.empresaId)}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium">
-                      {formatCurrency(saida.valorTotal)}
-                    </Badge>
-                    <Badge variant={saida.tipoPagamento === 'parcelado' ? 'default' : 'secondary'} className="text-xs">
-                      {saida.tipoPagamento === 'parcelado' ? 'Parcelado' : 'À Vista'}
-                    </Badge>
-                  </div>
-                </div>
 
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Data:</span>
-                    <span>{formatDate(saida.dataSaida)}</span>
-                  </div>
-                  {saida.itens && saida.itens.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="font-medium">Itens:</span>
-                      <span>{saida.itens.length} produto(s)</span>
-                    </div>
-                  )}
+                  
                   <div className="flex justify-between">
                     <span className="font-medium">Registrado em:</span>
                     <span className="text-xs">{formatDate(saida.dataHoraRegistro)}</span>

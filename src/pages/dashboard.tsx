@@ -42,7 +42,12 @@ export default function Dashboard() {
       setUsuarios(usuariosData);
       setProdutos(produtosData);
       setEntradas(entradasData);
-      setSaidas(saidasData);
+      
+      // Filtrar apenas saídas principais para estatísticas (não contar parcelas filhas duplicadamente)
+      const saidasPrincipais = saidasData.filter(saida => 
+        saida.tipoSaida === 'normal' || saida.tipoSaida === 'parcelada_pai'
+      );
+      setSaidas(saidasPrincipais);
     } catch (error) {
       toast({
         title: "Erro ao carregar dados",

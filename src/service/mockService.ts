@@ -283,7 +283,7 @@ const initialExpenses: Saida[] = [
     valorTotal: 57.48,
     observacao: 'Compras do mês',
   },
-  
+
   // Saída parcelada - 1ª parcela (saída pai)
   {
     id: 2,
@@ -729,7 +729,7 @@ export const mockExpenseService = {
         const dataExpense = new Date(expense.dataSaida);
         const mesExpense = dataExpense.getMonth() + 1; // getMonth() retorna 0-11
         const anoExpense = dataExpense.getFullYear();
-        
+
         return mesExpense === mes && anoExpense === ano;
       });
     }
@@ -867,28 +867,38 @@ export const mockExpenseService = {
 
 // Serviços de Relatórios Mock
 export const mockReportService = {
-  getFinancialSummary: async () => {
+  getFinancialSummary: async (): Promise<ResumoFinanceiro> => {
     await mockDelay();
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
 
     const totalEntradas = incomes.reduce((sum, income) => sum + income.valor, 0);
+
+    // Calcular total de saídas - somar todas as transações de impacto financeiro
     const totalSaidas = expenses.reduce((sum, expense) => sum + expense.valorTotal, 0);
+
+    // Calcular total parcelado apenas das saídas pai
     const totalParcelado = expenses
-      .filter(e => e.tipoPagamento === 'parcelado')
-      .reduce((sum, expense) => sum + expense.valorTotal, 0);
+      .filter(e => e.tipoSaida === 'parcelada_pai')
+      .reduce((sum, e) => sum + (e.valorTotal * (e.totalParcelas || 1)), 0);
+
+    // Calcular parcelas pendentes (parcelas futuras)
+    const hoje = new Date();
+    const totalPendentes = expenses
+      .filter(e => e.tipoSaida === 'parcela' && new Date(e.dataSaida) > hoje)
+      .reduce((sum, e) => sum + e.valorTotal, 0);
 
     return {
       saldoFamiliar: totalEntradas - totalSaidas,
       totalEntradas,
       totalSaidas,
       totalParcelado,
-      totalPago: totalParcelado / 3, // Simulando 1/3 pago
-      totalPendentes: (totalParcelado * 2) / 3, // Simulando 2/3 pendente
+      totalPago: totalSaidas - totalPendentes,
+      totalPendentes,
     };
   },
 
-  getRecentTransactions: async (limit = 10) => {
+  getRecentTransactions: async (limit = 10): Promise<Transacao[]> => {
     await mockDelay();
     const incomes = MockStorage.get<Entrada>('incomes', initialIncomes);
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
@@ -901,13 +911,25 @@ export const mockReportService = {
         valor: income.valor,
         descricao: `Entrada registrada`,
       })),
-      ...expenses.map(expense => ({
-        id: `expense_${expense.id}`,
-        tipo: 'saida',
-        data: expense.dataSaida,
-        valor: expense.valorTotal,
-        descricao: `Saída registrada`,
-      })),
+      ...expenses.map(expense => {
+        let tipo = 'saida';
+        let descricao = 'Saída registrada';
+
+        if (expense.tipoSaida === 'parcelada_pai') {
+          descricao = `Saída parcelada (${expense.numeroParcela}/${expense.totalParcelas})`;
+        } else if (expense.tipoSaida === 'parcela') {
+          tipo = 'parcela';
+          descricao = `Parcela ${expense.numeroParcela}`;
+        }
+
+        return {
+          id: `expense_${expense.id}`,
+          tipo,
+          data: expense.dataSaida,
+          valor: expense.valorTotal,
+          descricao,
+        };
+      }),
     ];
 
     return transactions

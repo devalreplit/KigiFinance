@@ -1,3 +1,4 @@
+
 -- ====================================================================
 -- SISTEMA FINANCEIRO FAMILIAR KIGI - SCRIPTS ORACLE 11G
 -- ====================================================================
@@ -5,8 +6,8 @@
 -- Descrição: Scripts para criação das tabelas, índices, constraints
 -- e relacionamentos do sistema financeiro familiar KIGI
 -- 
--- Base de análise: types.ts e estruturas de dados do projeto
--- Versão: Oracle Database 11G
+-- NOVA ESTRUTURA: Saídas unificadas com tipos (normal, parcelada_pai, parcela)
+-- Versão: Oracle Database 11G - REVISÃO COMPLETA
 -- Data: Janeiro 2025
 -- ====================================================================
 
@@ -56,13 +57,6 @@ CREATE SEQUENCE seq_itens_saida
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela PARCELAS
-CREATE SEQUENCE seq_parcelas
-    START WITH 1
-    INCREMENT BY 1
-    NOMAXVALUE
-    NOCACHE;
-
 -- Sequence para tabela SAIDA_TITULARES
 CREATE SEQUENCE seq_saida_titulares
     START WITH 1
@@ -99,7 +93,6 @@ CREATE TABLE empresas (
 
 -- TABELA: PRODUTOS
 -- Armazena o catálogo de produtos da família
--- Nota: precoUnitario foi removido - será definido apenas no momento da compra
 CREATE TABLE produtos (
     id NUMBER(10) PRIMARY KEY,
     codigo_barras VARCHAR2(50),
@@ -127,23 +120,40 @@ CREATE TABLE entradas (
 );
 
 -- TABELA: SAIDAS
--- Armazena as despesas/saídas financeiras da família
+-- NOVA ESTRUTURA: Unifica saídas à vista e parceladas em uma única tabela
+-- Cada saída tem impacto financeiro no mês de vencimento (data_saida)
 CREATE TABLE saidas (
     id NUMBER(10) PRIMARY KEY,
+    saida_pai_id NUMBER(10), -- Referência à saída pai (NULL para saídas normais e saídas_pai)
+    tipo_saida VARCHAR2(20) NOT NULL CHECK (tipo_saida IN ('normal', 'parcelada_pai', 'parcela')),
+    numero_parcela NUMBER(3) NOT NULL DEFAULT 1 CHECK (numero_parcela > 0),
+    total_parcelas NUMBER(3), -- Preenchido apenas para saídas parceladas (pai)
     usuario_registro_id NUMBER(10) NOT NULL,
     data_hora_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_saida DATE NOT NULL,
+    data_saida DATE NOT NULL, -- Data de impacto financeiro (vencimento da parcela)
     empresa_id NUMBER(10) NOT NULL,
     tipo_pagamento VARCHAR2(10) NOT NULL CHECK (tipo_pagamento IN ('avista', 'parcelado')),
     valor_total NUMBER(15,2) NOT NULL CHECK (valor_total > 0),
     observacao VARCHAR2(500),
-    numero_parcelas NUMBER(3),
-    data_primeira_parcela DATE,
     CONSTRAINT fk_saida_usuario_registro FOREIGN KEY (usuario_registro_id) REFERENCES usuarios(id),
     CONSTRAINT fk_saida_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
-    CONSTRAINT chk_parcelas_avista CHECK (
-        (tipo_pagamento = 'avista' AND numero_parcelas IS NULL AND data_primeira_parcela IS NULL) OR
-        (tipo_pagamento = 'parcelado' AND numero_parcelas > 1 AND data_primeira_parcela IS NOT NULL)
+    CONSTRAINT fk_saida_pai FOREIGN KEY (saida_pai_id) REFERENCES saidas(id),
+    -- Constraints de integridade da nova estrutura
+    CONSTRAINT chk_saida_avista CHECK (
+        (tipo_pagamento = 'avista' AND tipo_saida = 'normal' AND saida_pai_id IS NULL AND numero_parcela = 1) OR
+        (tipo_pagamento = 'parcelado')
+    ),
+    CONSTRAINT chk_saida_parcelada_pai CHECK (
+        (tipo_saida = 'parcelada_pai' AND saida_pai_id IS NULL AND total_parcelas > 1) OR
+        (tipo_saida != 'parcelada_pai')
+    ),
+    CONSTRAINT chk_saida_parcela_filha CHECK (
+        (tipo_saida = 'parcela' AND saida_pai_id IS NOT NULL AND total_parcelas IS NULL) OR
+        (tipo_saida != 'parcela')
+    ),
+    CONSTRAINT chk_numero_parcela_consistente CHECK (
+        (tipo_saida = 'normal' AND numero_parcela = 1) OR
+        (tipo_saida IN ('parcelada_pai', 'parcela') AND numero_parcela >= 1)
     )
 );
 
@@ -164,7 +174,6 @@ CREATE TABLE itens_saida (
 
 -- TABELA: SAIDA_TITULARES
 -- Tabela de relacionamento many-to-many entre saídas e usuários titulares
--- Uma saída pode ter múltiplos usuários como titulares
 CREATE TABLE saida_titulares (
     id NUMBER(10) PRIMARY KEY,
     saida_id NUMBER(10) NOT NULL,
@@ -172,24 +181,6 @@ CREATE TABLE saida_titulares (
     CONSTRAINT fk_saida_titular_saida FOREIGN KEY (saida_id) REFERENCES saidas(id) ON DELETE CASCADE,
     CONSTRAINT fk_saida_titular_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     CONSTRAINT uk_saida_usuario UNIQUE (saida_id, usuario_id)
-);
-
--- TABELA: PARCELAS
--- Armazena as parcelas das compras parceladas
-CREATE TABLE parcelas (
-    id NUMBER(10) PRIMARY KEY,
-    saida_original_id NUMBER(10) NOT NULL,
-    numero_parcela NUMBER(3) NOT NULL CHECK (numero_parcela > 0),
-    data_vencimento DATE NOT NULL,
-    valor_parcela NUMBER(15,2) NOT NULL CHECK (valor_parcela > 0),
-    status VARCHAR2(10) NOT NULL CHECK (status IN ('paga', 'vencida', 'a vencer')),
-    data_pagamento DATE,
-    CONSTRAINT fk_parcela_saida FOREIGN KEY (saida_original_id) REFERENCES saidas(id) ON DELETE CASCADE,
-    CONSTRAINT uk_saida_parcela UNIQUE (saida_original_id, numero_parcela),
-    CONSTRAINT chk_data_pagamento CHECK (
-        (status = 'paga' AND data_pagamento IS NOT NULL) OR
-        (status IN ('vencida', 'a vencer') AND data_pagamento IS NULL)
-    )
 );
 
 -- ====================================================================
@@ -218,11 +209,14 @@ CREATE INDEX idx_entradas_data_referencia ON entradas(data_referencia);
 CREATE INDEX idx_entradas_empresa_pagadora ON entradas(empresa_pagadora_id);
 CREATE INDEX idx_entradas_data_hora_registro ON entradas(data_hora_registro);
 
--- Índices para tabela SAIDAS
+-- Índices para tabela SAIDAS (NOVA ESTRUTURA)
 CREATE INDEX idx_saidas_usuario_registro ON saidas(usuario_registro_id);
 CREATE INDEX idx_saidas_data_saida ON saidas(data_saida);
 CREATE INDEX idx_saidas_empresa ON saidas(empresa_id);
 CREATE INDEX idx_saidas_tipo_pagamento ON saidas(tipo_pagamento);
+CREATE INDEX idx_saidas_tipo_saida ON saidas(tipo_saida);
+CREATE INDEX idx_saidas_saida_pai ON saidas(saida_pai_id);
+CREATE INDEX idx_saidas_numero_parcela ON saidas(numero_parcela);
 CREATE INDEX idx_saidas_data_hora_registro ON saidas(data_hora_registro);
 
 -- Índices para tabela ITENS_SAIDA
@@ -232,12 +226,6 @@ CREATE INDEX idx_itens_saida_produto ON itens_saida(produto_id);
 -- Índices para tabela SAIDA_TITULARES
 CREATE INDEX idx_saida_titulares_saida ON saida_titulares(saida_id);
 CREATE INDEX idx_saida_titulares_usuario ON saida_titulares(usuario_id);
-
--- Índices para tabela PARCELAS
-CREATE INDEX idx_parcelas_saida_original ON parcelas(saida_original_id);
-CREATE INDEX idx_parcelas_data_vencimento ON parcelas(data_vencimento);
-CREATE INDEX idx_parcelas_status ON parcelas(status);
-CREATE INDEX idx_parcelas_data_pagamento ON parcelas(data_pagamento);
 
 -- ====================================================================
 -- 4. CRIAÇÃO DOS TRIGGERS PARA IDs AUTOINCREMENTAIS
@@ -320,17 +308,6 @@ BEGIN
 END;
 /
 
--- Trigger para tabela PARCELAS
-CREATE OR REPLACE TRIGGER trg_parcelas_id
-    BEFORE INSERT ON parcelas
-    FOR EACH ROW
-BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_parcelas.NEXTVAL INTO :NEW.id FROM dual;
-    END IF;
-END;
-/
-
 -- ====================================================================
 -- 5. TRIGGERS PARA ATUALIZAÇÃO AUTOMÁTICA DE TIMESTAMPS
 -- ====================================================================
@@ -363,7 +340,7 @@ END;
 /
 
 -- ====================================================================
--- 6. TRIGGER PARA VALIDAÇÃO DE TOTAL DOS ITENS DE SAÍDA
+-- 6. TRIGGERS DE VALIDAÇÃO E INTEGRIDADE
 -- ====================================================================
 
 -- Trigger para validar se o valor total da saída corresponde à soma dos itens
@@ -401,30 +378,72 @@ BEGIN
 END;
 /
 
--- ====================================================================
--- 7. TRIGGER PARA ATUALIZAÇÃO AUTOMÁTICA DE STATUS DAS PARCELAS
--- ====================================================================
-
--- Trigger para atualizar automaticamente o status das parcelas baseado na data
-CREATE OR REPLACE TRIGGER trg_atualizar_status_parcela
-    BEFORE INSERT OR UPDATE ON parcelas
+-- Trigger para validação específica da estrutura de parcelas
+CREATE OR REPLACE TRIGGER trg_validar_estrutura_parcelas
+    BEFORE INSERT OR UPDATE ON saidas
     FOR EACH ROW
+DECLARE
+    v_saida_pai_tipo VARCHAR2(20);
+    v_saida_pai_total_parcelas NUMBER(3);
 BEGIN
-    -- Se não tem data de pagamento e a data de vencimento já passou
-    IF :NEW.data_pagamento IS NULL AND :NEW.data_vencimento < SYSDATE THEN
-        :NEW.status := 'vencida';
-    -- Se não tem data de pagamento e a data de vencimento ainda não chegou
-    ELSIF :NEW.data_pagamento IS NULL AND :NEW.data_vencimento >= SYSDATE THEN
-        :NEW.status := 'a vencer';
-    -- Se tem data de pagamento
-    ELSIF :NEW.data_pagamento IS NOT NULL THEN
-        :NEW.status := 'paga';
+    -- Validações para parcelas filhas
+    IF :NEW.tipo_saida = 'parcela' THEN
+        -- Verificar se a saída pai existe e é do tipo correto
+        SELECT tipo_saida, total_parcelas 
+        INTO v_saida_pai_tipo, v_saida_pai_total_parcelas
+        FROM saidas 
+        WHERE id = :NEW.saida_pai_id;
+        
+        -- Saída pai deve ser do tipo 'parcelada_pai'
+        IF v_saida_pai_tipo != 'parcelada_pai' THEN
+            RAISE_APPLICATION_ERROR(-20002, 
+                'Parcela filha deve referenciar uma saída pai do tipo parcelada_pai');
+        END IF;
+        
+        -- Número da parcela não pode exceder o total de parcelas
+        IF :NEW.numero_parcela > v_saida_pai_total_parcelas THEN
+            RAISE_APPLICATION_ERROR(-20003, 
+                'Número da parcela (' || :NEW.numero_parcela || 
+                ') não pode exceder o total de parcelas (' || v_saida_pai_total_parcelas || ')');
+        END IF;
+        
+        -- Herdar configurações da saída pai
+        SELECT empresa_id, tipo_pagamento, valor_total
+        INTO :NEW.empresa_id, :NEW.tipo_pagamento, :NEW.valor_total
+        FROM saidas
+        WHERE id = :NEW.saida_pai_id;
+    END IF;
+    
+    -- Validação para saídas parceladas pai
+    IF :NEW.tipo_saida = 'parcelada_pai' THEN
+        IF :NEW.total_parcelas IS NULL OR :NEW.total_parcelas < 2 THEN
+            RAISE_APPLICATION_ERROR(-20004, 
+                'Saída parcelada pai deve ter total_parcelas >= 2');
+        END IF;
+        
+        IF :NEW.numero_parcela != 1 THEN
+            RAISE_APPLICATION_ERROR(-20005, 
+                'Saída parcelada pai deve ter numero_parcela = 1');
+        END IF;
+    END IF;
+    
+    -- Validação para saídas normais
+    IF :NEW.tipo_saida = 'normal' THEN
+        IF :NEW.saida_pai_id IS NOT NULL THEN
+            RAISE_APPLICATION_ERROR(-20006, 
+                'Saída normal não pode ter saida_pai_id');
+        END IF;
+        
+        IF :NEW.numero_parcela != 1 THEN
+            RAISE_APPLICATION_ERROR(-20007, 
+                'Saída normal deve ter numero_parcela = 1');
+        END IF;
     END IF;
 END;
 /
 
 -- ====================================================================
--- 8. COMENTÁRIOS NAS TABELAS E COLUNAS
+-- 7. COMENTÁRIOS NAS TABELAS E COLUNAS
 -- ====================================================================
 
 -- Comentários na tabela USUARIOS
@@ -458,15 +477,19 @@ COMMENT ON COLUMN entradas.data_referencia IS 'Data de referência da receita';
 COMMENT ON COLUMN entradas.valor IS 'Valor da entrada em reais';
 COMMENT ON COLUMN entradas.empresa_pagadora_id IS 'Empresa que efetuou o pagamento';
 
--- Comentários na tabela SAIDAS
-COMMENT ON TABLE saidas IS 'Despesas e saídas financeiras da família';
+-- Comentários na tabela SAIDAS (NOVA ESTRUTURA)
+COMMENT ON TABLE saidas IS 'Despesas e saídas financeiras unificadas - à vista e parceladas';
+COMMENT ON COLUMN saidas.id IS 'Identificador único da saída';
+COMMENT ON COLUMN saidas.saida_pai_id IS 'Referência à saída pai (NULL para normais e parceladas_pai)';
+COMMENT ON COLUMN saidas.tipo_saida IS 'Tipo: normal (à vista), parcelada_pai (primeira parcela), parcela (parcelas subsequentes)';
+COMMENT ON COLUMN saidas.numero_parcela IS 'Número da parcela (1 para à vista, 1-N para parceladas)';
+COMMENT ON COLUMN saidas.total_parcelas IS 'Total de parcelas (apenas para parceladas_pai)';
 COMMENT ON COLUMN saidas.usuario_registro_id IS 'Usuário que registrou a saída';
-COMMENT ON COLUMN saidas.data_saida IS 'Data da compra/gasto';
+COMMENT ON COLUMN saidas.data_saida IS 'Data de impacto financeiro (vencimento da parcela)';
 COMMENT ON COLUMN saidas.empresa_id IS 'Empresa onde foi realizada a compra';
 COMMENT ON COLUMN saidas.tipo_pagamento IS 'Tipo de pagamento (avista, parcelado)';
-COMMENT ON COLUMN saidas.valor_total IS 'Valor total da saída em reais';
-COMMENT ON COLUMN saidas.numero_parcelas IS 'Número de parcelas (apenas para parcelado)';
-COMMENT ON COLUMN saidas.data_primeira_parcela IS 'Data de vencimento da primeira parcela';
+COMMENT ON COLUMN saidas.valor_total IS 'Valor da parcela (impacto financeiro no mês)';
+COMMENT ON COLUMN saidas.observacao IS 'Observações adicionais';
 
 -- Comentários na tabela ITENS_SAIDA
 COMMENT ON TABLE itens_saida IS 'Itens individuais de cada saída/despesa';
@@ -482,53 +505,21 @@ COMMENT ON TABLE saida_titulares IS 'Relacionamento entre saídas e usuários ti
 COMMENT ON COLUMN saida_titulares.saida_id IS 'Referência à saída';
 COMMENT ON COLUMN saida_titulares.usuario_id IS 'Referência ao usuário titular';
 
--- Comentários na tabela PARCELAS
-COMMENT ON TABLE parcelas IS 'Parcelas das compras parceladas';
-COMMENT ON COLUMN parcelas.saida_original_id IS 'Referência à saída parcelada original';
-COMMENT ON COLUMN parcelas.numero_parcela IS 'Número sequencial da parcela';
-COMMENT ON COLUMN parcelas.data_vencimento IS 'Data de vencimento da parcela';
-COMMENT ON COLUMN parcelas.valor_parcela IS 'Valor da parcela em reais';
-COMMENT ON COLUMN parcelas.status IS 'Status da parcela (paga, vencida, a vencer)';
-COMMENT ON COLUMN parcelas.data_pagamento IS 'Data em que a parcela foi paga';
-
 -- ====================================================================
--- 9. DADOS INICIAIS (SEEDS)
+-- 8. VIEWS PARA RELATÓRIOS E CONSULTAS FREQUENTES
 -- ====================================================================
 
--- Inserir usuários iniciais
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('João Silva', 'joao', 'senha_hash_aqui', 'pai');
-
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('Maria Silva', 'maria', 'senha_hash_aqui', 'mae');
-
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('Pedro Silva', 'pedro', 'senha_hash_aqui', 'filho');
-
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('Ana Silva', 'ana', 'senha_hash_aqui', 'filha');
-
--- Inserir empresas iniciais
-INSERT INTO empresas (nome) VALUES ('Supermercado ABC');
-INSERT INTO empresas (nome) VALUES ('Farmácia Central');
-INSERT INTO empresas (nome) VALUES ('Posto Shell');
-
--- Inserir produtos iniciais
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567890', 'Arroz Integral 5kg', 'kg', 'Alimentação');
-
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567891', 'Feijão Preto 1kg', 'kg', 'Alimentação');
-
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567892', 'Óleo de Soja 900ml', 'ml', 'Alimentação');
-
--- Commit das inserções iniciais
-COMMIT;
-
--- ====================================================================
--- 10. VIEWS PARA RELATÓRIOS E CONSULTAS FREQUENTES
--- ====================================================================
+-- View para saídas principais (apenas normais e parceladas_pai)
+CREATE OR REPLACE VIEW vw_saidas_principais AS
+SELECT 
+    s.*,
+    e.nome as empresa_nome,
+    u.nome as usuario_registro_nome
+FROM saidas s
+INNER JOIN empresas e ON s.empresa_id = e.id
+INNER JOIN usuarios u ON s.usuario_registro_id = u.id
+WHERE s.tipo_saida IN ('normal', 'parcelada_pai')
+ORDER BY s.data_saida DESC;
 
 -- View para resumo financeiro por usuário
 CREATE OR REPLACE VIEW vw_resumo_usuario AS
@@ -555,26 +546,27 @@ LEFT JOIN (
 ) saidas ON u.id = saidas.usuario_id
 WHERE u.ativo = 1;
 
--- View para parcelas em atraso
-CREATE OR REPLACE VIEW vw_parcelas_vencidas AS
+-- View para parcelas futuras (a vencer)
+CREATE OR REPLACE VIEW vw_parcelas_futuras AS
 SELECT 
-    p.id,
-    p.saida_original_id,
-    s.data_saida,
+    s.id,
+    s.saida_pai_id,
+    sp.data_saida as data_compra_original,
     e.nome as empresa,
-    p.numero_parcela,
-    p.data_vencimento,
-    p.valor_parcela,
-    TRUNC(SYSDATE) - TRUNC(p.data_vencimento) as dias_atraso,
+    s.numero_parcela,
+    s.data_saida as data_vencimento,
+    s.valor_total as valor_parcela,
+    TRUNC(s.data_saida) - TRUNC(SYSDATE) as dias_para_vencimento,
     u.nome as responsavel
-FROM parcelas p
-INNER JOIN saidas s ON p.saida_original_id = s.id
+FROM saidas s
+INNER JOIN saidas sp ON s.saida_pai_id = sp.id -- Join com a saída pai
 INNER JOIN empresas e ON s.empresa_id = e.id
 INNER JOIN usuarios u ON s.usuario_registro_id = u.id
-WHERE p.status = 'vencida'
-ORDER BY p.data_vencimento;
+WHERE s.tipo_saida = 'parcela'
+  AND s.data_saida > SYSDATE
+ORDER BY s.data_saida;
 
--- View para relatório de gastos por categoria
+-- View para gastos por categoria
 CREATE OR REPLACE VIEW vw_gastos_categoria AS
 SELECT 
     p.classificacao,
@@ -590,49 +582,172 @@ GROUP BY p.classificacao
 ORDER BY valor_total DESC;
 
 -- ====================================================================
+-- 9. DADOS INICIAIS (SEEDS)
+-- ====================================================================
+
+-- Inserir usuários iniciais
+INSERT INTO usuarios (nome, login, senha, papel) VALUES 
+('João Silva', 'joao', 'senha_hash_aqui', 'pai');
+
+INSERT INTO usuarios (nome, login, senha, papel) VALUES 
+('Maria Silva', 'maria', 'senha_hash_aqui', 'mae');
+
+INSERT INTO usuarios (nome, login, senha, papel) VALUES 
+('Pedro Silva', 'pedro', 'senha_hash_aqui', 'filho');
+
+INSERT INTO usuarios (nome, login, senha, papel) VALUES 
+('Ana Silva', 'ana', 'senha_hash_aqui', 'filha');
+
+-- Inserir empresas iniciais
+INSERT INTO empresas (nome) VALUES ('Supermercado ABC');
+INSERT INTO empresas (nome) VALUES ('Farmácia Central');
+INSERT INTO empresas (nome) VALUES ('Posto Shell');
+INSERT INTO empresas (nome) VALUES ('Magazine Luiza');
+
+-- Inserir produtos iniciais
+INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
+('7891234567890', 'Arroz Integral 5kg', 'kg', 'Alimentação');
+
+INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
+('7891234567891', 'Feijão Preto 1kg', 'kg', 'Alimentação');
+
+INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
+('7891234567892', 'Óleo de Soja 900ml', 'ml', 'Alimentação');
+
+INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
+('7891234567893', 'Smartphone Samsung', 'un', 'Eletrônicos');
+
+-- Inserir exemplos de entradas
+INSERT INTO entradas (usuario_registro_id, usuario_titular_id, data_referencia, valor, empresa_pagadora_id) 
+VALUES (1, 1, DATE '2024-01-01', 5000.00, 1);
+
+INSERT INTO entradas (usuario_registro_id, usuario_titular_id, data_referencia, valor, empresa_pagadora_id) 
+VALUES (1, 2, DATE '2024-01-01', 3000.00, 2);
+
+-- Exemplos de saídas à vista
+INSERT INTO saidas (tipo_saida, numero_parcela, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total, observacao) 
+VALUES ('normal', 1, 1, DATE '2024-01-05', 1, 'avista', 250.00, 'Compras do mês');
+
+-- Exemplo de saída parcelada - Primeira parcela (saída pai)
+INSERT INTO saidas (tipo_saida, numero_parcela, total_parcelas, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total, observacao) 
+VALUES ('parcelada_pai', 1, 3, 1, DATE '2024-01-15', 4, 'parcelado', 400.00, 'Smartphone parcelado em 3x');
+
+-- Parcelas subsequentes da saída parcelada
+INSERT INTO saidas (saida_pai_id, tipo_saida, numero_parcela, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total) 
+VALUES (2, 'parcela', 2, 1, DATE '2024-02-15', 4, 'parcelado', 400.00);
+
+INSERT INTO saidas (saida_pai_id, tipo_saida, numero_parcela, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total) 
+VALUES (2, 'parcela', 3, 1, DATE '2024-03-15', 4, 'parcelado', 400.00);
+
+-- Inserir itens para as saídas
+INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
+VALUES (1, 1, 'Arroz Integral 5kg', 2, 25.00, 50.00);
+
+INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
+VALUES (1, 2, 'Feijão Preto 1kg', 3, 8.00, 24.00);
+
+INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
+VALUES (1, 3, 'Óleo de Soja 900ml', 4, 6.50, 26.00);
+
+-- Itens para a saída parcelada (apenas na primeira parcela)
+INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
+VALUES (2, 4, 'Smartphone Samsung', 1, 1200.00, 1200.00);
+
+-- Inserir titulares das saídas
+INSERT INTO saida_titulares (saida_id, usuario_id) VALUES (1, 1);
+INSERT INTO saida_titulares (saida_id, usuario_id) VALUES (1, 2);
+INSERT INTO saida_titulares (saida_id, usuario_id) VALUES (2, 1);
+
+-- Commit das inserções iniciais
+COMMIT;
+
+-- ====================================================================
+-- 10. PROCEDURES PARA OPERAÇÕES ESPECÍFICAS
+-- ====================================================================
+
+-- Procedure para criar saída parcelada automaticamente
+CREATE OR REPLACE PROCEDURE sp_criar_saida_parcelada(
+    p_usuario_registro_id IN NUMBER,
+    p_empresa_id IN NUMBER,
+    p_valor_parcela IN NUMBER,
+    p_total_parcelas IN NUMBER,
+    p_data_primeira_parcela IN DATE,
+    p_observacao IN VARCHAR2 DEFAULT NULL,
+    p_saida_pai_id OUT NUMBER
+) AS
+    v_data_parcela DATE;
+BEGIN
+    -- Inserir a saída pai (primeira parcela)
+    INSERT INTO saidas (
+        tipo_saida, numero_parcela, total_parcelas,
+        usuario_registro_id, data_saida, empresa_id,
+        tipo_pagamento, valor_total, observacao
+    ) VALUES (
+        'parcelada_pai', 1, p_total_parcelas,
+        p_usuario_registro_id, p_data_primeira_parcela, p_empresa_id,
+        'parcelado', p_valor_parcela, p_observacao
+    ) RETURNING id INTO p_saida_pai_id;
+    
+    -- Inserir as parcelas subsequentes
+    FOR i IN 2..p_total_parcelas LOOP
+        v_data_parcela := ADD_MONTHS(p_data_primeira_parcela, i-1);
+        
+        INSERT INTO saidas (
+            saida_pai_id, tipo_saida, numero_parcela,
+            usuario_registro_id, data_saida, empresa_id,
+            tipo_pagamento, valor_total
+        ) VALUES (
+            p_saida_pai_id, 'parcela', i,
+            p_usuario_registro_id, v_data_parcela, p_empresa_id,
+            'parcelado', p_valor_parcela
+        );
+    END LOOP;
+    
+    COMMIT;
+END;
+/
+
+-- ====================================================================
 -- FIM DOS SCRIPTS
 -- ====================================================================
 
 /*
-OBSERVAÇÕES IMPORTANTES:
+OBSERVAÇÕES IMPORTANTES DA NOVA ESTRUTURA:
 
-1. RELACIONAMENTOS IDENTIFICADOS:
-   - usuarios 1:N entradas (usuário que registra)
-   - usuarios 1:N entradas (usuário titular)  
-   - usuarios 1:N saidas (usuário que registra)
-   - usuarios N:M saidas (usuários titulares) - através de saida_titulares
-   - empresas 1:N entradas (empresa pagadora)
-   - empresas 1:N saidas (empresa vendedora)
-   - produtos 1:N itens_saida
-   - saidas 1:N itens_saida
-   - saidas 1:N parcelas (para compras parceladas)
+1. MUDANÇAS PRINCIPAIS:
+   - Remoção da tabela PARCELAS
+   - Unificação de saídas à vista e parceladas na tabela SAIDAS
+   - Novos campos: saida_pai_id, tipo_saida, numero_parcela, total_parcelas
+   - Constraints específicas para validar a integridade da nova estrutura
 
-2. CAMPOS IMPORTANTES:
-   - precoUnitario foi removido da tabela produtos (conforme solicitação)
-   - precoUnitario permanece em itens_saida (preço no momento da compra)
-   - usuariosTitularesIds do frontend é implementado via tabela saida_titulares
-   - Campos de timestamp seguem padrão ISO (TIMESTAMP no Oracle)
-   - Status das parcelas é controlado automaticamente via trigger
+2. TIPOS DE SAÍDA:
+   - 'normal': Saídas à vista (numero_parcela = 1, saida_pai_id = NULL)
+   - 'parcelada_pai': Primeira parcela de uma compra parcelada
+   - 'parcela': Parcelas subsequentes (referenciam saida_pai_id)
 
-3. INTEGRIDADE DE DADOS:
-   - Constraints para garantir consistência
-   - Triggers para validação de totais
-   - Triggers para atualização automática de timestamps
-   - Índices para otimização de consultas
+3. IMPACTO FINANCEIRO:
+   - Todas as saídas têm impacto financeiro no mês da data_saida
+   - Parcelas filhas geram débito no mês de vencimento
+   - Rastreabilidade total via saida_pai_id
 
-4. SEGURANÇA:
-   - Senhas devem ser criptografadas na aplicação antes de serem inseridas
-   - Campos sensíveis protegidos por constraints
-   - Validações de domínio implementadas
+4. INTEGRIDADE DOS DADOS:
+   - Triggers de validação específicos para a nova estrutura
+   - Constraints garantem consistência entre tipos de saída
+   - Procedure para facilitar criação de saídas parceladas
 
 5. PERFORMANCE:
-   - Índices criados em campos frequentemente consultados
-   - Views materializadas podem ser criadas posteriormente se necessário
-   - Sequences otimizadas para inserções em lote
+   - Índices otimizados para a nova estrutura
+   - Views específicas para consultas frequentes
+   - Separação clara entre saídas principais e parcelas
 
-Para utilizar estes scripts:
-1. Execute na ordem apresentada
-2. Ajuste os valores de hash das senhas conforme sua implementação
-3. Adicione dados de teste conforme necessário
-4. Configure backup e recovery adequados para produção
+6. COMPATIBILIDADE:
+   - Scripts de migração serão necessários para dados existentes
+   - Views mantêm compatibilidade com consultas antigas
+   - Estrutura flexível para futuras expansões
+
+Para utilizar:
+1. Execute os scripts em ordem
+2. Use a procedure sp_criar_saida_parcelada para saídas parceladas
+3. Consulte vw_saidas_principais para listagens
+4. Use vw_parcelas_futuras para controle de vencimentos
 */

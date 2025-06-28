@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toastSuccess, toastError } from "@/lib/toast-utils";
-import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { userService } from "@/service/apiService";
 import { Usuario, UsuarioInput } from "../../../types";
 

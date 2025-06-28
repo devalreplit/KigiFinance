@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { companyService } from "@/service/apiService";
 import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
-import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Building2, Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import CompanyModal from "@/components/modals/company-modal";
@@ -19,7 +18,6 @@ export default function Companies() {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState<Empresa | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     loadCompanies();

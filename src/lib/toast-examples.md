@@ -54,4 +54,5 @@ toast({ title: "Mensagem" }); // Não terá as cores adequadas
 // Sempre use as funções utilitárias
 toastSuccess({ title: "Mensagem de sucesso" });
 toastError({ title: "Mensagem de erro" });
+```e: "Mensagem de erro" });
 ```

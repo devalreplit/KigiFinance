@@ -54,3 +54,12 @@ export function AlertDialog({
     </Dialog>
   );
 }
+
+// Export individual components for compatibility
+export const AlertDialogAction = Button;
+export const AlertDialogCancel = Button;
+export { DialogContent as AlertDialogContent };
+export { DialogDescription as AlertDialogDescription };
+export { DialogFooter as AlertDialogFooter };
+export { DialogHeader as AlertDialogHeader };
+export { DialogTitle as AlertDialogTitle };

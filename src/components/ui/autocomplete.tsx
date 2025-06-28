@@ -25,7 +25,7 @@ interface AutocompleteProps {
 
 }
 
-export function Autocomplete({
+export default function Autocomplete({
   options,
   value,
   onValueChange,
@@ -282,3 +282,6 @@ export function Autocomplete({
     </div>
   );
 }
+
+// Named export for compatibility
+export { Autocomplete };

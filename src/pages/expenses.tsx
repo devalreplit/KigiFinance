@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +49,12 @@ export default function Expenses() {
         companyService.getAll()
       ]);
 
-      setSaidas(saidasData);
+      // Filtrar apenas saídas normais e parceladas pai (não incluir parcelas filhas)
+      const saidasFiltradas = saidasData.filter(expense => 
+        expense.tipoSaida === 'normal' || expense.tipoSaida === 'parcelada_pai'
+      );
+
+      setSaidas(saidasFiltradas);
       setUsers(usersData);
       setEmpresas(empresasData);
 
@@ -283,9 +287,11 @@ export default function Expenses() {
                         </Badge>
                       </td>
                       <td className="py-4 px-6">
-                        <Badge variant={saida.tipoPagamento === 'parcelado' ? 'default' : 'secondary'} className="text-xs">
-                          {saida.tipoPagamento === 'parcelado' ? 'Parcelado' : 'À Vista'}
-                        </Badge>
+                        <div className="text-xs">
+                            {saida.tipoSaida === "parcelada_pai" && saida.totalParcelas
+                              ? `${saida.totalParcelas}x`
+                              : "À vista"}
+                          </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center justify-between">

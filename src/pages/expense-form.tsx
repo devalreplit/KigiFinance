@@ -415,11 +415,8 @@ export default function ExpenseForm() {
         tipoPagamento: formData.temParcelas ? "parcelado" : "avista",
         usuariosTitularesIds: selectedUsers,
         itens: items,
-        numeroParcelas: formData.temParcelas
+        totalParcelas: formData.temParcelas
           ? formData.quantidadeParcelas
-          : undefined,
-        dataPrimeiraParcela: formData.temParcelas
-          ? formData.dataPrimeiraParcela
           : undefined,
         observacao: formData.observacoes,
       };

@@ -23,7 +23,6 @@ import {
   productService,
   companyService,
   expenseService,
-  installmentService,
 } from "@/service/apiService";
 import {
   Edit3,
@@ -47,7 +46,6 @@ import {
   Saida,
   ItemSaidaInput,
   SaidaInput,
-  Parcela,
 } from "../../../types";
 
 interface ExpenseDetailsModalProps {
@@ -69,7 +67,7 @@ export default function ExpenseDetailsModal({
   const [users, setUsers] = useState<Usuario[]>([]);
   const [companies, setCompanies] = useState<Empresa[]>([]);
   const [products, setProducts] = useState<Produto[]>([]);
-  const [installments, setInstallments] = useState<Parcela[]>([]);
+  const [installments, setInstallments] = useState<Saida[]>([]);
   const [loadingInstallments, setLoadingInstallments] = useState(false);
   const { toast } = useToast();
 
@@ -81,7 +79,6 @@ export default function ExpenseDetailsModal({
     observacoes: "",
     temParcelas: false,
     quantidadeParcelas: 1,
-    dataPrimeiraParcela: new Date().toISOString().split("T")[0],
   });
   const [items, setItems] = useState<ItemSaidaInput[]>([]);
 
@@ -94,7 +91,7 @@ export default function ExpenseDetailsModal({
   useEffect(() => {
     if (expense && users.length > 0) {
       initializeFormData();
-      if (expense.tipoPagamento === 'parcelado') {
+      if (expense.tipoSaida === 'parcelada_pai') {
         loadInstallments();
       }
     }
@@ -123,14 +120,14 @@ export default function ExpenseDetailsModal({
   };
 
   const loadInstallments = async () => {
-    if (!expense || expense.tipoPagamento !== 'parcelado') return;
+    if (!expense || expense.tipoSaida !== 'parcelada_pai') return;
     
     try {
       setLoadingInstallments(true);
-      // Carrega todas as parcelas e filtra as relacionadas a esta saída
-      const allInstallments = await installmentService.getAll();
-      const expenseInstallments = allInstallments.filter(
-        installment => installment.saidaOriginalId === expense.id
+      // Carrega todas as saídas e filtra as parcelas filhas
+      const allExpenses = await expenseService.getAll();
+      const expenseInstallments = allExpenses.filter(
+        saida => saida.saidaPaiId === expense.id
       );
       setInstallments(expenseInstallments);
     } catch (error) {
@@ -152,9 +149,8 @@ export default function ExpenseDetailsModal({
     setFormData({
       empresaId: expense.empresaId.toString(),
       observacoes: expense.observacao || "",
-      temParcelas: expense.tipoPagamento === "parcelado",
-      quantidadeParcelas: expense.numeroParcelas || 1,
-      dataPrimeiraParcela: expense.dataPrimeiraParcela || new Date().toISOString().split("T")[0],
+      temParcelas: expense.tipoSaida === "parcelada_pai",
+      quantidadeParcelas: expense.totalParcelas || 1,
     });
 
     if (expense.itens) {
@@ -297,8 +293,8 @@ export default function ExpenseDetailsModal({
         itens: updatedItems,
         observacao: formData.observacoes,
         tipoPagamento: formData.temParcelas ? "parcelado" : "avista",
-        numeroParcelas: formData.temParcelas ? formData.quantidadeParcelas : undefined,
-        dataPrimeiraParcela: formData.temParcelas ? formData.dataPrimeiraParcela : undefined,
+        tipoSaida: formData.temParcelas ? "parcelada_pai" : "normal",
+        totalParcelas: formData.temParcelas ? formData.quantidadeParcelas : undefined,
         valorTotal: updatedItems.reduce((sum, item) => sum + item.total, 0),
       };
 
@@ -610,13 +606,13 @@ export default function ExpenseDetailsModal({
                 <Label className="font-semibold text-green-800">Tipo de Pagamento</Label>
                 <div className="mt-2">
                   <Badge
-                    variant={expense.tipoPagamento === "parcelado" ? "default" : "secondary"}
+                    variant={expense.tipoSaida === "parcelada_pai" ? "default" : "secondary"}
                   >
-                    {expense.tipoPagamento === "parcelado" ? "Parcelado" : "À Vista"}
+                    {expense.tipoSaida === "parcelada_pai" ? "Parcelado" : "À Vista"}
                   </Badge>
-                  {expense.tipoPagamento === "parcelado" && expense.numeroParcelas && (
+                  {expense.tipoSaida === "parcelada_pai" && expense.totalParcelas && (
                     <span className="ml-2 text-sm text-gray-600">
-                      {expense.numeroParcelas}x de {formatCurrency(expense.valorTotal / expense.numeroParcelas)}
+                      {expense.totalParcelas}x de {formatCurrency(expense.valorTotal / expense.totalParcelas)}
                     </span>
                   )}
                 </div>
@@ -634,7 +630,7 @@ export default function ExpenseDetailsModal({
                     </div>
 
                     {formData.temParcelas && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 gap-4 mt-4">
                         <div>
                           <Label>Quantidade de Parcelas</Label>
                           <Input
@@ -651,20 +647,7 @@ export default function ExpenseDetailsModal({
                             className="mt-1"
                           />
                         </div>
-                        <div>
-                          <Label>Data da Primeira Parcela</Label>
-                          <Input
-                            type="date"
-                            value={formData.dataPrimeiraParcela}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                dataPrimeiraParcela: e.target.value,
-                              }))
-                            }
-                            className="mt-1"
-                          />
-                        </div>
+                        
                       </div>
                     )}
                   </div>
@@ -672,8 +655,8 @@ export default function ExpenseDetailsModal({
               </CardContent>
             </Card>
 
-            {/* Parcelas - Mostrar apenas se for pagamento parcelado */}
-            {expense.tipoPagamento === "parcelado" && (
+            {/* Parcelas - Mostrar apenas se for saída parcelada */}
+            {expense.tipoSaida === "parcelada_pai" && (
               <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-3">
@@ -688,6 +671,33 @@ export default function ExpenseDetailsModal({
                     </div>
                   ) : installments.length > 0 ? (
                     <div className="space-y-3">
+                      {/* Primeira parcela (saída pai) */}
+                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-bold text-green-600">
+                              1
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              Parcela 1
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Vencimento: {new Date(expense.dataSaida).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-green-600">
+                            {formatCurrency(expense.valorTotal)}
+                          </p>
+                          <Badge variant="default" className="text-xs">
+                            Paga
+                          </Badge>
+                        </div>
+                      </div>
+                      {/* Parcelas filhas */}
                       {installments.map((installment) => (
                         <div
                           key={installment.id}
@@ -704,27 +714,27 @@ export default function ExpenseDetailsModal({
                                 Parcela {installment.numeroParcela}
                               </p>
                               <p className="text-xs text-gray-500">
-                                Vencimento: {new Date(installment.dataVencimento).toLocaleDateString('pt-BR')}
+                                Vencimento: {new Date(installment.dataSaida).toLocaleDateString('pt-BR')}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold text-green-600">
-                              {formatCurrency(installment.valorParcela)}
+                              {formatCurrency(installment.valorTotal)}
                             </p>
                             <Badge
                               variant={
-                                installment.status === 'paga' 
+                                new Date(installment.dataSaida) <= new Date() 
                                   ? 'default' 
-                                  : installment.status === 'vencida' 
+                                  : new Date(installment.dataSaida) < new Date() 
                                   ? 'destructive' 
                                   : 'secondary'
                               }
                               className="text-xs"
                             >
-                              {installment.status === 'paga' 
+                              {new Date(installment.dataSaida) <= new Date() 
                                 ? 'Paga' 
-                                : installment.status === 'vencida' 
+                                : new Date(installment.dataSaida) < new Date() 
                                 ? 'Vencida' 
                                 : 'A Vencer'}
                             </Badge>

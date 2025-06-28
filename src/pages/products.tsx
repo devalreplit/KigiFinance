@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 import { productService } from "@/service/apiService";
-import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
 import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Produto | undefined>(undefined);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Produto | null>(null);
-  const { toast } = useToast();
+  
 
   const loadProducts = async () => {
     try {

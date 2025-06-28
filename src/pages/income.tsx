@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
 import { userService, companyService, incomeService } from "@/service/apiService";
 import IncomeModal from "@/components/modals/income-modal";
 import { Plus, DollarSign, Loader2, TrendingUp, Search, Calendar } from "lucide-react";
@@ -27,7 +27,7 @@ export default function Income() {
     ano: new Date().getFullYear()
   });
   
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     loadData();

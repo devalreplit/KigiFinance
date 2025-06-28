@@ -34,11 +34,11 @@ export default function Expenses() {
   const [users, setUsers] = useState<Usuario[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Estados para modal de detalhes
   const [selectedExpense, setSelectedExpense] = useState<Saida | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  
+
   // Hook de navegação
   const [, setLocation] = useLocation();
 
@@ -50,7 +50,7 @@ export default function Expenses() {
     ano: new Date().getFullYear()
   });
 
-  const { toast } = useToast();
+  const { toast, toastSuccess, toastError } = useToast();
 
   /**
    * EFFECT HOOK - INICIALIZAÇÃO DA PÁGINA EXPENSES
@@ -110,10 +110,9 @@ export default function Expenses() {
       setPeriodoAtual({ mes: mesParam, ano: anoParam });
 
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao carregar dados",
         description: "Não foi possível carregar as informações",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -138,10 +137,9 @@ export default function Expenses() {
     const ano = parseInt(anoConsulta);
 
     if (!mes || !ano || mes < 1 || mes > 12 || ano < 2020 || ano > 2030) {
-      toast({
+      toastError({
         title: "Período inválido",
         description: "Por favor, informe um mês (1-12) e ano válidos",
-        variant: "destructive",
       });
       return;
     }
@@ -296,8 +294,8 @@ export default function Expenses() {
   const handleExpenseDeleted = () => {
     // Recarregar dados após exclusão
     loadData(periodoAtual.mes, periodoAtual.ano);
-    toast({
-      title: "Saída excluída",
+    toastSuccess({
+      title: "Sucesso!",
       description: "A saída foi excluída com sucesso",
     });
   };
@@ -503,7 +501,7 @@ export default function Expenses() {
               onClick={() => handleViewExpenseDetails(saida)}
             >
               <CardContent className="p-4">
-                
+
                 <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -522,18 +520,18 @@ export default function Expenses() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {formatDate(saida.dataSaida)}
                         </p>
-                        
+
                       </div>
                       <div className="text-right">
                         <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium">
                           {formatCurrency(saida.valorTotal)}
                         </Badge>
-                        
+
                       </div>
                     </div>
 
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                  
+
                   <div className="flex justify-between">
                     <span className="font-medium">Registrado em:</span>
                     <span className="text-xs">{formatDate(saida.dataHoraRegistro)}</span>

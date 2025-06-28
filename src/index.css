@@ -3,28 +3,43 @@
 @tailwind utilities;
 
 /* Toast styles for consistent colors */
-.toast-success {
+.toast-success,
+[data-state="open"][data-variant="success"],
+[data-radix-toast][data-variant="success"] {
   background-color: #16a34a !important;
   color: white !important;
   border: 1px solid #15803d !important;
 }
 
-.toast-error {
+.toast-error,
+[data-state="open"][data-variant="destructive"],
+[data-radix-toast][data-variant="destructive"] {
   background-color: #dc2626 !important;
   color: white !important;
   border: 1px solid #b91c1c !important;
 }
 
-.toast-warning {
+.toast-warning,
+[data-state="open"][data-variant="warning"],
+[data-radix-toast][data-variant="warning"] {
   background-color: #d97706 !important;
   color: white !important;
   border: 1px solid #b45309 !important;
 }
 
-.toast-info {
+.toast-info,
+[data-state="open"][data-variant="info"],
+[data-radix-toast][data-variant="info"] {
   background-color: #2563eb !important;
   color: white !important;
   border: 1px solid #1d4ed8 !important;
+}
+
+/* Override any default toast styles */
+[data-radix-toast-viewport] [data-radix-toast] {
+  background: inherit !important;
+  color: inherit !important;
+  border: inherit !important;
 }
 
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
 import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { userService } from "@/service/apiService";
 import UserModal from "@/components/modals/user-modal";
@@ -19,7 +19,7 @@ export default function Users() {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Usuario | null>(null);
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     loadUsers();

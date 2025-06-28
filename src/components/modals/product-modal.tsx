@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { productService } from "@/service/apiService";
 import { QrCode } from "lucide-react";
@@ -19,7 +19,7 @@ interface ProductModalProps {
 }
 
 export default function ProductModal({ open, onClose, product, onSuccess }: ProductModalProps) {
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   

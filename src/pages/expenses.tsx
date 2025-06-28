@@ -140,6 +140,15 @@ export default function Expenses() {
     loadData(periodoAtual.mes, periodoAtual.ano);
   };
 
+  const handleExpenseDeleted = () => {
+    // Recarregar dados após exclusão
+    loadData(periodoAtual.mes, periodoAtual.ano);
+    toast({
+      title: "Saída excluída",
+      description: "A saída foi excluída com sucesso",
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -418,6 +427,7 @@ export default function Expenses() {
         onClose={handleCloseDetailsModal}
         expense={selectedExpense}
         onExpenseUpdated={handleExpenseUpdated}
+        onExpenseDeleted={handleExpenseDeleted}
       />
     </div>
   );

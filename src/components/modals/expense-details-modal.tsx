@@ -2,57 +2,40 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Autocomplete, AutocompleteOption } from "@/components/ui/autocomplete";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatCurrency } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import {
-  userService,
-  productService,
-  companyService,
-  expenseService,
-} from "@/service/apiService";
-import {
-  Edit3,
-  Save,
-  X,
-  Plus,
-  Trash2,
-  ShoppingCart,
-  Calendar,
-  Users,
-  Building2,
-  DollarSign,
-  Package,
-  Eye,
+import { userService, companyService, productService, expenseService } from "@/service/apiService";
+import { formatCurrency } from "@/lib/utils";
+import Autocomplete, { AutocompleteOption } from "@/components/ui/autocomplete";
+import { 
+  Calendar, 
+  Edit, 
+  Save, 
+  X, 
+  Trash2, 
+  Users, 
+  Building, 
+  ShoppingCart, 
+  Plus, 
+  Minus,
   Loader2,
+  AlertTriangle
 } from "lucide-react";
-import {
-  Usuario,
-  Produto,
-  Empresa,
-  Saida,
-  ItemSaidaInput,
-  SaidaInput,
-} from "../../../types";
+import { Usuario, Empresa, Produto, Saida, ItemSaidaInput } from "../../../types";
 
 interface ExpenseDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   expense: Saida | null;
   onExpenseUpdated: () => void;
+  onExpenseDeleted?: () => void;
 }
 
 export default function ExpenseDetailsModal({
@@ -60,25 +43,28 @@ export default function ExpenseDetailsModal({
   onClose,
   expense,
   onExpenseUpdated,
+  onExpenseDeleted,
 }: ExpenseDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
   const [users, setUsers] = useState<Usuario[]>([]);
   const [companies, setCompanies] = useState<Empresa[]>([]);
   const [products, setProducts] = useState<Produto[]>([]);
   const [installments, setInstallments] = useState<Saida[]>([]);
   const [loadingInstallments, setLoadingInstallments] = useState(false);
+  
   const { toast } = useToast();
 
   // Estados para edição
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-  const [showObservacao, setShowObservacao] = useState(false);
   const [formData, setFormData] = useState({
     empresaId: "",
-    observacoes: "",
-    temParcelas: false,
-    quantidadeParcelas: 1,
+    observacao: "",
+    totalParcelas: 1,
   });
   const [items, setItems] = useState<ItemSaidaInput[]>([]);
 
@@ -124,11 +110,10 @@ export default function ExpenseDetailsModal({
     
     try {
       setLoadingInstallments(true);
-      // Carrega todas as saídas e filtra as parcelas filhas
       const allExpenses = await expenseService.getAll();
       const expenseInstallments = allExpenses.filter(
         saida => saida.saidaPaiId === expense.id
-      );
+      ).sort((a, b) => a.numeroParcela - b.numeroParcela);
       setInstallments(expenseInstallments);
     } catch (error) {
       console.error('Erro ao carregar parcelas:', error);
@@ -148,127 +133,149 @@ export default function ExpenseDetailsModal({
     setSelectedUsers(expense.usuariosTitularesIds || []);
     setFormData({
       empresaId: expense.empresaId.toString(),
-      observacoes: expense.observacao || "",
-      temParcelas: expense.tipoSaida === "parcelada_pai",
-      quantidadeParcelas: expense.totalParcelas || 1,
+      observacao: expense.observacao || "",
+      totalParcelas: expense.totalParcelas || 1,
     });
-
-    if (expense.itens) {
-      setItems(
-        expense.itens.map((item) => ({
-          produtoId: item.produtoId,
-          quantidade: item.quantidade,
-          precoUnitario: item.precoUnitario,
-        }))
-      );
-    }
-
-    setShowObservacao(Boolean(expense.observacao));
-  };
-
-  const getProductName = (produtoId: number) => {
-    const product = products.find(p => p.id === produtoId);
-    return product?.nome || `Produto ID: ${produtoId}`;
-  };
-
-  const getTitularesNames = (usuariosTitularesIds: number[]) => {
-    const titulares = users.filter((u) => usuariosTitularesIds.includes(u.id));
-    return titulares.map((t) => t.nome).join(", ") || "Usuários não encontrados";
-  };
-
-  const getEmpresaName = (empresaId: number) => {
-    const empresa = companies.find((e) => e.id === empresaId);
-    return empresa?.nome || "Empresa não encontrada";
+    setItems(expense.itens.map(item => ({
+      produtoId: item.produtoId,
+      quantidade: item.quantidade,
+      precoUnitario: item.precoUnitario,
+    })));
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR");
+    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  const handleEditToggle = () => {
-    if (isEditing) {
-      // Cancelar edição - restaurar dados originais
-      initializeFormData();
-    }
-    setIsEditing(!isEditing);
+  const getUserNames = (userIds: number[]) => {
+    const userNames = users.filter(u => userIds.includes(u.id)).map(u => u.nome);
+    return userNames.length > 0 ? userNames.join(', ') : 'Usuários não encontrados';
   };
 
-  const toggleUserSelection = (userId: number) => {
-    setSelectedUsers((prev) => {
-      const newSelection = prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId];
-
-      if (newSelection.length === 0) {
-        setFormData((prevForm) => ({ ...prevForm, empresaId: "" }));
-      }
-
-      return newSelection;
-    });
+  const getCompanyName = (companyId: number) => {
+    const company = companies.find(c => c.id === companyId);
+    return company?.nome || 'Empresa não encontrada';
   };
 
-  const toggleFamiliaSelection = () => {
-    const allUserIds = users.map((user) => user.id);
-    if (selectedUsers.length === allUserIds.length) {
-      setSelectedUsers([]);
-      setFormData((prev) => ({ ...prev, empresaId: "" }));
-    } else {
-      setSelectedUsers(allUserIds);
-    }
+  const getProductName = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    return product?.nome || 'Produto não encontrado';
   };
 
   const addItem = () => {
-    if (!formData.empresaId) {
-      toast({
-        title: "Selecione uma empresa",
-        description: "Primeiro selecione uma empresa antes de adicionar itens",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
 
-  const removeItem = (index: number) => {
-    if (items.length > 1) {
-      const newItems = items.filter((_, i) => i !== index);
-      setItems(newItems);
-    }
-  };
-
-  const updateItem = (
-    index: number,
-    field: keyof ItemSaidaInput,
-    value: any
-  ) => {
+  const updateItem = (index: number, field: keyof ItemSaidaInput, value: number) => {
     const newItems = [...items];
-
-    if (field === "produtoId" && value !== 0) {
-      const productExistsInOtherItems = items.some(
-        (item, i) =>
-          i !== index && item.produtoId === value && item.produtoId !== 0
-      );
-
-      if (productExistsInOtherItems) {
-        toast({
-          title: "Produto já está na lista",
-          description: "Produto já está na lista, altere a quantidade",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
 
+  const removeItem = (index: number) => {
+    if (items.length > 1) {
+      setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
   const calculateTotal = () => {
-    return items.reduce(
-      (sum, item) => sum + item.quantidade * item.precoUnitario,
-      0
-    );
+    return items.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0);
+  };
+
+  const handleAddInstallment = async () => {
+    if (!expense || expense.tipoSaida !== 'parcelada_pai') return;
+
+    try {
+      setSaving(true);
+      const novoNumero = Math.max(...installments.map(i => i.numeroParcela), expense.numeroParcela) + 1;
+      const valorParcela = expense.valorTotal;
+      
+      // Calcular data da nova parcela (próximo mês da última parcela)
+      const ultimaParcela = installments.length > 0 
+        ? installments[installments.length - 1] 
+        : expense;
+      const dataUltima = new Date(ultimaParcela.dataSaida);
+      const novaData = new Date(dataUltima);
+      novaData.setMonth(novaData.getMonth() + 1);
+
+      const novaParcela = {
+        saidaPaiId: expense.id,
+        tipoSaida: 'parcela' as const,
+        numeroParcela: novoNumero,
+        usuarioRegistroId: expense.usuarioRegistroId,
+        dataSaida: novaData.toISOString().split('T')[0],
+        empresaId: expense.empresaId,
+        tipoPagamento: expense.tipoPagamento,
+        usuariosTitularesIds: expense.usuariosTitularesIds,
+        itens: [],
+        observacao: `Parcela ${novoNumero}/${(expense.totalParcelas || 1) + 1}`,
+      };
+
+      await expenseService.create(novaParcela);
+      
+      // Atualizar total de parcelas da saída pai
+      await expenseService.update(expense.id, {
+        totalParcelas: (expense.totalParcelas || 1) + 1
+      });
+
+      toast({
+        title: "Parcela adicionada",
+        description: "Nova parcela criada com sucesso",
+      });
+
+      loadInstallments();
+      onExpenseUpdated();
+    } catch (error) {
+      toast({
+        title: "Erro ao adicionar parcela",
+        description: "Não foi possível adicionar a nova parcela",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemoveInstallment = async () => {
+    if (!expense || expense.tipoSaida !== 'parcelada_pai' || installments.length === 0) return;
+
+    try {
+      setSaving(true);
+      const ultimaParcela = installments[installments.length - 1];
+      
+      // Verificar se a parcela já foi paga (data já passou)
+      if (new Date(ultimaParcela.dataSaida) <= new Date()) {
+        toast({
+          title: "Não é possível remover",
+          description: "Não é possível remover uma parcela que já venceu",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await expenseService.delete(ultimaParcela.id);
+      
+      // Atualizar total de parcelas da saída pai
+      await expenseService.update(expense.id, {
+        totalParcelas: Math.max(1, (expense.totalParcelas || 1) - 1)
+      });
+
+      toast({
+        title: "Parcela removida",
+        description: "Parcela removida com sucesso",
+      });
+
+      loadInstallments();
+      onExpenseUpdated();
+    } catch (error) {
+      toast({
+        title: "Erro ao remover parcela",
+        description: "Não foi possível remover a parcela",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSave = async () => {
@@ -277,25 +284,51 @@ export default function ExpenseDetailsModal({
     try {
       setSaving(true);
 
-      // Converter itens para o formato correto incluindo nomeProduto e total
-      const updatedItems = items.map(item => {
-        const product = products.find(p => p.id === item.produtoId);
-        return {
-          ...item,
-          nomeProduto: product?.nome || 'Produto não encontrado',
-          total: item.quantidade * item.precoUnitario,
-        };
-      });
+      // Validações
+      if (selectedUsers.length === 0) {
+        toast({
+          title: "Erro de validação",
+          description: "Selecione pelo menos um responsável",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      const updatedExpenseData: Partial<Saida> = {
+      if (!formData.empresaId) {
+        toast({
+          title: "Erro de validação",
+          description: "Selecione uma empresa",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (items.length === 0 || items.some(item => item.produtoId === 0 || item.quantidade <= 0 || item.precoUnitario <= 0)) {
+        toast({
+          title: "Erro de validação",
+          description: "Todos os itens devem ter produto, quantidade e preço válidos",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const valorTotal = calculateTotal();
+
+      const updatedExpenseData = {
         empresaId: parseInt(formData.empresaId),
         usuariosTitularesIds: selectedUsers,
-        itens: updatedItems,
-        observacao: formData.observacoes,
-        tipoPagamento: formData.temParcelas ? "parcelado" : "avista",
-        tipoSaida: formData.temParcelas ? "parcelada_pai" : "normal",
-        totalParcelas: formData.temParcelas ? formData.quantidadeParcelas : undefined,
-        valorTotal: updatedItems.reduce((sum, item) => sum + item.total, 0),
+        observacao: formData.observacao,
+        valorTotal: valorTotal,
+        itens: items.map(item => {
+          const product = products.find(p => p.id === item.produtoId);
+          return {
+            produtoId: item.produtoId,
+            nomeProduto: product?.nome || 'Produto não encontrado',
+            quantidade: item.quantidade,
+            precoUnitario: item.precoUnitario,
+            total: item.quantidade * item.precoUnitario,
+          };
+        }),
       };
 
       await expenseService.update(expense.id, updatedExpenseData);
@@ -310,12 +343,45 @@ export default function ExpenseDetailsModal({
     } catch (error: any) {
       toast({
         title: "Erro ao atualizar saída",
-        description:
-          error.response?.data?.message || "Não foi possível atualizar a saída",
+        description: error.response?.data?.message || "Não foi possível atualizar a saída",
         variant: "destructive",
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!expense || !onExpenseDeleted) return;
+
+    try {
+      setDeleting(true);
+
+      // Se for saída parcelada, deletar também as parcelas filhas
+      if (expense.tipoSaida === 'parcelada_pai') {
+        for (const installment of installments) {
+          await expenseService.delete(installment.id);
+        }
+      }
+
+      await expenseService.delete(expense.id);
+
+      toast({
+        title: "Saída excluída",
+        description: "Saída e todas as parcelas relacionadas foram excluídas com sucesso",
+      });
+
+      setShowDeleteDialog(false);
+      onClose();
+      onExpenseDeleted();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir saída",
+        description: error.response?.data?.message || "Não foi possível excluir a saída",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -328,475 +394,415 @@ export default function ExpenseDetailsModal({
   if (!expense) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <ShoppingCart className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
-              <span>
-                {isEditing ? "Editar Saída" : "Detalhes da Saída"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {!isEditing ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEditToggle}
-                  className="text-green-600 border-green-600 hover:bg-green-50"
-                >
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Editar
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEditToggle}
-                    disabled={saving}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvar
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </div>
-          </DialogTitle>
-        </DialogHeader>
-
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Informações Básicas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Calendar className="h-4 w-4 text-green-600" />
-                    <Label className="font-semibold text-green-800">Data da Saída</Label>
-                  </div>
-                  <p className="text-lg">{formatDate(expense.dataSaida)}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    <Label className="font-semibold text-green-800">Valor Total</Label>
-                  </div>
-                  <p className="text-lg font-bold text-green-600">
-                    {isEditing ? formatCurrency(calculateTotal()) : formatCurrency(expense.valorTotal)}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Responsáveis */}
-            <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Users className="h-4 w-4 text-green-600" />
-                  <Label className="font-semibold text-green-800">Responsáveis</Label>
-                </div>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Detalhes da Saída</span>
+              <div className="flex gap-2">
                 {!isEditing ? (
-                  <p>{getTitularesNames(expense.usuariosTitularesIds)}</p>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
-                      {users.map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex items-center space-x-3 p-2 bg-white dark:bg-gray-800 rounded-lg border border-green-100"
-                        >
-                          <Checkbox
-                            checked={selectedUsers.includes(user.id)}
-                            onCheckedChange={() => toggleUserSelection(user.id)}
-                            className="w-4 h-4"
-                          />
-                          <Label className="cursor-pointer text-sm font-medium">
-                            {user.nome}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex justify-center">
-                      <div className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-green-100">
-                        <Checkbox
-                          checked={selectedUsers.length === users.length && users.length > 0}
-                          onCheckedChange={toggleFamiliaSelection}
-                          className="w-4 h-4"
-                        />
-                        <Label className="font-semibold text-green-600 cursor-pointer">
-                          👨‍👩‍👧‍👦 Família
-                        </Label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Empresa */}
-            <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Building2 className="h-4 w-4 text-green-600" />
-                  <Label className="font-semibold text-green-800">Empresa</Label>
-                </div>
-                {!isEditing ? (
-                  <p>{getEmpresaName(expense.empresaId)}</p>
-                ) : (
-                  <Select
-                    value={formData.empresaId}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, empresaId: value }))
-                    }
-                    disabled={selectedUsers.length === 0}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a empresa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id.toString()}>
-                          {company.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Itens */}
-            <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-green-600" />
-                    <Label className="font-semibold text-green-800">Itens da Compra</Label>
-                  </div>
-                  {isEditing && (
+                  <>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={addItem}
-                      className="bg-green-500 text-white hover:bg-green-600"
+                      onClick={() => setIsEditing(true)}
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Adicionar Item
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
                     </Button>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  {(isEditing ? items : expense.itens || []).map((item, index) => (
-                    <div
-                      key={index}
-                      className="grid grid-cols-1 sm:grid-cols-12 gap-4 p-4 border rounded-lg bg-white"
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="text-red-600 border-red-600 hover:bg-red-50"
                     >
-                      {isEditing && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeItem(index)}
-                          className="absolute top-2 right-2 text-red-600 hover:text-red-700"
-                          disabled={items.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing(false);
+                        initializeFormData();
+                      }}
+                      disabled={saving}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {saving ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
                       )}
-
-                      <div className="sm:col-span-5">
-                        <Label className="text-sm font-medium">Produto</Label>
-                        {!isEditing ? (
-                          <p className="mt-1">{getProductName(item.produtoId)}</p>
-                        ) : (
-                          <Autocomplete
-                            options={productOptions}
-                            value={item.produtoId > 0 ? item.produtoId.toString() : ""}
-                            onValueChange={(value) =>
-                              updateItem(index, "produtoId", parseInt(value) || 0)
-                            }
-                            placeholder="Digite o nome do produto..."
-                            className="mt-1"
-                          />
-                        )}
-                      </div>
-
-                      <div className="sm:col-span-3">
-                        <Label className="text-sm font-medium">Quantidade</Label>
-                        {!isEditing ? (
-                          <p className="mt-1">{item.quantidade}</p>
-                        ) : (
-                          <Input
-                            type="number"
-                            value={item.quantidade}
-                            onChange={(e) =>
-                              updateItem(index, "quantidade", parseInt(e.target.value) || 0)
-                            }
-                            className="mt-1"
-                            min="1"
-                            max="20"
-                          />
-                        )}
-                      </div>
-
-                      <div className="sm:col-span-3">
-                        <Label className="text-sm font-medium">Preço Unitário</Label>
-                        {!isEditing ? (
-                          <p className="mt-1">{formatCurrency(item.precoUnitario)}</p>
-                        ) : (
-                          <Input
-                            type="text"
-                            value={formatCurrency(item.precoUnitario).replace("R$", "").trim()}
-                            onChange={(e) => {
-                              const numericValue = e.target.value.replace(/\D/g, "");
-                              const valueInReais = parseInt(numericValue || "0") / 100;
-                              updateItem(index, "precoUnitario", valueInReais);
-                            }}
-                            className="mt-1"
-                            placeholder="0,00"
-                          />
-                        )}
-                      </div>
-
-                      <div className="sm:col-span-1">
-                        <Label className="text-sm font-medium">Total</Label>
-                        <p className="mt-1 font-semibold text-green-600">
-                          {formatCurrency(item.quantidade * item.precoUnitario)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tipo de Pagamento */}
-            <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-              <CardContent className="p-4">
-                <Label className="font-semibold text-green-800">Tipo de Pagamento</Label>
-                <div className="mt-2">
-                  <Badge
-                    variant={expense.tipoSaida === "parcelada_pai" ? "default" : "secondary"}
-                  >
-                    {expense.tipoSaida === "parcelada_pai" ? "Parcelado" : "À Vista"}
-                  </Badge>
-                  {expense.tipoSaida === "parcelada_pai" && expense.totalParcelas && (
-                    <span className="ml-2 text-sm text-gray-600">
-                      {expense.totalParcelas}x de {formatCurrency(expense.valorTotal / expense.totalParcelas)}
-                    </span>
-                  )}
-                </div>
-
-                {isEditing && (
-                  <div className="mt-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={formData.temParcelas}
-                        onCheckedChange={(checked) =>
-                          setFormData((prev) => ({ ...prev, temParcelas: !!checked }))
-                        }
-                      />
-                      <Label>Pagamento Parcelado</Label>
-                    </div>
-
-                    {formData.temParcelas && (
-                      <div className="grid grid-cols-1 gap-4 mt-4">
-                        <div>
-                          <Label>Quantidade de Parcelas</Label>
-                          <Input
-                            type="number"
-                            value={formData.quantidadeParcelas}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                quantidadeParcelas: parseInt(e.target.value) || 1,
-                              }))
-                            }
-                            min="1"
-                            max="60"
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                      </div>
-                    )}
-                  </div>
+                      Salvar
+                    </Button>
+                  </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
 
-            {/* Parcelas - Mostrar apenas se for saída parcelada */}
-            {expense.tipoSaida === "parcelada_pai" && (
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin mr-2" />
+              <span>Carregando dados...</span>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Informações Básicas */}
+              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="font-semibold text-green-800">Data da Saída</Label>
+                      <p className="text-sm mt-1">{formatDate(expense.dataSaida)}</p>
+                    </div>
+                    <div>
+                      <Label className="font-semibold text-green-800">Valor Total</Label>
+                      <p className="text-lg font-bold text-green-600 mt-1">
+                        {formatCurrency(isEditing ? calculateTotal() : expense.valorTotal)}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="font-semibold text-green-800">Tipo de Pagamento</Label>
+                      <div className="mt-1">
+                        <Badge variant={expense.tipoSaida === "parcelada_pai" ? "default" : "secondary"}>
+                          {expense.tipoSaida === "parcelada_pai" ? "Parcelado" : "À Vista"}
+                        </Badge>
+                        {expense.tipoSaida === "parcelada_pai" && expense.totalParcelas && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {expense.totalParcelas}x de {formatCurrency(expense.valorTotal)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="font-semibold text-green-800">Registrado em</Label>
+                      <p className="text-sm mt-1">{formatDate(expense.dataHoraRegistro)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Empresa */}
               <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <Calendar className="h-4 w-4 text-green-600" />
-                    <Label className="font-semibold text-green-800">Parcelas</Label>
+                    <Building className="h-4 w-4 text-green-600" />
+                    <Label className="font-semibold text-green-800">Empresa</Label>
                   </div>
                   
-                  {loadingInstallments ? (
-                    <div className="flex justify-center items-center py-4">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span className="text-sm">Carregando parcelas...</span>
+                  {isEditing ? (
+                    <Select value={formData.empresaId} onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma empresa" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id.toString()}>
+                            {company.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm">{getCompanyName(expense.empresaId)}</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Responsáveis */}
+              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Users className="h-4 w-4 text-green-600" />
+                    <Label className="font-semibold text-green-800">Responsáveis</Label>
+                  </div>
+                  
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      {users.map((user) => (
+                        <div key={user.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedUsers.includes(user.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedUsers([...selectedUsers, user.id]);
+                              } else {
+                                setSelectedUsers(selectedUsers.filter(id => id !== user.id));
+                              }
+                            }}
+                          />
+                          <Label className="cursor-pointer">{user.nome}</Label>
+                        </div>
+                      ))}
                     </div>
-                  ) : installments.length > 0 ? (
-                    <div className="space-y-3">
-                      {/* Primeira parcela (saída pai) */}
-                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100">
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-bold text-green-600">
-                              1
-                            </span>
+                  ) : (
+                    <p className="text-sm">{getUserNames(expense.usuariosTitularesIds)}</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Itens da Compra */}
+              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4 text-green-600" />
+                      <Label className="font-semibold text-green-800">Itens da Compra</Label>
+                    </div>
+                    {isEditing && (
+                      <Button variant="outline" size="sm" onClick={addItem}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar Item
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    {isEditing ? (
+                      items.map((item, index) => (
+                        <div key={index} className="flex gap-2 items-end p-3 bg-white rounded border">
+                          <div className="flex-1">
+                            <Label className="text-xs">Produto</Label>
+                            <Autocomplete
+                              options={productOptions}
+                              value={item.produtoId.toString()}
+                              onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value))}
+                              placeholder="Selecione um produto"
+                            />
                           </div>
+                          <div className="w-24">
+                            <Label className="text-xs">Qtd</Label>
+                            <Input
+                              type="number"
+                              value={item.quantidade}
+                              onChange={(e) => updateItem(index, 'quantidade', parseFloat(e.target.value) || 0)}
+                              min="0"
+                              step="0.1"
+                            />
+                          </div>
+                          <div className="w-32">
+                            <Label className="text-xs">Preço Unit.</Label>
+                            <Input
+                              type="number"
+                              value={item.precoUnitario}
+                              onChange={(e) => updateItem(index, 'precoUnitario', parseFloat(e.target.value) || 0)}
+                              min="0"
+                              step="0.01"
+                            />
+                          </div>
+                          <div className="w-32">
+                            <Label className="text-xs">Total</Label>
+                            <div className="p-2 bg-gray-50 rounded text-sm font-medium">
+                              {formatCurrency(item.quantidade * item.precoUnitario)}
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                            disabled={items.length === 1}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      expense.itens.map((item, index) => (
+                        <div key={index} className="flex justify-between items-center p-3 bg-white rounded border">
                           <div>
-                            <p className="text-sm font-medium">
-                              Parcela 1
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Vencimento: {new Date(expense.dataSaida).toLocaleDateString('pt-BR')}
+                            <p className="font-medium">{item.nomeProduto}</p>
+                            <p className="text-sm text-gray-600">
+                              {item.quantidade} × {formatCurrency(item.precoUnitario)}
                             </p>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(expense.valorTotal)}
+                          <p className="font-bold text-green-600">
+                            {formatCurrency(item.total)}
                           </p>
-                          <Badge variant="default" className="text-xs">
-                            Paga
-                          </Badge>
                         </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Parcelas - Apenas para saídas parceladas */}
+              {expense.tipoSaida === "parcelada_pai" && (
+                <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-green-600" />
+                        <Label className="font-semibold text-green-800">Parcelas</Label>
                       </div>
-                      {/* Parcelas filhas */}
-                      {installments.map((installment) => (
-                        <div
-                          key={installment.id}
-                          className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100"
-                        >
+                      {isEditing && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRemoveInstallment}
+                            disabled={saving || installments.length === 0}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Minus className="h-4 w-4 mr-2" />
+                            Remover Parcela
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddInstallment}
+                            disabled={saving}
+                            className="text-green-600 border-green-300 hover:bg-green-50"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Adicionar Parcela
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {loadingInstallments ? (
+                      <div className="flex justify-center items-center py-4">
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <span className="text-sm">Carregando parcelas...</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* Primeira parcela (saída pai) */}
+                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100">
                           <div className="flex items-center gap-3">
                             <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                              <span className="text-xs font-bold text-green-600">
-                                {installment.numeroParcela}
-                              </span>
+                              <span className="text-xs font-bold text-green-600">1</span>
                             </div>
                             <div>
-                              <p className="text-sm font-medium">
-                                Parcela {installment.numeroParcela}
-                              </p>
+                              <p className="text-sm font-medium">Parcela 1</p>
                               <p className="text-xs text-gray-500">
-                                Vencimento: {new Date(installment.dataSaida).toLocaleDateString('pt-BR')}
+                                Vencimento: {formatDate(expense.dataSaida)}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold text-green-600">
-                              {formatCurrency(installment.valorTotal)}
+                              {formatCurrency(expense.valorTotal)}
                             </p>
-                            <Badge
-                              variant={
-                                new Date(installment.dataSaida) <= new Date() 
-                                  ? 'default' 
-                                  : new Date(installment.dataSaida) < new Date() 
-                                  ? 'destructive' 
-                                  : 'secondary'
-                              }
-                              className="text-xs"
-                            >
-                              {new Date(installment.dataSaida) <= new Date() 
-                                ? 'Paga' 
-                                : new Date(installment.dataSaida) < new Date() 
-                                ? 'Vencida' 
-                                : 'A Vencer'}
-                            </Badge>
+                            <Badge variant="default" className="text-xs">Paga</Badge>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      Nenhuma parcela encontrada para esta saída.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Observações */}
-            {(expense.observacao || isEditing) && (
+                        {/* Parcelas filhas */}
+                        {installments.map((installment) => (
+                          <div key={installment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-bold text-green-600">
+                                  {installment.numeroParcela}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">
+                                  Parcela {installment.numeroParcela}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Vencimento: {formatDate(installment.dataSaida)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-green-600">
+                                {formatCurrency(installment.valorTotal)}
+                              </p>
+                              <Badge
+                                variant={
+                                  new Date(installment.dataSaida) <= new Date() 
+                                    ? 'default' 
+                                    : 'secondary'
+                                }
+                                className="text-xs"
+                              >
+                                {new Date(installment.dataSaida) <= new Date() ? 'Paga' : 'A vencer'}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Observações */}
               <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <Label className="font-semibold text-green-800">Observações</Label>
-                    {isEditing && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowObservacao(!showObservacao)}
-                      >
-                        {showObservacao ? <Eye className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
-                      </Button>
-                    )}
-                  </div>
-                  {!isEditing ? (
-                    <p>{expense.observacao || "Nenhuma observação"}</p>
+                  <Label className="font-semibold text-green-800">Observações</Label>
+                  {isEditing ? (
+                    <Textarea
+                      value={formData.observacao}
+                      onChange={(e) => setFormData(prev => ({ ...prev, observacao: e.target.value }))}
+                      placeholder="Digite observações sobre esta saída..."
+                      className="mt-2"
+                    />
                   ) : (
-                    showObservacao && (
-                      <Textarea
-                        value={formData.observacoes}
-                        onChange={(e) =>
-                          setFormData((prev) => ({ ...prev, observacoes: e.target.value }))
-                        }
-                        placeholder="Observações adicionais..."
-                        rows={3}
-                      />
-                    )
+                    <p className="text-sm mt-2">{expense.observacao || "Nenhuma observação"}</p>
                   )}
                 </CardContent>
               </Card>
-            )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-            {/* Data de Registro */}
-            <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-              <CardContent className="p-4">
-                <Label className="font-semibold text-green-800">Registrado em</Label>
-                <p className="mt-1 text-sm text-gray-600">
-                  {formatDate(expense.dataHoraRegistro)}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {expense?.tipoSaida === 'parcelada_pai' 
+                ? `Esta ação irá excluir a saída parcelada e todas as ${installments.length} parcelas relacionadas. Esta ação não pode ser desfeita.`
+                : 'Esta ação irá excluir a saída permanentemente. Esta ação não pode ser desfeita.'
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

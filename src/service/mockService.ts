@@ -252,63 +252,105 @@ const generateInitialIncomes = (): Entrada[] => {
 
 const initialIncomes: Entrada[] = generateInitialIncomes();
 
-const initialExpenses: Saida[] = [
-  // Saída à vista
-  {
-    id: 1,
-    tipoSaida: 'normal',
-    numeroParcela: 1,
-    usuarioRegistroId: 1,
-    dataHoraRegistro: '2024-01-16T15:45:00.000Z',
-    dataSaida: '2024-01-16',
-    empresaId: 1,
-    tipoPagamento: 'avista',
-    usuariosTitularesIds: [1, 2],
-    itens: [
-      {
-        produtoId: 1,
-        nomeProduto: 'Arroz Integral 5kg',
-        quantidade: 2,
-        precoUnitario: 15.99,
-        total: 31.98,
-      },
-      {
-        produtoId: 2,
-        nomeProduto: 'Feijão Preto 1kg',
-        quantidade: 3,
-        precoUnitario: 8.50,
-        total: 25.50,
-      },
-    ],
-    valorTotal: 57.48,
-    observacao: 'Compras do mês',
-  },
+// Gerar saídas para o mês corrente dinamicamente
+const generateInitialExpenses = (): Saida[] => {
+  const hoje = new Date();
+  const mesCorrente = hoje.getMonth() + 1;
+  const anoCorrente = hoje.getFullYear();
 
-  // Saída parcelada - 1ª parcela (saída pai)
-  {
-    id: 2,
-    tipoSaida: 'parcelada_pai',
-    numeroParcela: 1,
-    totalParcelas: 3,
-    usuarioRegistroId: 1,
-    dataHoraRegistro: '2024-01-20T10:30:00.000Z',
-    dataSaida: '2024-01-20',
-    empresaId: 2,
-    tipoPagamento: 'parcelado',
-    usuariosTitularesIds: [1],
-    itens: [
-      {
-        produtoId: 3,
-        nomeProduto: 'Óleo de Soja 900ml',
-        quantidade: 10,
-        precoUnitario: 15.00,
-        total: 150.00,
-      },
-    ],
-    valorTotal: 150.00,
-    observacao: 'Compra parcelada em 3x',
-  },
-];
+  return [
+    // Saída à vista
+    {
+      id: 1,
+      tipoSaida: 'normal',
+      numeroParcela: 1,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      dataSaida: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-16`,
+      empresaId: 1,
+      tipoPagamento: 'avista',
+      usuariosTitularesIds: [1, 2],
+      itens: [
+        {
+          produtoId: 1,
+          nomeProduto: 'Arroz Integral 5kg',
+          quantidade: 2,
+          precoUnitario: 15.99,
+          total: 31.98,
+        },
+        {
+          produtoId: 2,
+          nomeProduto: 'Feijão Preto 1kg',
+          quantidade: 3,
+          precoUnitario: 8.50,
+          total: 25.50,
+        },
+      ],
+      valorTotal: 57.48,
+      observacao: 'Compras do mês',
+    },
+
+    // Saída parcelada - 1ª parcela (saída pai)
+    {
+      id: 2,
+      tipoSaida: 'parcelada_pai',
+      numeroParcela: 1,
+      totalParcelas: 3,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      dataSaida: `${anoCorrente}-${mesCorrente.toString().padStart(2, '0')}-20`,
+      empresaId: 2,
+      tipoPagamento: 'parcelado',
+      usuariosTitularesIds: [1],
+      itens: [
+        {
+          produtoId: 3,
+          nomeProduto: 'Óleo de Soja 900ml',
+          quantidade: 10,
+          precoUnitario: 15.00,
+          total: 150.00,
+        },
+      ],
+      valorTotal: 150.00,
+      observacao: 'Compra parcelada em 3x',
+    },
+
+    // Parcelas filhas da saída parcelada
+    {
+      id: 3,
+      saidaPaiId: 2,
+      tipoSaida: 'parcela',
+      numeroParcela: 2,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      dataSaida: `${anoCorrente}-${(mesCorrente + 1).toString().padStart(2, '0')}-20`,
+      empresaId: 2,
+      tipoPagamento: 'parcelado',
+      usuariosTitularesIds: [1],
+      itens: [],
+      valorTotal: 150.00,
+      observacao: 'Parcela 2/3',
+    },
+
+    {
+      id: 4,
+      saidaPaiId: 2,
+      tipoSaida: 'parcela',
+      numeroParcela: 3,
+      usuarioRegistroId: 1,
+      dataHoraRegistro: new Date().toISOString(),
+      dataSaida: `${anoCorrente}-${(mesCorrente + 2).toString().padStart(2, '0')}-20`,
+      empresaId: 2,
+      tipoPagamento: 'parcelado',
+      usuariosTitularesIds: [1],
+      itens: [],
+      valorTotal: 150.00,
+      observacao: 'Parcela 3/3',
+    },
+  ];
+};
+
+const initialExpenses: Saida[] = generateInitialExpenses();
 
 // Função para simular delay de rede
 const mockDelay = (ms: number = 500) => 
@@ -855,10 +897,26 @@ export const mockExpenseService = {
   delete: async (id: number): Promise<void> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
-    const index = expenses.findIndex(e => e.id === id);
-    if (index === -1) throw new Error('Saída não encontrada');
+    const expense = expenses.find(e => e.id === id);
+    if (!expense) throw new Error('Saída não encontrada');
 
-    expenses.splice(index, 1);
+    // Se for saída parcelada pai, deletar também as parcelas filhas
+    if (expense.tipoSaida === 'parcelada_pai') {
+      const parcelasFilhas = expenses.filter(e => e.saidaPaiId === id);
+      parcelasFilhas.forEach(parcela => {
+        const parcelaIndex = expenses.findIndex(e => e.id === parcela.id);
+        if (parcelaIndex !== -1) {
+          expenses.splice(parcelaIndex, 1);
+        }
+      });
+    }
+
+    // Deletar a saída principal
+    const index = expenses.findIndex(e => e.id === id);
+    if (index !== -1) {
+      expenses.splice(index, 1);
+    }
+
     MockStorage.set('expenses', expenses);
   },
 };

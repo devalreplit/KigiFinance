@@ -1280,11 +1280,11 @@ export default function ExpenseForm() {
                             {Array.from(
                               { length: formData.quantidadeParcelas },
                               (_, index) => {
+                                const baseDate = new Date(formData.dataPrimeiraParcela);
                                 const parcelaDate = new Date(
-                                  formData.dataPrimeiraParcela,
-                                );
-                                parcelaDate.setMonth(
-                                  parcelaDate.getMonth() + index,
+                                  baseDate.getFullYear(),
+                                  baseDate.getMonth() + index,
+                                  baseDate.getDate()
                                 );
                                 const valorParcela =
                                   formData.valorTotal /
@@ -1316,11 +1316,11 @@ export default function ExpenseForm() {
                           {Array.from(
                             { length: formData.quantidadeParcelas },
                             (_, index) => {
+                              const baseDate = new Date(formData.dataPrimeiraParcela);
                               const parcelaDate = new Date(
-                                formData.dataPrimeiraParcela,
-                              );
-                              parcelaDate.setMonth(
-                                parcelaDate.getMonth() + index,
+                                baseDate.getFullYear(),
+                                baseDate.getMonth() + index,
+                                baseDate.getDate()
                               );
                               const valorParcela =
                                 formData.valorTotal /

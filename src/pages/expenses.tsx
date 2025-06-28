@@ -11,16 +11,38 @@ import { Plus, TrendingDown, Loader2, Search, Calendar, ShoppingCart, Eye } from
 import { Usuario, Empresa, Saida } from "../../types";
 import { useLocation } from "wouter";
 
+/**
+ * PÁGINA EXPENSES - GERENCIAMENTO DE SAÍDAS
+ * 
+ * Responsabilidade:
+ * - Listar saídas financeiras (normais e parceladas pai)
+ * - Permitir filtro por período (mês/ano)
+ * - Fornecer acesso rápido para criar nova saída
+ * - Exibir detalhes e permitir edição/exclusão via modal
+ * - Implementar visualização responsiva (desktop/mobile)
+ * 
+ * Regras de Negócio:
+ * - Por padrão carrega saídas do mês corrente
+ * - Exibe apenas saídas principais (normal + parcelada_pai)
+ * - Não exibe parcelas filhas na listagem principal
+ * - Saídas parceladas mostram informação de parcelamento
+ * - Ordenação por data mais recente primeiro
+ */
 export default function Expenses() {
+  // Estados para dados da listagem
   const [saidas, setSaidas] = useState<Saida[]>([]);
   const [users, setUsers] = useState<Usuario[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Estados para modal de detalhes
   const [selectedExpense, setSelectedExpense] = useState<Saida | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  
+  // Hook de navegação
   const [, setLocation] = useLocation();
 
-  // Estados para filtro de mês/ano
+  // Estados para filtro temporal
   const [mesConsulta, setMesConsulta] = useState<string>("");
   const [anoConsulta, setAnoConsulta] = useState<string>("");
   const [periodoAtual, setPeriodoAtual] = useState<{mes: number, ano: number}>({
@@ -30,11 +52,37 @@ export default function Expenses() {
 
   const { toast } = useToast();
 
+  /**
+   * EFFECT HOOK - INICIALIZAÇÃO DA PÁGINA EXPENSES
+   * 
+   * Responsabilidade:
+   * - Carregar dados iniciais ao montar o componente
+   * - Executar apenas uma vez na montagem
+   */
   useEffect(() => {
     loadData();
   }, []);
 
-  // Carregar dados de saídas - por padrão carrega do mês corrente
+  /**
+   * FUNÇÃO LOADDATA - CARREGAMENTO DE SAÍDAS
+   * 
+   * @param mes (opcional) - Mês para filtro (1-12). Se não informado, usa mês atual
+   * @param ano (opcional) - Ano para filtro. Se não informado, usa ano atual
+   * 
+   * Responsabilidade:
+   * - Carregar saídas do período especificado
+   * - Carregar dados auxiliares (usuários, empresas)
+   * - Filtrar apenas saídas principais (normal + parcelada_pai)
+   * - Atualizar estados do componente
+   * - Tratar erros de carregamento
+   * 
+   * Regras de Negócio:
+   * - Por padrão carrega dados do mês corrente
+   * - Saídas filtradas por data_saida do período (impacto financeiro)
+   * - Exclui parcelas filhas da listagem principal
+   * - Ordenação por data mais recente primeiro (implementada no serviço)
+   * - Executa chamadas paralelas para otimizar performance
+   */
   const loadData = async (mes?: number, ano?: number) => {
     try {
       setLoading(true);
@@ -72,7 +120,19 @@ export default function Expenses() {
     }
   };
 
-  // Filtrar saídas por mês/ano específico
+  /**
+   * FUNÇÃO HANDLEFILTRARPOR PERIODO - FILTRAR SAÍDAS POR MÊS/ANO
+   * 
+   * Responsabilidade:
+   * - Validar mês e ano informados pelo usuário
+   * - Aplicar filtro temporal às saídas
+   * - Exibir mensagens de erro para dados inválidos
+   * 
+   * Regras de Negócio:
+   * - Mês deve estar entre 1 e 12
+   * - Ano deve estar entre 2020 e 2030 (range de funcionamento do sistema)
+   * - Ambos os campos são obrigatórios para filtrar
+   */
   const handleFiltrarPorPeriodo = () => {
     const mes = parseInt(mesConsulta);
     const ano = parseInt(anoConsulta);
@@ -89,7 +149,17 @@ export default function Expenses() {
     loadData(mes, ano);
   };
 
-  // Voltar para o mês corrente
+  /**
+   * FUNÇÃO HANDLEVOLTARMESCORRENTE - RETORNAR PARA MÊS ATUAL
+   * 
+   * Responsabilidade:
+   * - Resetar filtros de período
+   * - Recarregar dados do mês atual
+   * - Limpar campos de consulta
+   * 
+   * Regras de Negócio:
+   * - Sempre retorna para o mês/ano atual da data do sistema
+   */
   const handleVoltarMesCorrente = () => {
     const hoje = new Date();
     const mesAtual = hoje.getMonth() + 1;
@@ -100,6 +170,16 @@ export default function Expenses() {
     loadData(mesAtual, anoAtual);
   };
 
+  /**
+   * FUNÇÃO FORMATCURRENCY - FORMATAR VALOR MONETÁRIO
+   * 
+   * @param value - Valor numérico a ser formatado
+   * @returns String formatada como moeda brasileira
+   * 
+   * Responsabilidade:
+   * - Formatar valores monetários no padrão brasileiro (R$)
+   * - Padronizar exibição de valores na interface
+   */
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -107,39 +187,112 @@ export default function Expenses() {
     }).format(value);
   };
 
+  /**
+   * FUNÇÃO FORMATDATE - FORMATAR DATA NO PADRÃO BRASILEIRO
+   * 
+   * @param dateString - String de data no formato ISO
+   * @returns Data formatada no padrão dd/mm/aaaa
+   * 
+   * Responsabilidade:
+   * - Converter datas ISO para formato brasileiro
+   * - Padronizar exibição de datas na interface
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  /**
+   * FUNÇÃO GETTITULARESNAMES - OBTER NOMES DOS RESPONSÁVEIS
+   * 
+   * @param usuariosTitularesIds - Array com IDs dos usuários responsáveis
+   * @returns String com nomes dos responsáveis separados por vírgula
+   * 
+   * Responsabilidade:
+   * - Resolver nomes dos usuários responsáveis a partir dos IDs
+   * - Formatear lista de nomes de forma legível
+   * - Fornecer fallback para IDs inexistentes
+   */
   const getTitularesNames = (usuariosTitularesIds: number[]) => {
     const titulares = users.filter(u => usuariosTitularesIds.includes(u.id));
     return titulares.map(t => t.nome).join(', ') || 'Usuários não encontrados';
   };
 
+  /**
+   * FUNÇÃO GETEMPRESANAME - OBTER NOME DA EMPRESA
+   * 
+   * @param empresaId - ID da empresa
+   * @returns Nome da empresa ou mensagem de fallback
+   * 
+   * Responsabilidade:
+   * - Resolver nome da empresa a partir do ID
+   * - Fornecer fallback para IDs inexistentes
+   */
   const getEmpresaName = (empresaId: number) => {
     const empresa = empresas.find(e => e.id === empresaId);
     return empresa?.nome || 'Empresa não encontrada';
   };
 
+  /**
+   * FUNÇÃO HANDLENOVAENTRADA - NAVEGAR PARA FORMULÁRIO DE NOVA SAÍDA
+   * 
+   * Responsabilidade:
+   * - Redirecionar usuário para página de criação de saída
+   * - Utilizar roteamento programático
+   */
   const handleNovaEntrada = () => {
     setLocation('/expenses/new');
   };
 
+  /**
+   * FUNÇÃO HANDLEVIEWEXPENSEDETAILS - ABRIR MODAL DE DETALHES
+   * 
+   * @param expense - Objeto Saida selecionada para visualização
+   * 
+   * Responsabilidade:
+   * - Definir saída selecionada para o modal
+   * - Abrir modal de detalhes
+   * - Permitir visualização, edição e exclusão
+   */
   const handleViewExpenseDetails = (expense: Saida) => {
     setSelectedExpense(expense);
     setIsDetailsModalOpen(true);
   };
 
+  /**
+   * FUNÇÃO HANDLECLOSEDETAILSMODAL - FECHAR MODAL DE DETALHES
+   * 
+   * Responsabilidade:
+   * - Fechar modal de detalhes
+   * - Limpar saída selecionada
+   * - Resetar estado do modal
+   */
   const handleCloseDetailsModal = () => {
     setIsDetailsModalOpen(false);
     setSelectedExpense(null);
   };
 
+  /**
+   * FUNÇÃO HANDLEEXPENSEUPDATED - CALLBACK APÓS ATUALIZAÇÃO DE SAÍDA
+   * 
+   * Responsabilidade:
+   * - Recarregar dados após edição bem-sucedida
+   * - Manter período atual selecionado
+   * - Sincronizar listagem com dados atualizados
+   */
   const handleExpenseUpdated = () => {
     // Recarregar dados após atualização
     loadData(periodoAtual.mes, periodoAtual.ano);
   };
 
+  /**
+   * FUNÇÃO HANDLEEXPENSEDELETED - CALLBACK APÓS EXCLUSÃO DE SAÍDA
+   * 
+   * Responsabilidade:
+   * - Recarregar dados após exclusão bem-sucedida
+   * - Exibir confirmação de exclusão
+   * - Manter período atual selecionado
+   * - Sincronizar listagem com dados atualizados
+   */
   const handleExpenseDeleted = () => {
     // Recarregar dados após exclusão
     loadData(periodoAtual.mes, periodoAtual.ano);

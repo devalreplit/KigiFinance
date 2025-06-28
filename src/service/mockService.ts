@@ -11,12 +11,48 @@ import {
   SaidaInput,
 } from '../../types';
 
-// Sistema de storage local persistente
+/**
+ * CLASSE MOCKSTORAGE - GERENCIAMENTO DE ARMAZENAMENTO LOCAL PARA DADOS MOCK
+ * 
+ * Responsabilidade:
+ * - Simular persistência de dados usando localStorage
+ * - Fornecer interface unificada para operações de storage
+ * - Manter namespacing para evitar conflitos
+ * - Tratar erros de parsing/storage
+ * 
+ * Padrão de uso:
+ * - Todos os dados mock são prefixados com 'kigi_mock_'
+ * - Serialização/deserialização automática via JSON
+ * - Fallback para dados padrão em caso de erro
+ */
 class MockStorage {
+  /**
+   * FUNÇÃO GETSTORAGEKEY - GERAR CHAVE DE ARMAZENAMENTO
+   * 
+   * @param entity - Nome da entidade (users, companies, etc.)
+   * @returns Chave prefixada para localStorage
+   * 
+   * Responsabilidade:
+   * - Padronizar nomenclatura das chaves
+   * - Evitar conflitos com outras aplicações
+   */
   private static getStorageKey(entity: string): string {
     return `kigi_mock_${entity}`;
   }
 
+  /**
+   * FUNÇÃO GET - RECUPERAR DADOS DO LOCALSTORAGE
+   * 
+   * @param entity - Nome da entidade
+   * @param defaultData - Dados padrão caso não existam no storage
+   * @returns Array de entidades do tipo T
+   * 
+   * Responsabilidade:
+   * - Recuperar dados serializados do localStorage
+   * - Deserializar JSON de forma segura
+   * - Retornar dados padrão em caso de erro
+   * - Manter tipagem forte com generics
+   */
   static get<T>(entity: string, defaultData: T[]): T[] {
     try {
       const stored = localStorage.getItem(this.getStorageKey(entity));
@@ -26,10 +62,29 @@ class MockStorage {
     }
   }
 
+  /**
+   * FUNÇÃO SET - ARMAZENAR DADOS NO LOCALSTORAGE
+   * 
+   * @param entity - Nome da entidade
+   * @param data - Array de dados a serem armazenados
+   * 
+   * Responsabilidade:
+   * - Serializar dados para JSON
+   * - Armazenar no localStorage com chave padronizada
+   * - Manter persistência entre sessões
+   */
   static set<T>(entity: string, data: T[]): void {
     localStorage.setItem(this.getStorageKey(entity), JSON.stringify(data));
   }
 
+  /**
+   * FUNÇÃO CLEAR - LIMPAR TODOS OS DADOS MOCK
+   * 
+   * Responsabilidade:
+   * - Remover todos os dados mock do localStorage
+   * - Manter outros dados não relacionados intactos
+   * - Útil para reset completo em desenvolvimento
+   */
   static clear(): void {
     const keys = Object.keys(localStorage).filter(key => key.startsWith('kigi_mock_'));
     keys.forEach(key => localStorage.removeItem(key));
@@ -352,11 +407,35 @@ const generateInitialExpenses = (): Saida[] => {
 
 const initialExpenses: Saida[] = generateInitialExpenses();
 
-// Função para simular delay de rede
+/**
+ * FUNÇÃO MOCKDELAY - SIMULAR LATÊNCIA DE REDE
+ * 
+ * @param ms - Millisegundos de delay (padrão: 500ms)
+ * @returns Promise que resolve após o delay
+ * 
+ * Responsabilidade:
+ * - Simular comportamento realista de API
+ * - Permitir teste de estados de loading
+ * - Facilitar transição para API real
+ * - Melhorar experiência de desenvolvimento
+ */
 const mockDelay = (ms: number = 500) => 
   new Promise(resolve => setTimeout(resolve, ms));
 
-// Inicializar dados se não existirem
+/**
+ * FUNÇÃO INITIALIZEDATA - INICIALIZAR DADOS MOCK
+ * 
+ * Responsabilidade:
+ * - Verificar se dados já existem no localStorage
+ * - Criar dados iniciais apenas na primeira execução
+ * - Manter dados existentes entre sessões
+ * - Garantir que aplicação sempre tenha dados para funcionar
+ * 
+ * Regras de Negócio:
+ * - Executa apenas se dados não existem
+ * - Preserva dados existentes modificados pelo usuário
+ * - Inicializa todas as entidades necessárias
+ */
 const initializeData = () => {
   if (!localStorage.getItem('kigi_mock_users')) {
     MockStorage.set('users', initialUsers);
@@ -375,11 +454,38 @@ const initializeData = () => {
   }
 };
 
-// Inicializar dados na primeira execução
+// Inicializar dados na primeira execução do módulo
 initializeData();
 
-// Serviços de Autenticação Mock
+/**
+ * SERVIÇO DE AUTENTICAÇÃO MOCK
+ * 
+ * Responsabilidade:
+ * - Simular operações de autenticação
+ * - Gerenciar sessão de usuário
+ * - Validar credenciais
+ * - Manter estado de autenticação
+ */
 export const mockAuthService = {
+  /**
+   * FUNÇÃO LOGIN - AUTENTICAR USUÁRIO
+   * 
+   * @param login - Login do usuário
+   * @param senha - Senha do usuário
+   * @returns Promise com usuário autenticado e token
+   * 
+   * Responsabilidade:
+   * - Validar credenciais do usuário
+   * - Buscar usuário ativo no sistema
+   * - Gerar token de sessão
+   * - Retornar dados de autenticação
+   * 
+   * Regras de Negócio:
+   * - Usuário deve estar ativo (ativo = true)
+   * - Login e senha devem coincidir exatamente
+   * - Token é gerado com timestamp para unicidade
+   * - Logs detalhados para debugging
+   */
   login: async (login: string, senha: string): Promise<{ user: Usuario; token: string }> => {
     await mockDelay(500);
 
@@ -406,6 +512,14 @@ export const mockAuthService = {
     return { user, token };
   },
 
+  /**
+   * FUNÇÃO LOGOUT - ENCERRAR SESSÃO
+   * 
+   * Responsabilidade:
+   * - Limpar dados de autenticação
+   * - Remover token e usuário do localStorage
+   * - Simular delay de operação de rede
+   */
   logout: async (): Promise<void> => {
     await mockDelay(300);
     // Limpar dados de autenticação do localStorage
@@ -413,6 +527,22 @@ export const mockAuthService = {
     localStorage.removeItem('currentUser');
   },
 
+  /**
+   * FUNÇÃO GETCURRENTUSER - OBTER USUÁRIO ATUAL
+   * 
+   * @returns Promise com dados do usuário logado
+   * 
+   * Responsabilidade:
+   * - Recuperar usuário da sessão atual
+   * - Validar dados salvos no localStorage
+   * - Fornecer fallback para usuário padrão
+   * - Tratar erros de parsing
+   * 
+   * Regras de Negócio:
+   * - Prioriza usuário salvo no localStorage
+   * - Fallback para usuário 'pai' ou primeiro usuário
+   * - Remove dados corrompidos automaticamente
+   */
   getCurrentUser: async (): Promise<Usuario> => {
     await mockDelay(200);
 
@@ -433,6 +563,16 @@ export const mockAuthService = {
     return adminUser;
   },
 
+  /**
+   * FUNÇÃO ISAUTHENTICATED - VERIFICAR SE USUÁRIO ESTÁ AUTENTICADO
+   * 
+   * @returns Boolean indicando se há sessão ativa
+   * 
+   * Responsabilidade:
+   * - Verificar presença de token de autenticação
+   * - Determinar estado de autenticação
+   * - Não valida expiração (simplificação para mock)
+   */
   isAuthenticated: (): boolean => {
     const hasToken = localStorage.getItem('authToken') !== null;
     return hasToken;
@@ -756,9 +896,37 @@ export const mockIncomeService = {
   },
 };
 
-// Serviços de Saídas Mock
+/**
+ * SERVIÇO DE SAÍDAS MOCK
+ * 
+ * Responsabilidade:
+ * - Gerenciar saídas financeiras (CRUD)
+ * - Implementar lógica de saídas parceladas
+ * - Filtrar dados por período
+ * - Manter consistência entre saídas pai e parcelas filhas
+ * - Simular comportamento de API real
+ */
 export const mockExpenseService = {
-  // Buscar saídas com filtro opcional de mês/ano - Por padrão não retorna parcelas filhas
+  /**
+   * FUNÇÃO GETALL - BUSCAR TODAS AS SAÍDAS
+   * 
+   * @param mes (opcional) - Mês para filtro (1-12)
+   * @param ano (opcional) - Ano para filtro
+   * @param incluirParcelas (opcional) - Se deve incluir parcelas filhas (padrão: false)
+   * @returns Promise com array de saídas filtradas
+   * 
+   * Responsabilidade:
+   * - Recuperar saídas do armazenamento mock
+   * - Aplicar filtros de período quando especificados
+   * - Controlar inclusão de parcelas filhas
+   * - Ordenar por data mais recente primeiro
+   * 
+   * Regras de Negócio:
+   * - Por padrão exclui parcelas filhas (tipoSaida === 'parcela')
+   * - Filtro por mês/ano é baseado na data_saida (impacto financeiro)
+   * - Ordenação decrescente por data de saída
+   * - Sem filtro = retorna todas as saídas principais
+   */
   getAll: async (mes?: number, ano?: number, incluirParcelas?: boolean): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
@@ -787,11 +955,33 @@ export const mockExpenseService = {
     );
   },
 
-  // Função específica para buscar saídas de um mês/ano específico
+  /**
+   * FUNÇÃO GETBYMONTHYEAR - BUSCAR SAÍDAS POR MÊS/ANO ESPECÍFICO
+   * 
+   * @param mes - Mês (1-12)
+   * @param ano - Ano
+   * @returns Promise com saídas do período especificado
+   * 
+   * Responsabilidade:
+   * - Fornecer alias para getAll com filtro de período
+   * - Manter compatibilidade de interface
+   * - Simplificar chamadas com filtro temporal
+   */
   getByMonthYear: async (mes: number, ano: number): Promise<Saida[]> => {
     return mockExpenseService.getAll(mes, ano);
   },
 
+  /**
+   * FUNÇÃO GETBYID - BUSCAR SAÍDA POR ID
+   * 
+   * @param id - ID da saída
+   * @returns Promise com dados da saída
+   * 
+   * Responsabilidade:
+   * - Recuperar saída específica por ID
+   * - Validar existência da saída
+   * - Lançar erro para IDs inexistentes
+   */
   getById: async (id: number): Promise<Saida> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
@@ -800,19 +990,65 @@ export const mockExpenseService = {
     return expense;
   },
 
+  /**
+   * FUNÇÃO GETWITHINSTALLMENTS - BUSCAR APENAS SAÍDAS PARCELADAS PAI
+   * 
+   * @returns Promise com saídas do tipo 'parcelada_pai'
+   * 
+   * Responsabilidade:
+   * - Filtrar apenas saídas parceladas principais
+   * - Excluir saídas normais e parcelas filhas
+   * - Útil para relatórios de parcelamento
+   */
   getWithInstallments: async (): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     return expenses.filter(e => e.tipoSaida === 'parcelada_pai');
   },
 
-  // Buscar parcelas filhas de uma saída parcelada
+  /**
+   * FUNÇÃO GETCHILDINSTALLMENTS - BUSCAR PARCELAS FILHAS
+   * 
+   * @param saidaPaiId - ID da saída pai
+   * @returns Promise com parcelas filhas ordenadas por número
+   * 
+   * Responsabilidade:
+   * - Recuperar parcelas filhas de uma saída parcelada
+   * - Ordenar por número da parcela (1, 2, 3...)
+   * - Manter relacionamento pai-filho
+   * - Útil para exibir timeline de pagamentos
+   */
   getChildInstallments: async (saidaPaiId: number): Promise<Saida[]> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);
     return expenses.filter(e => e.saidaPaiId === saidaPaiId).sort((a, b) => a.numeroParcela - b.numeroParcela);
   },
 
+  /**
+   * FUNÇÃO CREATE - CRIAR NOVA SAÍDA
+   * 
+   * @param expenseData - Dados da saída a ser criada
+   * @returns Promise com saída criada
+   * 
+   * Responsabilidade:
+   * - Criar nova saída no sistema
+   * - Calcular valor total baseado nos itens
+   * - Determinar tipo de saída baseado no pagamento
+   * - Gerar ID único para nova saída
+   * - Enriquecer itens com dados de produtos
+   * - Criar parcelas filhas para saídas parceladas
+   * - Persistir dados no armazenamento
+   * 
+   * Regras de Negócio:
+   * - ID é gerado como max(IDs existentes) + 1
+   * - Tipo de saída: 'normal' para à vista, 'parcelada_pai' para parcelado
+   * - Valor total = Σ(quantidade × preço) de todos os itens
+   * - Data/hora de registro = timestamp atual
+   * - Para saídas parceladas: criar parcelas filhas automaticamente
+   * - Parcelas filhas: valor = valor_total / total_parcelas
+   * - Parcelas filhas: data = data_primeira + (n-1) meses
+   * - Parcelas filhas: não possuem itens (itens ficam apenas na saída pai)
+   */
   create: async (expenseData: SaidaInput): Promise<Saida> => {
     await mockDelay();
     const expenses = MockStorage.get<Saida>('expenses', initialExpenses);

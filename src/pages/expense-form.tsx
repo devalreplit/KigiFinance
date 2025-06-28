@@ -42,6 +42,28 @@ import {
 } from "../../types";
 import { useLocation } from "wouter";
 
+/**
+ * PÁGINA EXPENSE-FORM - FORMULÁRIO DE REGISTRO DE SAÍDAS
+ * 
+ * Responsabilidade:
+ * - Permitir criação de novas saídas (à vista ou parceladas)
+ * - Gerenciar seleção de responsáveis e empresa
+ * - Controlar lista de itens da compra
+ * - Implementar scanner de código de barras
+ * - Calcular valores automaticamente
+ * - Configurar pagamento parcelado
+ * - Validar dados antes do envio
+ * 
+ * Regras de Negócio:
+ * - Pelo menos um responsável deve ser selecionado
+ * - Empresa é obrigatória
+ * - Pelo menos um item válido deve existir
+ * - Produtos não podem ser duplicados na lista
+ * - Quantidade entre 0.1 e 20
+ * - Preço unitário deve ser maior que zero
+ * - Parcelas entre 1 e 60 (apenas se habilitado)
+ * - Data primeira parcela não pode ser anterior a hoje
+ */
 export default function ExpenseForm() {
   const [users, setUsers] = useState<Usuario[]>([]);
   const [companies, setCompanies] = useState<Empresa[]>([]);
@@ -75,7 +97,18 @@ export default function ExpenseForm() {
     },
   ]);
 
-  // Observador para resetar parcelas quando necessário
+  /**
+   * EFFECT HOOK - VALIDAÇÃO AUTOMÁTICA DE PARCELAS
+   * 
+   * Responsabilidade:
+   * - Monitorar mudanças nos itens e configuração de parcelas
+   * - Desabilitar parcelamento automaticamente se não há itens válidos
+   * - Resetar configurações de parcela quando necessário
+   * 
+   * Regras de Negócio:
+   * - Parcelamento só é permitido com itens válidos
+   * - Reset automático para configurações padrão quando inválido
+   */
   useEffect(() => {
     const hasValidItemsCheck = items.some(
       (item) =>
@@ -92,10 +125,30 @@ export default function ExpenseForm() {
     }
   }, [formData.temParcelas, items]);
 
+  /**
+   * EFFECT HOOK - INICIALIZAÇÃO DO FORMULÁRIO
+   * 
+   * Responsabilidade:
+   * - Carregar dados necessários ao montar o componente
+   * - Executar apenas uma vez na montagem
+   */
   useEffect(() => {
     loadData();
   }, []);
 
+  /**
+   * FUNÇÃO LOADDATA - CARREGAMENTO DE DADOS AUXILIARES
+   * 
+   * Responsabilidade:
+   * - Carregar listas de usuários, empresas e produtos
+   * - Disponibilizar dados para seletores do formulário
+   * - Tratar erros de carregamento
+   * 
+   * Regras de Negócio:
+   * - Carrega apenas entidades ativas
+   * - Executa chamadas paralelas para otimizar performance
+   * - Dados são necessários para funcionamento do formulário
+   */
   const loadData = async () => {
     try {
       setLoading(true);
@@ -118,7 +171,21 @@ export default function ExpenseForm() {
     }
   };
 
-  // Funções para gerenciar seleção de usuários
+  /**
+   * FUNÇÃO TOGGLEUSERSELECTION - ALTERNAR SELEÇÃO DE USUÁRIO
+   * 
+   * @param userId - ID do usuário a ser selecionado/deselecionado
+   * 
+   * Responsabilidade:
+   * - Gerenciar seleção individual de usuários responsáveis
+   * - Limpar empresa quando nenhum usuário está selecionado
+   * - Manter consistência entre seleções
+   * 
+   * Regras de Negócio:
+   * - Permite seleção múltipla de usuários
+   * - Empresa é resetada quando não há responsáveis
+   * - Responsáveis são obrigatórios para criar saída
+   */
   const toggleUserSelection = (userId: number) => {
     setSelectedUsers((prev) => {
       const newSelection = prev.includes(userId)
@@ -134,6 +201,19 @@ export default function ExpenseForm() {
     });
   };
 
+  /**
+   * FUNÇÃO TOGGLEFAMILIASELECTION - ALTERNAR SELEÇÃO DE TODA FAMÍLIA
+   * 
+   * Responsabilidade:
+   * - Facilitar seleção/deseleção de todos os usuários
+   * - Implementar comportamento de "selecionar todos"
+   * - Limpar empresa quando todos são deselecionados
+   * 
+   * Regras de Negócio:
+   * - Se todos estão selecionados: desmarca todos
+   * - Se nem todos estão selecionados: seleciona todos
+   * - Comportamento de toggle inteligente
+   */
   const toggleFamiliaSelection = () => {
     const allUserIds = users.map((user) => user.id);
     if (selectedUsers.length === allUserIds.length) {
@@ -146,23 +226,62 @@ export default function ExpenseForm() {
     }
   };
 
-  // Função para controlar exibição do campo observação
+  /**
+   * FUNÇÃO TOGGLEOBSERVACAO - CONTROLAR VISIBILIDADE DO CAMPO OBSERVAÇÃO
+   * 
+   * Responsabilidade:
+   * - Mostrar/ocultar campo de observações
+   * - Implementar interface expansível
+   * - Otimizar espaço da tela
+   */
   const toggleObservacao = () => {
     setShowObservacao(!showObservacao);
   };
 
-  // Verificar se deve mostrar observação baseado no texto
+  /**
+   * COMPUTED PROPERTY - DETERMINAR SE DEVE MOSTRAR OBSERVAÇÃO
+   * 
+   * Responsabilidade:
+   * - Mostrar campo se foi explicitamente aberto
+   * - Mostrar campo se já há texto digitado
+   * - Manter visibilidade consistente
+   */
   const shouldShowObservacao =
     showObservacao || formData.observacoes.length > 0;
 
-  // Função para verificar se produto já existe na lista
+  /**
+   * FUNÇÃO ISPRODUCTINLIST - VERIFICAR SE PRODUTO JÁ ESTÁ NA LISTA
+   * 
+   * @param productId - ID do produto a ser verificado
+   * @returns Boolean indicando se produto já existe na lista
+   * 
+   * Responsabilidade:
+   * - Prevenir duplicação de produtos na lista
+   * - Validar antes de adicionar novos itens
+   * 
+   * Regras de Negócio:
+   * - Produtos não podem ser duplicados na mesma saída
+   * - Considera apenas produtos válidos (ID > 0)
+   */
   const isProductInList = (productId: number) => {
     return items.some(
       (item) => item.produtoId === productId && productId !== 0,
     );
   };
 
-  // Função para verificar se há itens válidos
+  /**
+   * FUNÇÃO HASVALIDITEMS - VERIFICAR SE HÁ ITENS VÁLIDOS
+   * 
+   * @returns Boolean indicando se existe pelo menos um item válido
+   * 
+   * Responsabilidade:
+   * - Validar se formulário tem itens válidos para submissão
+   * - Habilitar/desabilitar funcionalidades baseadas em itens válidos
+   * 
+   * Regras de Negócio:
+   * - Item válido: produto selecionado + quantidade > 0 + preço > 0
+   * - Necessário pelo menos um item válido para criar saída
+   */
   const hasValidItems = () => {
     return items.some(
       (item) =>
@@ -170,7 +289,20 @@ export default function ExpenseForm() {
     );
   };
 
-  // Função para verificar se há itens inválidos
+  /**
+   * FUNÇÃO HASINVALIDITEMS - VERIFICAR SE HÁ ITENS INVÁLIDOS
+   * 
+   * @returns Boolean indicando se existe algum item inválido
+   * 
+   * Responsabilidade:
+   * - Identificar itens incompletos ou inválidos
+   * - Prevenir adição de novos itens até completar existentes
+   * - Melhorar UX com validação em tempo real
+   * 
+   * Regras de Negócio:
+   * - Item inválido: produto não selecionado OU quantidade <= 0 OU preço <= 0
+   * - Bloqueia adição de novos itens até resolver pendências
+   */
   const hasInvalidItems = () => {
     return items.some(
       (item) =>
@@ -178,6 +310,21 @@ export default function ExpenseForm() {
     );
   };
 
+  /**
+   * FUNÇÃO ADDITEM - ADICIONAR NOVO ITEM À LISTA
+   * 
+   * Responsabilidade:
+   * - Adicionar nova linha de item à lista de compras
+   * - Validar pré-requisitos antes de adicionar
+   * - Manter integridade da lista de itens
+   * - Fornecer feedback ao usuário sobre erros
+   * 
+   * Regras de Negócio:
+   * - Empresa deve estar selecionada antes de adicionar itens
+   * - Todos os itens existentes devem estar válidos
+   * - Novo item é criado com valores padrão (produto: nenhum, qtd: 1, preço: 0)
+   * - Máximo não definido explicitamente, mas limitado pela UX
+   */
   const addItem = () => {
     // Só adiciona se empresa foi selecionada e não há itens inválidos
     if (!formData.empresaId) {
@@ -203,6 +350,23 @@ export default function ExpenseForm() {
     setItems([...items, { produtoId: 0, quantidade: 1, precoUnitario: 0 }]);
   };
 
+  /**
+   * FUNÇÃO REMOVEITEM - REMOVER ITEM DA LISTA
+   * 
+   * @param index - Índice do item a ser removido
+   * 
+   * Responsabilidade:
+   * - Remover item específico da lista
+   * - Manter pelo menos um item na lista
+   * - Recalcular total após remoção
+   * - Resetar configurações de parcela se necessário
+   * 
+   * Regras de Negócio:
+   * - Deve sempre existir pelo menos um item na lista
+   * - Remove configuração de parcelas se não há mais itens válidos
+   * - Recalcula valor total automaticamente
+   * - Reseta configurações para padrão quando necessário
+   */
   const removeItem = (index: number) => {
     if (items.length > 1) {
       const newItems = items.filter((_, i) => i !== index);
@@ -226,6 +390,27 @@ export default function ExpenseForm() {
     }
   };
 
+  /**
+   * FUNÇÃO UPDATEITEM - ATUALIZAR CAMPO DE UM ITEM
+   * 
+   * @param index - Índice do item a ser atualizado
+   * @param field - Campo do item a ser modificado
+   * @param value - Novo valor para o campo
+   * 
+   * Responsabilidade:
+   * - Atualizar campo específico de um item
+   * - Validar duplicação de produtos
+   * - Forçar limpeza quando produto duplicado
+   * - Recalcular total automaticamente
+   * - Manter consistência da lista
+   * 
+   * Regras de Negócio:
+   * - Produtos não podem ser duplicados na lista
+   * - Validação especial para campo produtoId
+   * - Limpeza completa do item quando produto duplicado
+   * - Re-render forçado para garantir limpeza visual
+   * - Recálculo automático do valor total
+   */
   const updateItem = (
     index: number,
     field: keyof ItemSaidaInput,
@@ -270,6 +455,21 @@ export default function ExpenseForm() {
     updateTotalValue(newItems);
   };
 
+  /**
+   * FUNÇÃO UPDATETOTALVALUE - RECALCULAR VALOR TOTAL
+   * 
+   * @param currentItems - Array atual de itens para cálculo
+   * 
+   * Responsabilidade:
+   * - Calcular valor total da saída baseado nos itens
+   * - Atualizar estado do formulário com novo total
+   * - Manter sincronização entre itens e total
+   * 
+   * Regras de Negócio:
+   * - Total = Σ(quantidade × preço unitário) de todos os itens
+   * - Cálculo automático a cada mudança nos itens
+   * - Utilizado para determinar valor das parcelas
+   */
   const updateTotalValue = (currentItems: ItemSaidaInput[]) => {
     const total = currentItems.reduce(
       (sum, item) => sum + item.quantidade * item.precoUnitario,

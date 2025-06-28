@@ -10,7 +10,25 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
+/**
+ * PÁGINA DASHBOARD - RESUMO FINANCEIRO FAMILIAR
+ * 
+ * Responsabilidade:
+ * - Exibir resumo financeiro do mês atual ou período selecionado
+ * - Mostrar cartões com indicadores principais (entradas, saídas, saldo)
+ * - Permitir filtro por mês/ano específico
+ * - Controlar visibilidade dos valores (privacidade)
+ * - Exibir transações recentes com paginação
+ * 
+ * Regras de Negócio:
+ * - Por padrão carrega dados do mês corrente
+ * - Saldo = Total Entradas - Total Saídas
+ * - Saídas consideram apenas impacto financeiro do período (data_saida)
+ * - Parcelas futuras não impactam o saldo do mês atual
+ * - Valores podem ser ocultados para privacidade
+ */
 export default function Dashboard() {
+  // Estados para dados principais do dashboard
   const { toast } = useToast();
   const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
@@ -21,10 +39,35 @@ export default function Dashboard() {
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [saidas, setSaidas] = useState<Saida[]>([]);
 
+  /**
+   * EFFECT HOOK - INICIALIZAÇÃO DO DASHBOARD
+   * 
+   * Responsabilidade:
+   * - Carregar dados iniciais ao montar o componente
+   * - Executar apenas uma vez na montagem
+   */
   useEffect(() => {
     loadDashboardData();
   }, []);
 
+  /**
+   * FUNÇÃO LOADDASHBOARDDATA - CARREGAMENTO DE DADOS DO DASHBOARD
+   * 
+   * @param mes (opcional) - Mês para filtro (1-12). Se não informado, usa mês atual
+   * @param ano (opcional) - Ano para filtro. Se não informado, usa ano atual
+   * 
+   * Responsabilidade:
+   * - Carregar todos os dados necessários para o dashboard
+   * - Filtrar entradas e saídas pelo período especificado
+   * - Atualizar estados do componente
+   * - Tratar erros de carregamento
+   * 
+   * Regras de Negócio:
+   * - Por padrão carrega dados do mês corrente
+   * - Entradas filtradas por data_referencia do período
+   * - Saídas filtradas por data_saida do período (impacto financeiro)
+   * - Executa chamadas paralelas para otimizar performance
+   */
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -42,7 +85,7 @@ export default function Dashboard() {
       setUsuarios(usuariosData);
       setProdutos(produtosData);
       setEntradas(entradasData);
-      
+
       // Filtrar apenas saídas principais para estatísticas (não contar parcelas filhas duplicadamente)
       const saidasPrincipais = saidasData.filter(saida => 
         saida.tipoSaida === 'normal' || saida.tipoSaida === 'parcelada_pai'
@@ -264,7 +307,7 @@ export default function Dashboard() {
                 </div>
                 <Badge variant="secondary">{usuarios.length}</Badge>
               </div>
-              
+
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
                   <Package className="w-5 h-5 text-green-600" />
@@ -272,7 +315,7 @@ export default function Dashboard() {
                 </div>
                 <Badge variant="secondary">{produtos.length}</Badge>
               </div>
-              
+
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
                   <TrendingUp className="w-5 h-5 text-green-600" />
@@ -280,7 +323,7 @@ export default function Dashboard() {
                 </div>
                 <Badge variant="secondary">{entradas.length}</Badge>
               </div>
-              
+
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
                   <TrendingDown className="w-5 h-5 text-red-600" />

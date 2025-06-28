@@ -78,6 +78,9 @@ export interface ItemSaida {
 
 export interface Saida {
   id: number;
+  saidaPaiId?: number;
+  tipoSaida: 'normal' | 'parcelada_pai' | 'parcela';
+  numeroParcela: number;
   usuarioRegistroId: number;
   dataHoraRegistro: string;
   dataSaida: string;
@@ -87,19 +90,20 @@ export interface Saida {
   itens: ItemSaida[];
   valorTotal: number;
   observacao?: string;
-  numeroParcelas?: number;
-  dataPrimeiraParcela?: string;
+  totalParcelas?: number;
 }
 
 export interface SaidaInput {
+  saidaPaiId?: number;
+  tipoSaida?: 'normal' | 'parcelada_pai' | 'parcela';
+  numeroParcela?: number;
   usuarioRegistroId: number;
   dataSaida: string;
   empresaId: number;
   tipoPagamento: "avista" | "parcelado";
   usuariosTitularesIds: number[];
   itens: ItemSaidaInput[];
-  numeroParcelas?: number;
-  dataPrimeiraParcela?: string;
+  totalParcelas?: number;
   observacao?: string;
 }
 
@@ -109,22 +113,7 @@ export interface ItemSaidaInput {
   precoUnitario: number;
 }
 
-export interface Parcela {
-  id: number;
-  saidaOriginalId: number;
-  numeroParcela: number;
-  dataVencimento: string;
-  valorParcela: number;
-  status: "paga" | "vencida" | "a vencer";
-  dataPagamento?: string;
-}
 
-export interface ParcelaInput {
-  saidaOriginalId: number;
-  numeroParcela: number;
-  dataVencimento: string;
-  valorParcela: number;
-}
 
 export interface Transacao {
   id: number;

@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
-import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { userService } from "@/service/apiService";
 import UserModal from "@/components/modals/user-modal";
 import { AlertDialog } from "@/components/ui/alert-dialog";

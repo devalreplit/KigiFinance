@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 
 import { productService } from "@/service/apiService";
 import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
-import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from "lucide-react";
 import ProductModal from "@/components/modals/product-modal";

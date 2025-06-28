@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { userService, companyService, productService, expenseService } from "@/service/apiService";
 import { formatCurrency } from "@/lib/utils";
 import Autocomplete, { AutocompleteOption } from "@/components/ui/autocomplete";
@@ -241,10 +242,9 @@ export default function ExpenseDetailsModal({
         updateItem(scanningIndex, "produtoId", product.id);
         // Note: Produto não tem precoUnitario, apenas define o produto
 
-        toast({
+        toastSuccess({
           title: "Produto encontrado",
           description: `${product.nome} adicionado à lista`,
-          className: "bg-green-600 text-white border-green-600",
         });
       } else {
         toast({
@@ -278,10 +278,9 @@ export default function ExpenseDetailsModal({
       await expenseService.addInstallment(expense.id);
       await loadInstallments();
       
-      toast({
+      toastSuccess({
         title: "Parcela adicionada",
         description: "Nova parcela adicionada com sucesso",
-        className: "bg-green-600 text-white border-green-600",
       });
     } catch (error) {
       toast({
@@ -303,10 +302,9 @@ export default function ExpenseDetailsModal({
       await expenseService.removeInstallment(lastInstallment.id);
       await loadInstallments();
       
-      toast({
+      toastSuccess({
         title: "Parcela removida",
         description: "Última parcela removida com sucesso",
-        className: "bg-green-600 text-white border-green-600",
       });
     } catch (error) {
       toast({
@@ -390,11 +388,9 @@ export default function ExpenseDetailsModal({
 
       await expenseService.update(expense.id, updatedExpense);
 
-      toast({
+      toastSuccess({
         title: "Saída atualizada",
         description: "Saída atualizada com sucesso",
-        variant: "default",
-        className: "bg-green-600 text-white border-green-600",
       });
 
       setIsEditing(false);
@@ -417,10 +413,9 @@ export default function ExpenseDetailsModal({
       setDeleting(true);
       await expenseService.delete(expense.id);
 
-      toast({
+      toastSuccess({
         title: "Saída excluída",
         description: "Saída excluída com sucesso",
-        className: "bg-green-600 text-white border-green-600",
       });
 
       setShowDeleteDialog(false);

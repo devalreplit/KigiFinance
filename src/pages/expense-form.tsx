@@ -22,6 +22,7 @@ import {
   expenseService,
 } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import {
   Plus,
   Trash2,
@@ -540,7 +541,7 @@ export default function ExpenseForm() {
         updateItem(scanningIndex, "produtoId", product.id);
         updateItem(scanningIndex, "precoUnitario", product.precoUnitario);
 
-        toast({
+        toastSuccess({
           title: "Produto encontrado",
           description: `${product.nome} adicionado à lista`,
         });
@@ -622,7 +623,7 @@ export default function ExpenseForm() {
 
       await expenseService.create(expenseData);
 
-      toast({
+      toastSuccess({
         title: "Saída registrada",
         description: "Saída registrada com sucesso",
       });

@@ -26,9 +26,11 @@ import {
   Plus, 
   Minus,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  QrCode
 } from "lucide-react";
 import { Usuario, Empresa, Produto, Saida, ItemSaidaInput } from "../../../types";
+import BarcodeScanner from "@/components/barcode-scanner";
 
 interface ExpenseDetailsModalProps {
   isOpen: boolean;
@@ -50,6 +52,9 @@ export default function ExpenseDetailsModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanningIndex, setScanningIndex] = useState<number | null>(null);
+  const [productSearchLoading, setProductSearchLoading] = useState(false);
   
   const [users, setUsers] = useState<Usuario[]>([]);
   const [companies, setCompanies] = useState<Empresa[]>([]);
@@ -168,6 +173,39 @@ export default function ExpenseDetailsModal({
 
   const updateItem = (index: number, field: keyof ItemSaidaInput, value: number) => {
     const newItems = [...items];
+
+    // Se está atualizando o produto, verificar se já existe em OUTROS itens
+    if (field === "produtoId" && value !== 0) {
+      // Verifica se o produto já existe em outros itens (excluindo o item atual)
+      const productExistsInOtherItems = items.some(
+        (item, i) =>
+          i !== index && item.produtoId === value && item.produtoId !== 0,
+      );
+
+      if (productExistsInOtherItems) {
+        toast({
+          title: "Produto já está na lista",
+          description: "Produto já está na lista, altere a quantidade",
+          variant: "destructive",
+        });
+
+        // Forçar limpeza completa do item
+        newItems[index] = { 
+          produtoId: 0, 
+          quantidade: 1, 
+          precoUnitario: 0 
+        };
+        setItems(newItems);
+
+        // Forçar re-render do componente para garantir limpeza visual
+        setTimeout(() => {
+          setItems([...newItems]);
+        }, 10);
+
+        return;
+      }
+    }
+
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
@@ -175,6 +213,88 @@ export default function ExpenseDetailsModal({
   const removeItem = (index: number) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleProductSearch = async (query: string) => {
+    if (!query || query.length < 3) return;
+
+    try {
+      setProductSearchLoading(true);
+      // Em um cenário real, você faria uma chamada para buscar produtos
+      // baseado na query. Por agora, vamos filtrar os produtos locais
+      // mas mantemos a estrutura para futuras integrações com API
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
+    } finally {
+      setProductSearchLoading(false);
+    }
+  };
+
+  const handleBarcodeScanned = async (barcode: string) => {
+    if (scanningIndex === null) return;
+
+    try {
+      setProductSearchLoading(true);
+      const product = await productService.getByBarcode(barcode);
+
+      if (product) {
+        // Verificar se o produto já está na lista em outros itens (excluindo o item atual)
+        const productExistsInOtherItems = items.some(
+          (item, i) =>
+            i !== scanningIndex &&
+            item.produtoId === product.id &&
+            item.produtoId !== 0,
+        );
+
+        if (productExistsInOtherItems) {
+          toast({
+            title: "Produto já está na lista",
+            description: "Produto já está na lista, altere a quantidade",
+            variant: "destructive",
+          });
+
+          // Forçar limpeza completa do item
+          const newItems = [...items];
+          newItems[scanningIndex] = { 
+            produtoId: 0, 
+            quantidade: 1, 
+            precoUnitario: 0 
+          };
+          setItems(newItems);
+
+          // Forçar re-render do componente para garantir limpeza visual
+          setTimeout(() => {
+            setItems([...newItems]);
+          }, 10);
+
+          return;
+        }
+
+        updateItem(scanningIndex, "produtoId", product.id);
+        // Note: Produto não tem precoUnitario, apenas define o produto
+
+        toast({
+          title: "Produto encontrado",
+          description: `${product.nome} adicionado à lista`,
+        });
+      } else {
+        toast({
+          title: "Produto não encontrado",
+          description: "Nenhum produto encontrado com este código de barras",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao buscar produto",
+        description: "Não foi possível buscar o produto pelo código de barras",
+        variant: "destructive",
+      });
+    } finally {
+      setProductSearchLoading(false);
+      setShowScanner(false);
+      setScanningIndex(null);
     }
   };
 
@@ -352,7 +472,7 @@ export default function ExpenseDetailsModal({
   };
 
   const handleDelete = async () => {
-    if (!expense || !onExpenseDeleted) return;
+    if (!expense) return;
 
     try {
       setDeleting(true);
@@ -373,7 +493,11 @@ export default function ExpenseDetailsModal({
 
       setShowDeleteDialog(false);
       onClose();
-      onExpenseDeleted();
+      
+      // Chamar callback se existir
+      if (onExpenseDeleted) {
+        onExpenseDeleted();
+      }
     } catch (error: any) {
       toast({
         title: "Erro ao excluir saída",
@@ -578,12 +702,30 @@ export default function ExpenseDetailsModal({
                         <div key={index} className="flex gap-2 items-end p-3 bg-white rounded border">
                           <div className="flex-1">
                             <Label className="text-xs">Produto</Label>
-                            <Autocomplete
-                              options={productOptions}
-                              value={item.produtoId.toString()}
-                              onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value))}
-                              placeholder="Selecione um produto"
-                            />
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <Autocomplete
+                                  options={productOptions}
+                                  value={item.produtoId.toString()}
+                                  onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value))}
+                                  placeholder="Selecione um produto"
+                                  onSearch={handleProductSearch}
+                                  loading={productSearchLoading}
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setScanningIndex(index);
+                                  setShowScanner(true);
+                                }}
+                                className="border-green-300 text-green-600 hover:bg-green-50"
+                              >
+                                <QrCode className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="w-24">
                             <Label className="text-xs">Qtd</Label>
@@ -591,7 +733,8 @@ export default function ExpenseDetailsModal({
                               type="number"
                               value={item.quantidade}
                               onChange={(e) => updateItem(index, 'quantidade', parseFloat(e.target.value) || 0)}
-                              min="0"
+                              min="0.1"
+                              max="20"
                               step="0.1"
                             />
                           </div>
@@ -767,42 +910,30 @@ export default function ExpenseDetailsModal({
       </Dialog>
 
       {/* Dialog de Confirmação de Exclusão */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              Confirmar Exclusão
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {expense?.tipoSaida === 'parcelada_pai' 
-                ? `Esta ação irá excluir a saída parcelada e todas as ${installments.length} parcelas relacionadas. Esta ação não pode ser desfeita.`
-                : 'Esta ação irá excluir a saída permanentemente. Esta ação não pode ser desfeita.'
-              }
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Excluindo...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AlertDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Confirmar Exclusão"
+        description={
+          expense?.tipoSaida === 'parcelada_pai' 
+            ? `Esta ação irá excluir a saída parcelada e todas as ${installments.length} parcelas relacionadas. Esta ação não pode ser desfeita.`
+            : 'Esta ação irá excluir a saída permanentemente. Esta ação não pode ser desfeita.'
+        }
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        onConfirm={handleDelete}
+        destructive={true}
+      />
+
+      {/* Scanner de Código de Barras */}
+      <BarcodeScanner
+        isOpen={showScanner}
+        onClose={() => {
+          setShowScanner(false);
+          setScanningIndex(null);
+        }}
+        onScan={handleBarcodeScanned}
+      />
     </>
   );
 }

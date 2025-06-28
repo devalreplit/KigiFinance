@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { userService, companyService, productService, expenseService } from "@/service/apiService";
 import { formatCurrency } from "@/lib/utils";
@@ -80,25 +79,29 @@ export default function ExpenseDetailsModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (expense && users.length > 0) {
+    if (isOpen && expense) {
       initializeFormData();
-      if (expense.tipoSaida === 'parcelada_pai') {
-        loadInstallments();
-      }
     }
-  }, [expense, users]);
+  }, [isOpen, expense]);
+
+  useEffect(() => {
+    if (isOpen && expense?.tipoSaida === "parcelada_pai") {
+      loadInstallments();
+    }
+  }, [isOpen, expense?.tipoSaida]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, companiesData, productsData] = await Promise.all([
+      const [usersResponse, companiesResponse, productsResponse] = await Promise.all([
         userService.getAll(),
         companyService.getAll(),
         productService.getAll(),
       ]);
-      setUsers(usersData);
-      setCompanies(companiesData);
-      setProducts(productsData);
+      
+      setUsers(usersResponse);
+      setCompanies(companiesResponse);
+      setProducts(productsResponse);
     } catch (error) {
       toast({
         title: "Erro ao carregar dados",
@@ -111,26 +114,23 @@ export default function ExpenseDetailsModal({
   };
 
   const loadInstallments = async () => {
-    if (!expense || expense.tipoSaida !== 'parcelada_pai') return;
+    if (!expense || expense.tipoSaida !== "parcelada_pai") return;
     
     try {
       setLoadingInstallments(true);
-      const allExpenses = await expenseService.getAll();
-      const expenseInstallments = allExpenses.filter(
-        saida => saida.saidaPaiId === expense.id
-      ).sort((a, b) => a.numeroParcela - b.numeroParcela);
-      setInstallments(expenseInstallments);
+      const installmentsData = await expenseService.getInstallments(expense.id);
+      setInstallments(installmentsData);
     } catch (error) {
-      console.error('Erro ao carregar parcelas:', error);
-      toast({
-        title: "Erro ao carregar parcelas",
-        description: "Não foi possível carregar as parcelas desta saída",
-        variant: "destructive",
-      });
+      console.error("Erro ao carregar parcelas:", error);
     } finally {
       setLoadingInstallments(false);
     }
   };
+
+  const productOptions: AutocompleteOption[] = products.map(product => ({
+    value: product.id.toString(),
+    label: product.nome,
+  }));
 
   const initializeFormData = () => {
     if (!expense) return;
@@ -173,39 +173,6 @@ export default function ExpenseDetailsModal({
 
   const updateItem = (index: number, field: keyof ItemSaidaInput, value: number) => {
     const newItems = [...items];
-
-    // Se está atualizando o produto, verificar se já existe em OUTROS itens
-    if (field === "produtoId" && value !== 0) {
-      // Verifica se o produto já existe em outros itens (excluindo o item atual)
-      const productExistsInOtherItems = items.some(
-        (item, i) =>
-          i !== index && item.produtoId === value && item.produtoId !== 0,
-      );
-
-      if (productExistsInOtherItems) {
-        toast({
-          title: "Produto já está na lista",
-          description: "Produto já está na lista, altere a quantidade",
-          variant: "destructive",
-        });
-
-        // Forçar limpeza completa do item
-        newItems[index] = { 
-          produtoId: 0, 
-          quantidade: 1, 
-          precoUnitario: 0 
-        };
-        setItems(newItems);
-
-        // Forçar re-render do componente para garantir limpeza visual
-        setTimeout(() => {
-          setItems([...newItems]);
-        }, 10);
-
-        return;
-      }
-    }
-
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
   };
@@ -303,90 +270,41 @@ export default function ExpenseDetailsModal({
   };
 
   const handleAddInstallment = async () => {
-    if (!expense || expense.tipoSaida !== 'parcelada_pai') return;
+    if (!expense || expense.tipoSaida !== "parcelada_pai") return;
 
     try {
-      setSaving(true);
-      const novoNumero = Math.max(...installments.map(i => i.numeroParcela), expense.numeroParcela) + 1;
-      const valorParcela = expense.valorTotal;
+      setLoadingInstallments(true);
+      await expenseService.addInstallment(expense.id);
+      await loadInstallments();
       
-      // Calcular data da nova parcela (próximo mês da última parcela)
-      const ultimaParcela = installments.length > 0 
-        ? installments[installments.length - 1] 
-        : expense;
-      const dataUltima = new Date(ultimaParcela.dataSaida);
-      const novaData = new Date(dataUltima);
-      novaData.setMonth(novaData.getMonth() + 1);
-
-      const novaParcela = {
-        saidaPaiId: expense.id,
-        tipoSaida: 'parcela' as const,
-        numeroParcela: novoNumero,
-        usuarioRegistroId: expense.usuarioRegistroId,
-        dataSaida: novaData.toISOString().split('T')[0],
-        empresaId: expense.empresaId,
-        tipoPagamento: expense.tipoPagamento,
-        usuariosTitularesIds: expense.usuariosTitularesIds,
-        itens: [],
-        observacao: `Parcela ${novoNumero}/${(expense.totalParcelas || 1) + 1}`,
-      };
-
-      await expenseService.create(novaParcela);
-      
-      // Atualizar total de parcelas da saída pai
-      await expenseService.update(expense.id, {
-        totalParcelas: (expense.totalParcelas || 1) + 1
-      });
-
       toast({
         title: "Parcela adicionada",
-        description: "Nova parcela criada com sucesso",
+        description: "Nova parcela adicionada com sucesso",
       });
-
-      loadInstallments();
-      onExpenseUpdated();
     } catch (error) {
       toast({
         title: "Erro ao adicionar parcela",
-        description: "Não foi possível adicionar a nova parcela",
+        description: "Não foi possível adicionar nova parcela",
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setLoadingInstallments(false);
     }
   };
 
   const handleRemoveInstallment = async () => {
-    if (!expense || expense.tipoSaida !== 'parcelada_pai' || installments.length === 0) return;
+    if (!expense || expense.tipoSaida !== "parcelada_pai" || installments.length === 0) return;
 
     try {
-      setSaving(true);
-      const ultimaParcela = installments[installments.length - 1];
+      setLoadingInstallments(true);
+      const lastInstallment = installments[installments.length - 1];
+      await expenseService.removeInstallment(lastInstallment.id);
+      await loadInstallments();
       
-      // Verificar se a parcela já foi paga (data já passou)
-      if (new Date(ultimaParcela.dataSaida) <= new Date()) {
-        toast({
-          title: "Não é possível remover",
-          description: "Não é possível remover uma parcela que já venceu",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      await expenseService.delete(ultimaParcela.id);
-      
-      // Atualizar total de parcelas da saída pai
-      await expenseService.update(expense.id, {
-        totalParcelas: Math.max(1, (expense.totalParcelas || 1) - 1)
-      });
-
       toast({
         title: "Parcela removida",
-        description: "Parcela removida com sucesso",
+        description: "Última parcela removida com sucesso",
       });
-
-      loadInstallments();
-      onExpenseUpdated();
     } catch (error) {
       toast({
         title: "Erro ao remover parcela",
@@ -394,64 +312,72 @@ export default function ExpenseDetailsModal({
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setLoadingInstallments(false);
     }
   };
 
   const handleSave = async () => {
     if (!expense) return;
 
+    // Validações
+    if (selectedUsers.length === 0) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione pelo menos um responsável",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.empresaId) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione uma empresa",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (items.length === 0 || items.some(item => item.produtoId === 0)) {
+      toast({
+        title: "Erro de validação",
+        description: "Todos os itens devem ter um produto selecionado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (items.some(item => item.quantidade <= 0)) {
+      toast({
+        title: "Erro de validação",
+        description: "Todos os itens devem ter quantidade maior que zero",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (items.some(item => item.precoUnitario <= 0)) {
+      toast({
+        title: "Erro de validação",
+        description: "Todos os itens devem ter preço unitário maior que zero",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setSaving(true);
 
-      // Validações
-      if (selectedUsers.length === 0) {
-        toast({
-          title: "Erro de validação",
-          description: "Selecione pelo menos um responsável",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!formData.empresaId) {
-        toast({
-          title: "Erro de validação",
-          description: "Selecione uma empresa",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (items.length === 0 || items.some(item => item.produtoId === 0 || item.quantidade <= 0 || item.precoUnitario <= 0)) {
-        toast({
-          title: "Erro de validação",
-          description: "Todos os itens devem ter produto, quantidade e preço válidos",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const valorTotal = calculateTotal();
-
-      const updatedExpenseData = {
+      const updatedExpense = {
+        ...expense,
         empresaId: parseInt(formData.empresaId),
         usuariosTitularesIds: selectedUsers,
+        itens: items,
         observacao: formData.observacao,
-        valorTotal: valorTotal,
-        itens: items.map(item => {
-          const product = products.find(p => p.id === item.produtoId);
-          return {
-            produtoId: item.produtoId,
-            nomeProduto: product?.nome || 'Produto não encontrado',
-            quantidade: item.quantidade,
-            precoUnitario: item.precoUnitario,
-            total: item.quantidade * item.precoUnitario,
-          };
-        }),
+        valorTotal: calculateTotal(),
       };
 
-      await expenseService.update(expense.id, updatedExpenseData);
+      await expenseService.update(expense.id, updatedExpense);
 
       toast({
         title: "Saída atualizada",
@@ -460,10 +386,10 @@ export default function ExpenseDetailsModal({
 
       setIsEditing(false);
       onExpenseUpdated();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro ao atualizar saída",
-        description: error.response?.data?.message || "Não foi possível atualizar a saída",
+        description: "Não foi possível atualizar a saída",
         variant: "destructive",
       });
     } finally {
@@ -476,32 +402,23 @@ export default function ExpenseDetailsModal({
 
     try {
       setDeleting(true);
-
-      // Se for saída parcelada, deletar também as parcelas filhas
-      if (expense.tipoSaida === 'parcelada_pai') {
-        for (const installment of installments) {
-          await expenseService.delete(installment.id);
-        }
-      }
-
       await expenseService.delete(expense.id);
 
       toast({
         title: "Saída excluída",
-        description: "Saída e todas as parcelas relacionadas foram excluídas com sucesso",
+        description: "Saída excluída com sucesso",
       });
 
       setShowDeleteDialog(false);
       onClose();
       
-      // Chamar callback se existir
       if (onExpenseDeleted) {
         onExpenseDeleted();
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro ao excluir saída",
-        description: error.response?.data?.message || "Não foi possível excluir a saída",
+        description: "Não foi possível excluir a saída",
         variant: "destructive",
       });
     } finally {
@@ -509,11 +426,13 @@ export default function ExpenseDetailsModal({
     }
   };
 
-  const productOptions: AutocompleteOption[] = products.map((product) => ({
-    value: product.id.toString(),
-    label: product.nome,
-    id: product.id,
-  }));
+  const toggleUserSelection = (userId: number) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
 
   if (!expense) return null;
 
@@ -523,7 +442,10 @@ export default function ExpenseDetailsModal({
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              <span>Detalhes da Saída</span>
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-green-600" />
+                Detalhes da Saída
+              </div>
               <div className="flex gap-2">
                 {!isEditing ? (
                   <>
@@ -531,7 +453,7 @@ export default function ExpenseDetailsModal({
                       variant="outline"
                       size="sm"
                       onClick={() => setIsEditing(true)}
-                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                      className="text-green-600 border-green-300 hover:bg-green-50"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Editar
@@ -540,7 +462,7 @@ export default function ExpenseDetailsModal({
                       variant="outline"
                       size="sm"
                       onClick={() => setShowDeleteDialog(true)}
-                      className="text-red-600 border-red-600 hover:bg-red-50"
+                      className="text-red-600 border-red-300 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Excluir
@@ -567,11 +489,16 @@ export default function ExpenseDetailsModal({
                       className="bg-green-600 hover:bg-green-700"
                     >
                       {saving ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Salvando...
+                        </>
                       ) : (
-                        <Save className="h-4 w-4 mr-2" />
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Salvar
+                        </>
                       )}
-                      Salvar
                     </Button>
                   </>
                 )}
@@ -580,31 +507,27 @@ export default function ExpenseDetailsModal({
           </DialogHeader>
 
           {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin mr-2" />
-              <span>Carregando dados...</span>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-green-600" />
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 mt-6">
               {/* Informações Básicas */}
               <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
                 <CardContent className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label className="font-semibold text-green-800">Data da Saída</Label>
                       <p className="text-sm mt-1">{formatDate(expense.dataSaida)}</p>
                     </div>
                     <div>
                       <Label className="font-semibold text-green-800">Valor Total</Label>
-                      <p className="text-lg font-bold text-green-600 mt-1">
-                        {formatCurrency(isEditing ? calculateTotal() : expense.valorTotal)}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="font-semibold text-green-800">Tipo de Pagamento</Label>
-                      <div className="mt-1">
-                        <Badge variant={expense.tipoSaida === "parcelada_pai" ? "default" : "secondary"}>
-                          {expense.tipoSaida === "parcelada_pai" ? "Parcelado" : "À Vista"}
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 font-medium">
+                          {formatCurrency(isEditing ? calculateTotal() : expense.valorTotal)}
+                        </Badge>
+                        <Badge variant={expense.tipoPagamento === "parcelado" ? "default" : "secondary"}>
+                          {expense.tipoPagamento === "parcelada_pai" ? "Parcelado" : "À Vista"}
                         </Badge>
                         {expense.tipoSaida === "parcelada_pai" && expense.totalParcelas && (
                           <span className="ml-2 text-sm text-gray-600">
@@ -618,6 +541,34 @@ export default function ExpenseDetailsModal({
                       <p className="text-sm mt-1">{formatDate(expense.dataHoraRegistro)}</p>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Responsáveis */}
+              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Users className="h-4 w-4 text-green-600" />
+                    <Label className="font-semibold text-green-800">Responsáveis</Label>
+                  </div>
+                  
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        {users.map((user) => (
+                          <div key={user.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={selectedUsers.includes(user.id)}
+                              onCheckedChange={() => toggleUserSelection(user.id)}
+                            />
+                            <Label className="text-sm">{user.nome}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm">{getUserNames(expense.usuariosTitularesIds)}</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -648,38 +599,6 @@ export default function ExpenseDetailsModal({
                 </CardContent>
               </Card>
 
-              {/* Responsáveis */}
-              <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Users className="h-4 w-4 text-green-600" />
-                    <Label className="font-semibold text-green-800">Responsáveis</Label>
-                  </div>
-                  
-                  {isEditing ? (
-                    <div className="space-y-2">
-                      {users.map((user) => (
-                        <div key={user.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={selectedUsers.includes(user.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedUsers([...selectedUsers, user.id]);
-                              } else {
-                                setSelectedUsers(selectedUsers.filter(id => id !== user.id));
-                              }
-                            }}
-                          />
-                          <Label className="cursor-pointer">{user.nome}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm">{getUserNames(expense.usuariosTitularesIds)}</p>
-                  )}
-                </CardContent>
-              </Card>
-
               {/* Itens da Compra */}
               <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
                 <CardContent className="p-4">
@@ -689,7 +608,13 @@ export default function ExpenseDetailsModal({
                       <Label className="font-semibold text-green-800">Itens da Compra</Label>
                     </div>
                     {isEditing && (
-                      <Button variant="outline" size="sm" onClick={addItem}>
+                      <Button
+                        type="button"
+                        onClick={addItem}
+                        variant="outline"
+                        size="sm"
+                        className="bg-green-500 text-white hover:bg-green-600"
+                      >
                         <Plus className="h-4 w-4 mr-2" />
                         Adicionar Item
                       </Button>
@@ -699,20 +624,57 @@ export default function ExpenseDetailsModal({
                   <div className="space-y-3">
                     {isEditing ? (
                       items.map((item, index) => (
-                        <div key={index} className="flex gap-2 items-end p-3 bg-white rounded border">
-                          <div className="flex-1">
-                            <Label className="text-xs">Produto</Label>
+                        <div
+                          key={index}
+                          className="relative grid grid-cols-1 sm:grid-cols-12 gap-4 p-4 border rounded-lg"
+                          style={{ backgroundColor: '#f0fdf4' }}
+                        >
+                          {/* Botão de excluir no canto superior direito - desktop */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                            className={`absolute top-2 right-2 hidden sm:flex z-10 ${
+                              items.length === 1 
+                                ? "text-gray-400 hover:text-gray-400 bg-gray-100 hover:bg-gray-100 border-gray-200 cursor-not-allowed" 
+                                : "text-green-600 hover:text-green-700"
+                            }`}
+                            disabled={items.length === 1}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+
+                          <div className="sm:col-span-5">
+                            <div className="flex items-center justify-between mb-2">
+                              <Label className="text-center flex-1 sm:text-left">Produto *</Label>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeItem(index)}
+                                className={`sm:hidden ${
+                                  items.length === 1 
+                                    ? "text-gray-400 hover:text-gray-400 bg-gray-100 hover:bg-gray-100 border-gray-200 cursor-not-allowed" 
+                                    : "text-green-600 hover:text-green-700"
+                                }`}
+                                disabled={items.length === 1}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                             <div className="flex gap-2">
-                              <div className="flex-1">
-                                <Autocomplete
-                                  options={productOptions}
-                                  value={item.produtoId.toString()}
-                                  onValueChange={(value) => updateItem(index, 'produtoId', parseInt(value))}
-                                  placeholder="Selecione um produto"
-                                  onSearch={handleProductSearch}
-                                  loading={productSearchLoading}
-                                />
-                              </div>
+                              <Autocomplete
+                                key={`autocomplete-${index}-${item.produtoId}-${Date.now()}`}
+                                options={productOptions}
+                                value={item.produtoId > 0 ? item.produtoId.toString() : ""}
+                                onValueChange={(value) => updateItem(index, "produtoId", parseInt(value) || 0)}
+                                placeholder="Digite o nome do produto..."
+                                onSearch={handleProductSearch}
+                                loading={productSearchLoading}
+                                emptyMessage="Nenhum produto encontrado"
+                                className="flex-1"
+                              />
                               <Button
                                 type="button"
                                 variant="outline"
@@ -721,48 +683,121 @@ export default function ExpenseDetailsModal({
                                   setScanningIndex(index);
                                   setShowScanner(true);
                                 }}
-                                className="border-green-300 text-green-600 hover:bg-green-50"
                               >
                                 <QrCode className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
-                          <div className="w-24">
-                            <Label className="text-xs">Qtd</Label>
-                            <Input
-                              type="number"
-                              value={item.quantidade}
-                              onChange={(e) => updateItem(index, 'quantidade', parseFloat(e.target.value) || 0)}
-                              min="0.1"
-                              max="20"
-                              step="0.1"
-                            />
-                          </div>
-                          <div className="w-32">
-                            <Label className="text-xs">Preço Unit.</Label>
-                            <Input
-                              type="number"
-                              value={item.precoUnitario}
-                              onChange={(e) => updateItem(index, 'precoUnitario', parseFloat(e.target.value) || 0)}
-                              min="0"
-                              step="0.01"
-                            />
-                          </div>
-                          <div className="w-32">
-                            <Label className="text-xs">Total</Label>
-                            <div className="p-2 bg-gray-50 rounded text-sm font-medium">
-                              {formatCurrency(item.quantidade * item.precoUnitario)}
+
+                          <div className="sm:col-span-3">
+                            <Label className="text-center block mb-2 sm:text-center">Quantidade * (0-20)</Label>
+                            <div className="flex items-center justify-center gap-4 py-2">
+                              <button
+                                type="button"
+                                className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() =>
+                                  item.quantidade > 0 &&
+                                  updateItem(index, "quantidade", item.quantidade - 1)
+                                }
+                                disabled={item.quantidade <= 0}
+                              >
+                                -
+                              </button>
+
+                              <div className="flex flex-col items-center">
+                                <Input
+                                  type="tel"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  value={item.quantidade.toString()}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/[^0-9]/g, "");
+                                    const numValue = parseInt(value) || 0;
+                                    if (numValue >= 0 && numValue <= 20) {
+                                      updateItem(index, "quantidade", numValue);
+                                    }
+                                  }}
+                                  className="w-20 text-center text-xl font-bold"
+                                  autoComplete="off"
+                                  autoCorrect="off"
+                                  spellCheck="false"
+                                />
+                                <span className="text-xs text-gray-500 mt-1">0-20</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() =>
+                                  item.quantidade < 20 &&
+                                  updateItem(index, "quantidade", item.quantidade + 1)
+                                }
+                                disabled={item.quantidade >= 20}
+                              >
+                                +
+                              </button>
                             </div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeItem(index)}
-                            disabled={items.length === 1}
-                            className="text-red-600 border-red-300 hover:bg-red-50"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
+
+                          <div className="sm:col-span-3">
+                            <Label className="text-center block mb-2 sm:text-right text-sm font-medium text-green-700 dark:text-green-300">
+                              Preço Unitário *
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">
+                                R$
+                              </span>
+                              <Input
+                                type="text"
+                                inputMode="decimal"
+                                value={formatCurrency(item.precoUnitario).replace("R$", "").trim()}
+                                onChange={(e) => {
+                                  // Remove tudo que não é número
+                                  const numericValue = e.target.value.replace(/\D/g, "");
+
+                                  // Se vazio, define como 0
+                                  if (numericValue === "") {
+                                    updateItem(index, "precoUnitario", 0);
+                                    return;
+                                  }
+
+                                  // Converte centavos para reais (divide por 100)
+                                  const valueInReais = parseInt(numericValue) / 100;
+
+                                  // Limita a 999999.99 (R$ 999.999,99)
+                                  if (valueInReais <= 999999.99) {
+                                    updateItem(index, "precoUnitario", valueInReais);
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  // Permite: números, backspace, delete, tab, escape, enter
+                                  if (
+                                    [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                                    // Permite: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                                    (e.keyCode === 88 && e.ctrlKey === true) ||
+                                    // Permite: números do teclado principal e numérico
+                                    (e.keyCode >= 48 && e.keyCode <= 57) ||
+                                    (e.keyCode >= 96 && e.keyCode <= 105)
+                                  ) {
+                                    return;
+                                  }
+                                  // Para outros, cancela
+                                  e.preventDefault();
+                                }}
+                                placeholder="0,00"
+                                className="text-center text-lg font-medium pl-12 pr-4"
+                                autoComplete="off"
+                                autoCorrect="off"
+                                spellCheck="false"
+                              />
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1 text-center">
+                              Digite apenas números (centavos)
+                            </div>
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -820,64 +855,20 @@ export default function ExpenseDetailsModal({
                     </div>
                     
                     {loadingInstallments ? (
-                      <div className="flex justify-center items-center py-4">
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        <span className="text-sm">Carregando parcelas...</span>
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-4 w-4 animate-spin text-green-600" />
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {/* Primeira parcela (saída pai) */}
-                        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                              <span className="text-xs font-bold text-green-600">1</span>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">Parcela 1</p>
-                              <p className="text-xs text-gray-500">
-                                Vencimento: {formatDate(expense.dataSaida)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-bold text-green-600">
-                              {formatCurrency(expense.valorTotal)}
-                            </p>
-                            <Badge variant="default" className="text-xs">Paga</Badge>
-                          </div>
-                        </div>
-
-                        {/* Parcelas filhas */}
-                        {installments.map((installment) => (
-                          <div key={installment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-100">
-                            <div className="flex items-center gap-3">
-                              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                                <span className="text-xs font-bold text-green-600">
-                                  {installment.numeroParcela}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Parcela {installment.numeroParcela}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  Vencimento: {formatDate(installment.dataSaida)}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-bold text-green-600">
+                      <div className="space-y-2">
+                        {installments.map((installment, index) => (
+                          <div key={installment.id} className="flex justify-between items-center p-2 bg-white rounded border">
+                            <span className="text-sm">
+                              Parcela {installment.numeroParcela} de {expense.totalParcelas}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{formatDate(installment.dataSaida)}</span>
+                              <Badge variant="secondary">
                                 {formatCurrency(installment.valorTotal)}
-                              </p>
-                              <Badge
-                                variant={
-                                  new Date(installment.dataSaida) <= new Date() 
-                                    ? 'default' 
-                                    : 'secondary'
-                                }
-                                className="text-xs"
-                              >
-                                {new Date(installment.dataSaida) <= new Date() ? 'Paga' : 'A vencer'}
                               </Badge>
                             </div>
                           </div>
@@ -891,16 +882,17 @@ export default function ExpenseDetailsModal({
               {/* Observações */}
               <Card className="border-green-200" style={{ backgroundColor: '#f0fdf4' }}>
                 <CardContent className="p-4">
-                  <Label className="font-semibold text-green-800">Observações</Label>
+                  <Label className="font-semibold text-green-800 mb-3 block">Observações</Label>
+                  
                   {isEditing ? (
                     <Textarea
                       value={formData.observacao}
                       onChange={(e) => setFormData(prev => ({ ...prev, observacao: e.target.value }))}
-                      placeholder="Digite observações sobre esta saída..."
-                      className="mt-2"
+                      placeholder="Adicione observações sobre esta saída..."
+                      rows={3}
                     />
                   ) : (
-                    <p className="text-sm mt-2">{expense.observacao || "Nenhuma observação"}</p>
+                    <p className="text-sm">{expense.observacao || "Nenhuma observação"}</p>
                   )}
                 </CardContent>
               </Card>

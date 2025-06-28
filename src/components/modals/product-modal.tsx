@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { productService } from "@/service/apiService";
 import { QrCode } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
@@ -51,10 +52,9 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
     e.preventDefault();
 
     if (!formData.nome.trim()) {
-      toast({
+      toastError({
         title: "Campos obrigatórios",
         description: "Nome é obrigatório",
-        variant: "destructive",
       });
       return;
     }
@@ -71,13 +71,13 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
 
       if (product) {
         await productService.update(product.id, productData);
-        toast({
+        toastSuccess({
           title: "Produto atualizado",
           description: "Produto atualizado com sucesso",
         });
       } else {
         await productService.create(productData);
-        toast({
+        toastSuccess({
           title: "Produto criado",
           description: "Produto criado com sucesso",
         });
@@ -87,10 +87,9 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
       onClose();
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
-      toast({
+      toastError({
         title: "Erro",
         description: product ? "Erro ao atualizar produto" : "Erro ao criar produto",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -104,7 +103,7 @@ export default function ProductModal({ open, onClose, product, onSuccess }: Prod
   const handleBarcodeScanned = (barcode: string) => {
     handleInputChange("codigoBarras", barcode);
     setShowScanner(false);
-    toast({
+    toastSuccess({
       title: "Código detectado",
       description: `Código ${barcode} adicionado ao produto`,
     });

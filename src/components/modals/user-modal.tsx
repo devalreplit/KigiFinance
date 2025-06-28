@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { userService } from "@/service/apiService";
 import { Usuario, UsuarioInput } from "../../../types";
 
@@ -47,19 +48,17 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
     e.preventDefault();
 
     if (!formData.nome.trim() || !formData.login.trim()) {
-      toast({
+      toastError({
         title: "Campos obrigatórios",
         description: "Nome e login são obrigatórios",
-        variant: "destructive",
       });
       return;
     }
 
     if (!user && !formData.senha.trim()) {
-      toast({
+      toastError({
         title: "Senha obrigatória",
         description: "A senha é obrigatória para novos usuários",
-        variant: "destructive",
       });
       return;
     }
@@ -76,13 +75,13 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
 
       if (user) {
         await userService.update(user.id, userData);
-        toast({
+        toastSuccess({
           title: "Usuário atualizado",
           description: "Usuário atualizado com sucesso",
         });
       } else {
         await userService.create(userData);
-        toast({
+        toastSuccess({
           title: "Usuário criado",
           description: "Usuário criado com sucesso",
         });
@@ -91,10 +90,9 @@ export default function UserModal({ open, onClose, user, onSuccess }: UserModalP
       onSuccess();
       onClose();
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro",
         description: user ? "Erro ao atualizar usuário" : "Erro ao criar usuário",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { companyService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Building2, Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import CompanyModal from "@/components/modals/company-modal";
@@ -30,10 +31,9 @@ export default function Companies() {
       const data = await companyService.getAll();
       setCompanies(data);
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao carregar empresas",
         description: "Não foi possível carregar as empresas",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -57,15 +57,14 @@ export default function Companies() {
       setDeleting(companyToDelete.id);
       await companyService.delete(companyToDelete.id);
       await loadCompanies();
-      toast({
+      toastSuccess({
         title: "Empresa excluída",
         description: "Empresa excluída com sucesso",
       });
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao excluir empresa",
         description: "Não foi possível excluir a empresa",
-        variant: "destructive",
       });
     } finally {
       setDeleting(null);

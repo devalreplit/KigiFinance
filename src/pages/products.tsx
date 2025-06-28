@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { productService } from "@/service/apiService";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Plus, Search, Edit, Trash2, Package, Loader2 } from "lucide-react";
 import ProductModal from "@/components/modals/product-modal";
@@ -28,10 +29,9 @@ export default function Products() {
       const data = await productService.getAll();
       setProducts(data);
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao carregar produtos",
         description: "Não foi possível carregar a lista de produtos",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -64,16 +64,15 @@ export default function Products() {
     try {
       setDeleting(productToDelete.id);
       await productService.delete(productToDelete.id);
-      toast({
+      toastSuccess({
         title: "Produto excluído",
         description: "Produto excluído com sucesso",
       });
       loadProducts();
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao excluir produto",
         description: "Não foi possível excluir o produto",
-        variant: "destructive",
       });
     } finally {
       setDeleting(null);

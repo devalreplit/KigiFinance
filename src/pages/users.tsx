@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { userService } from "@/service/apiService";
 import UserModal from "@/components/modals/user-modal";
 import { AlertDialog } from "@/components/ui/alert-dialog";
@@ -30,10 +31,9 @@ export default function Users() {
       const data = await userService.getAll();
       setUsers(data);
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao carregar usuários",
         description: "Não foi possível carregar a lista de usuários",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -57,15 +57,14 @@ export default function Users() {
       setDeleting(userToDelete.id);
       await userService.delete(userToDelete.id);
       await loadUsers();
-      toast({
+      toastSuccess({
         title: "Usuário excluído",
         description: "Usuário excluído com sucesso",
       });
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro ao excluir usuário",
         description: "Não foi possível excluir o usuário",
-        variant: "destructive",
       });
     } finally {
       setDeleting(null);

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { companyService } from "@/service/apiService";
 import { Empresa, EmpresaInput } from "../../../types";
 
@@ -37,10 +38,9 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
     e.preventDefault();
 
     if (!formData.nome.trim()) {
-      toast({
+      toastError({
         title: "Campos obrigatórios",
         description: "Nome da empresa é obrigatório",
-        variant: "destructive",
       });
       return;
     }
@@ -54,13 +54,13 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
 
       if (company) {
         await companyService.update(company.id, empresaData);
-        toast({
+        toastSuccess({
           title: "Empresa atualizada",
           description: "Empresa atualizada com sucesso",
         });
       } else {
         await companyService.create(empresaData);
-        toast({
+        toastSuccess({
           title: "Empresa criada",
           description: "Empresa criada com sucesso",
         });
@@ -69,10 +69,9 @@ export default function CompanyModal({ open, onClose, company, onSuccess }: Comp
       onSuccess();
       onClose();
     } catch (error) {
-      toast({
+      toastError({
         title: "Erro",
         description: company ? "Erro ao atualizar empresa" : "Erro ao criar empresa",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

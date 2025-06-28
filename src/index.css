@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Toast styles for consistent colors */
+.toast-success {
+  background-color: #16a34a !important;
+  color: white !important;
+  border: 1px solid #15803d !important;
+}
+
+.toast-error {
+  background-color: #dc2626 !important;
+  color: white !important;
+  border: 1px solid #b91c1c !important;
+}
+
+.toast-warning {
+  background-color: #d97706 !important;
+  color: white !important;
+  border: 1px solid #b45309 !important;
+}
+
+.toast-info {
+  background-color: #2563eb !important;
+  color: white !important;
+  border: 1px solid #1d4ed8 !important;
+}
+
 
 
 @layer base {

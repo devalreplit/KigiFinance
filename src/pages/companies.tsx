@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { companyService } from "@/service/apiService";
-import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError, toastInfo, toastWarning } from "@/lib/toast-utils";
 import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Building2, Plus, Edit, Trash2, Loader2 } from "lucide-react";

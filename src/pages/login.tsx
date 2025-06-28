@@ -49,6 +49,26 @@ export default function Login({ onLogin }: LoginProps) {
     console.log('✅ localStorage limpo com sucesso');
   }, []);
 
+  /**
+   * FUNÇÃO HANDLESUBMIT - PROCESSAR FORMULÁRIO DE LOGIN
+   * 
+   * @param e - Evento de submit do formulário
+   * 
+   * Responsabilidade:
+   * - Validar campos obrigatórios antes do envio
+   * - Chamar serviço de autenticação com credenciais
+   * - Exibir mensagens de sucesso ou erro apropriadas
+   * - Gerenciar estado de loading durante processo
+   * - Prevenir comportamento padrão do formulário
+   * 
+   * Regras de Negócio:
+   * - Login e senha são obrigatórios
+   * - Loading é ativado durante autenticação
+   * - Sucesso exibe toast de boas-vindas
+   * - Erro exibe mensagem específica ou genérica
+   * - Redirecionamento é automático via AuthContext
+   * - Loading sempre é desativado ao final (finally)
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

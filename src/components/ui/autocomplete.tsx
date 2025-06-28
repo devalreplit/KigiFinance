@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useState, useRef, useEffect } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
@@ -84,10 +83,25 @@ export default function Autocomplete({
     }
   }, [value]);
 
+  /**
+   * FUNÇÃO HANDLEINPUTCHANGE - GERENCIAR MUDANÇAS NO INPUT
+   * 
+   * @param e - Evento de mudança do input
+   * 
+   * Responsabilidade:
+   * - Atualizar query de busca baseada no input do usuário
+   * - Controlar abertura/fechamento do dropdown baseado no comprimento
+   * - Implementar lógica de busca progressiva
+   * 
+   * Regras de Negócio:
+   * - Dropdown abre quando query tem 3+ caracteres
+   * - Dropdown fecha quando query tem menos de 3 caracteres
+   * - Query é sempre atualizada independente do estado do dropdown
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     if (!isOpen && query) {
       setIsOpen(true);
     }
@@ -98,18 +112,55 @@ export default function Autocomplete({
     }
   };
 
+  /**
+   * FUNÇÃO HANDLEOPTIONSELECT - SELECIONAR OPÇÃO DO DROPDOWN
+   * 
+   * @param option - Opção selecionada pelo usuário
+   * 
+   * Responsabilidade:
+   * - Notificar componente pai sobre seleção via callback
+   * - Fechar dropdown após seleção
+   * - Limpar query de busca
+   * - Remover foco do input
+   * 
+   * Regras de Negócio:
+   * - Callback onValueChange é chamado com valor da opção
+   * - Dropdown é fechado imediatamente
+   * - Interface retorna ao estado inicial
+   * - Foco é removido para melhor UX
+   */
   const handleOptionSelect = (option: AutocompleteOption) => {
     setSearchQuery(option.label);
     setIsOpen(false);
     setHighlightedIndex(-1);
-    
+
     if (onValueChange) {
       onValueChange(option.value);
     }
-    
+
     inputRef.current?.blur();
   };
 
+  /**
+   * FUNÇÃO HANDLEKEYDOWN - NAVEGAÇÃO POR TECLADO
+   * 
+   * @param e - Evento de tecla pressionada
+   * 
+   * Responsabilidade:
+   * - Implementar navegação por setas (ArrowUp/ArrowDown)
+   * - Permitir seleção por Enter
+   * - Implementar fechamento por Escape
+   * - Controlar highlight de opções
+   * - Gerenciar abertura por ArrowDown quando fechado
+   * 
+   * Regras de Negócio:
+   * - ArrowDown quando fechado: abre dropdown se query válida
+   * - ArrowDown quando aberto: move highlight para baixo
+   * - ArrowUp: move highlight para cima
+   * - Enter: seleciona opção highlighted
+   * - Escape: fecha dropdown e remove foco
+   * - Navegação fica dentro dos limites das opções
+   */
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) {
       if (e.key === "ArrowDown" || e.key === "Enter") {
@@ -127,21 +178,21 @@ export default function Autocomplete({
           prev < filteredOptions.length - 1 ? prev + 1 : 0
         );
         break;
-        
+
       case "ArrowUp":
         e.preventDefault();
         setHighlightedIndex(prev => 
           prev > 0 ? prev - 1 : filteredOptions.length - 1
         );
         break;
-        
+
       case "Enter":
         e.preventDefault();
         if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
           handleOptionSelect(filteredOptions[highlightedIndex]);
         }
         break;
-        
+
       case "Escape":
         setIsOpen(false);
         setHighlightedIndex(-1);
@@ -160,12 +211,38 @@ export default function Autocomplete({
     inputRef.current?.focus();
   };
 
+  /**
+   * FUNÇÃO HANDLEINPUTFOCUS - TRATAR FOCO NO INPUT
+   * 
+   * Responsabilidade:
+   * - Reabrir dropdown se query já tem 3+ caracteres
+   * - Melhorar experiência do usuário em re-foco
+   * - Manter consistência de comportamento
+   * 
+   * Regras de Negócio:
+   * - Dropdown reabre apenas se query atende critério mínimo
+   * - Não modifica query existente
+   * - Permite continuação de busca interrompida
+   */
   const handleInputFocus = () => {
     if (searchQuery.length >= 3) {
       setIsOpen(true);
     }
   };
 
+  /**
+   * FUNÇÃO HANDLEINPUTBLUR - TRATAR PERDA DE FOCO DO INPUT
+   * 
+   * Responsabilidade:
+   * - Fechar dropdown quando input perde foco
+   * - Usar delay para permitir cliques nas opções
+   * - Evitar fechamento prematuro durante seleção
+   * 
+   * Regras de Negócio:
+   * - Delay de 150ms permite clique em opções
+   * - Dropdown sempre fecha após blur (com delay)
+   * - UX preservada para seleção por mouse
+   */
   const handleInputBlur = () => {
     // Delay para permitir clique em opções
     setTimeout(() => {
@@ -202,7 +279,7 @@ export default function Autocomplete({
           className="pr-20"
           autoComplete="off"
         />
-        
+
         <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {searchQuery && (
             <Button
@@ -215,7 +292,7 @@ export default function Autocomplete({
               <X className="h-3 w-3" />
             </Button>
           )}
-          
+
           <Button
             type="button"
             variant="ghost"
@@ -258,7 +335,7 @@ export default function Autocomplete({
                   onClick={() => handleOptionSelect(option)}
                 >
                   <span className="flex-1">{option.label}</span>
-                  
+
                   {value === option.value && (
                     <Check className="h-4 w-4 ml-2" />
                   )}
@@ -272,7 +349,7 @@ export default function Autocomplete({
           </ul>
         </div>
       )}
-      
+
       {isOpen && (
         <div 
           className="fixed inset-0 z-40" 

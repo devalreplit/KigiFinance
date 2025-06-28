@@ -1,10 +1,47 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+/**
+ * FUNÇÃO CN - COMBINAR CLASSES CSS COM TAILWIND
+ * 
+ * @param inputs - Classes CSS a serem combinadas
+ * @returns String com classes CSS otimizadas
+ * 
+ * Responsabilidade:
+ * - Combinar múltiplas classes CSS de forma inteligente
+ * - Resolver conflitos entre classes do Tailwind
+ * - Otimizar output final removendo duplicatas
+ * - Suportar condicionais e arrays de classes
+ * 
+ * Regras de Negócio:
+ * - Classes condicionais (undefined/null) são ignoradas
+ * - Conflitos do Tailwind são resolvidos (última classe prevalece)
+ * - Funciona com strings, arrays, objetos e condicionais
+ * - Utiliza clsx para flexibilidade e twMerge para otimização
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * FUNÇÃO FORMATCURRENCY - FORMATAR VALORES MONETÁRIOS
+ * 
+ * @param value - Valor numérico a ser formatado
+ * @returns String formatada como moeda brasileira (R$)
+ * 
+ * Responsabilidade:
+ * - Formatar valores numéricos como moeda brasileira
+ * - Aplicar separadores de milhares e decimais corretos
+ * - Incluir símbolo da moeda (R$)
+ * - Manter consistência de formatação em toda aplicação
+ * 
+ * Regras de Negócio:
+ * - Formato: R$ 1.234,56 (padrão brasileiro)
+ * - Sempre exibe 2 casas decimais
+ * - Usa vírgula como separador decimal
+ * - Usa ponto como separador de milhares
+ * - Valores negativos são precedidos por sinal de menos
+ */
 export function formatCurrency(value: number | string): string {
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   return new Intl.NumberFormat('pt-BR', {

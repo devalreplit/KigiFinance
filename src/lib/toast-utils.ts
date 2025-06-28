@@ -1,77 +1,115 @@
 import { toast } from "@/hooks/use-toast";
 
-interface ToastSuccessOptions {
+/**
+ * UTILITÁRIOS DE TOAST - FUNÇÕES HELPER PARA NOTIFICAÇÕES
+ * 
+ * Responsabilidade:
+ * - Padronizar criação de toasts na aplicação
+ * - Fornecer funções semânticas para diferentes tipos de notificação
+ * - Simplificar uso do sistema de toast
+ * - Manter consistência visual e de comportamento
+ * 
+ * Regras de Negócio:
+ * - Success: notificações de operações bem-sucedidas
+ * - Error: notificações de erros e falhas
+ * - Info: notificações informativas neutras
+ * - Warning: notificações de alerta e cuidado
+ * - Título sempre obrigatório, descrição opcional
+ */
+
+interface ToastOptions {
   title: string;
   description?: string;
 }
 
-interface ToastErrorOptions {
-  title: string;
-  description?: string;
-}
-
-interface ToastInfoOptions {
-  title: string;
-  description?: string;
-}
-
-interface ToastWarningOptions {
-  title: string;
-  description?: string;
-}
-
-export const toastSuccess = ({ title, description }: ToastSuccessOptions) => {
-  return toast({
+/**
+ * FUNÇÃO TOASTSUCCESS - EXIBIR TOAST DE SUCESSO
+ * 
+ * @param options - Título e descrição opcional do toast
+ * 
+ * Responsabilidade:
+ * - Exibir notificação de sucesso com variante padrão
+ * - Comunicar operações concluídas com êxito
+ * - Fornecer feedback positivo ao usuário
+ * 
+ * Regras de Negócio:
+ * - Usa variante "default" (geralmente verde)
+ * - Título obrigatório, descrição opcional
+ * - Usado para confirmações de ações bem-sucedidas
+ */
+export const toastSuccess = ({ title, description }: ToastOptions) => {
+  toast({
     title,
     description,
-    variant: "success",
-    style: {
-      backgroundColor: "#16a34a",
-      color: "white",
-      border: "1px solid #15803d",
-    },
-    className: "toast-success",
+    variant: "default",
   });
 };
 
-export const toastError = ({ title, description }: ToastErrorOptions) => {
-  return toast({
+/**
+ * FUNÇÃO TOASTERROR - EXIBIR TOAST DE ERRO
+ * 
+ * @param options - Título e descrição opcional do toast
+ * 
+ * Responsabilidade:
+ * - Exibir notificação de erro com variante destrutiva
+ * - Comunicar falhas e problemas ao usuário
+ * - Fornecer feedback sobre operações que falharam
+ * 
+ * Regras de Negócio:
+ * - Usa variante "destructive" (geralmente vermelha)
+ * - Título obrigatório, descrição opcional
+ * - Usado para erros de validação, falhas de API, etc.
+ */
+export const toastError = ({ title, description }: ToastOptions) => {
+  toast({
     title,
     description,
     variant: "destructive",
-    style: {
-      backgroundColor: "#dc2626",
-      color: "white",
-      border: "1px solid #b91c1c",
-    },
-    className: "toast-error",
   });
 };
 
-export const toastInfo = ({ title, description }: ToastInfoOptions) => {
-  return toast({
+/**
+ * FUNÇÃO TOASTINFO - EXIBIR TOAST INFORMATIVO
+ * 
+ * @param options - Título e descrição opcional do toast
+ * 
+ * Responsabilidade:
+ * - Exibir notificação informativa neutra
+ * - Comunicar informações gerais ao usuário
+ * - Fornecer contexto sobre estado do sistema
+ * 
+ * Regras de Negócio:
+ * - Usa variante "default" (neutra)
+ * - Título obrigatório, descrição opcional
+ * - Usado para informações de status, dicas, etc.
+ */
+export const toastInfo = ({ title, description }: ToastOptions) => {
+  toast({
     title,
     description,
-    variant: "info",
-    style: {
-      backgroundColor: "#2563eb",
-      color: "white",
-      border: "1px solid #1d4ed8",
-    },
-    className: "toast-info",
+    variant: "default",
   });
 };
 
-export const toastWarning = ({ title, description }: ToastWarningOptions) => {
-  return toast({
+/**
+ * FUNÇÃO TOASTWARNING - EXIBIR TOAST DE AVISO
+ * 
+ * @param options - Título e descrição opcional do toast
+ * 
+ * Responsabilidade:
+ * - Exibir notificação de aviso/cuidado
+ * - Alertar usuário sobre situações que requerem atenção
+ * - Fornecer feedback sobre ações que podem ter consequências
+ * 
+ * Regras de Negócio:
+ * - Usa variante "default" (poderia ser "warning" se disponível)
+ * - Título obrigatório, descrição opcional
+ * - Usado para alertas, confirmações necessárias, etc.
+ */
+export const toastWarning = ({ title, description }: ToastOptions) => {
+  toast({
     title,
     description,
-    variant: "warning",
-    style: {
-      backgroundColor: "#d97706",
-      color: "white",
-      border: "1px solid #b45309",
-    },
-    className: "toast-warning",
+    variant: "default",
   });
 };

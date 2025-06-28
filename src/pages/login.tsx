@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/service/apiService";
 import { Loader2, LogIn } from "lucide-react";
@@ -52,10 +53,9 @@ export default function Login({ onLogin }: LoginProps) {
     e.preventDefault();
 
     if (!formData.login || !formData.senha) {
-      toast({
+      toastError({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos",
-        variant: "destructive",
       });
       return;
     }
@@ -68,31 +68,28 @@ export default function Login({ onLogin }: LoginProps) {
         const success = await onLogin(formData.login, formData.senha);
 
         if (success) {
-          toast({
+          toastSuccess({
             title: "Login realizado com sucesso",
             description: "Bem-vindo ao sistema KIGI!",
           });
         } else {
-          toast({
+          toastError({
             title: "Erro no login",
             description: "Credenciais inválidas",
-            variant: "destructive",
           });
         }
       } else {
         console.error('onLogin não é uma função:', onLogin);
-        toast({
+        toastError({
           title: "Erro no login",
           description: "Função de login não disponível",
-          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Erro no login:", error);
-      toast({
+      toastError({
         title: "Erro no login",
         description: "Usuário ou senha incorretos",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

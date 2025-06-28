@@ -6,8 +6,9 @@
 -- Descrição: Scripts para criação das tabelas, índices, constraints
 -- e relacionamentos do sistema financeiro familiar KIGI
 -- 
--- NOVA ESTRUTURA: Saídas unificadas com tipos (normal, parcelada_pai, parcela)
--- Versão: Oracle Database 11G - REVISÃO COMPLETA
+-- ESTRUTURA ATUAL: Saídas unificadas com tipos (normal, parcelada_pai, parcela)
+-- Prefixo: KIG_ em todos os objetos de banco
+-- Versão: Oracle Database 11G - REVISÃO COMPLETA ATUALIZADA
 -- Data: Janeiro 2025
 -- ====================================================================
 
@@ -15,50 +16,50 @@
 -- 1. CRIAÇÃO DAS SEQUENCES PARA IDs AUTOINCREMENTAIS
 -- ====================================================================
 
--- Sequence para tabela USUARIOS
-CREATE SEQUENCE seq_usuarios
+-- Sequence para tabela KIG_USUARIOS
+CREATE SEQUENCE KIG_SEQ_USUARIOS
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela EMPRESAS
-CREATE SEQUENCE seq_empresas
+-- Sequence para tabela KIG_EMPRESAS
+CREATE SEQUENCE KIG_SEQ_EMPRESAS
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela PRODUTOS
-CREATE SEQUENCE seq_produtos
+-- Sequence para tabela KIG_PRODUTOS
+CREATE SEQUENCE KIG_SEQ_PRODUTOS
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela ENTRADAS
-CREATE SEQUENCE seq_entradas
+-- Sequence para tabela KIG_ENTRADAS
+CREATE SEQUENCE KIG_SEQ_ENTRADAS
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela SAIDAS
-CREATE SEQUENCE seq_saidas
+-- Sequence para tabela KIG_SAIDAS
+CREATE SEQUENCE KIG_SEQ_SAIDAS
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela ITENS_SAIDA
-CREATE SEQUENCE seq_itens_saida
+-- Sequence para tabela KIG_ITENS_SAIDA
+CREATE SEQUENCE KIG_SEQ_ITENS_SAIDA
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
     NOCACHE;
 
--- Sequence para tabela SAIDA_TITULARES
-CREATE SEQUENCE seq_saida_titulares
+-- Sequence para tabela KIG_SAIDA_TITULARES
+CREATE SEQUENCE KIG_SEQ_SAIDA_TITULARES
     START WITH 1
     INCREMENT BY 1
     NOMAXVALUE
@@ -68,242 +69,248 @@ CREATE SEQUENCE seq_saida_titulares
 -- 2. CRIAÇÃO DAS TABELAS PRINCIPAIS
 -- ====================================================================
 
--- TABELA: USUARIOS
+-- TABELA: KIG_USUARIOS
 -- Armazena os usuários da família (pai, mãe, filhos)
-CREATE TABLE usuarios (
-    id NUMBER(10) PRIMARY KEY,
-    nome VARCHAR2(100) NOT NULL,
-    login VARCHAR2(50) NOT NULL UNIQUE,
-    senha VARCHAR2(255) NOT NULL,
-    papel VARCHAR2(10) NOT NULL CHECK (papel IN ('pai', 'mae', 'filho', 'filha')),
-    ativo NUMBER(1) DEFAULT 1 CHECK (ativo IN (0, 1)),
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Atualizada conforme estrutura atual do sistema
+CREATE TABLE KIG_USUARIOS (
+    ID NUMBER(10) PRIMARY KEY,
+    NOME VARCHAR2(100) NOT NULL,
+    LOGIN VARCHAR2(50) NOT NULL UNIQUE,
+    SENHA VARCHAR2(255) NOT NULL,
+    PAPEL VARCHAR2(10) NOT NULL CHECK (PAPEL IN ('pai', 'mae', 'filho', 'filha')),
+    ATIVO NUMBER(1) DEFAULT 1 CHECK (ATIVO IN (0, 1)),
+    CRIADO_EM TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ATUALIZADO_EM TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA: EMPRESAS
+-- TABELA: KIG_EMPRESAS
 -- Armazena as empresas onde são realizadas compras/pagamentos
-CREATE TABLE empresas (
-    id NUMBER(10) PRIMARY KEY,
-    nome VARCHAR2(200) NOT NULL,
-    ativo NUMBER(1) DEFAULT 1 CHECK (ativo IN (0, 1)),
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Estrutura simplificada conforme uso atual no sistema
+CREATE TABLE KIG_EMPRESAS (
+    ID NUMBER(10) PRIMARY KEY,
+    NOME VARCHAR2(200) NOT NULL,
+    ATIVO NUMBER(1) DEFAULT 1 CHECK (ATIVO IN (0, 1)),
+    CRIADO_EM TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ATUALIZADO_EM TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA: PRODUTOS
+-- TABELA: KIG_PRODUTOS
 -- Armazena o catálogo de produtos da família
-CREATE TABLE produtos (
-    id NUMBER(10) PRIMARY KEY,
-    codigo_barras VARCHAR2(50),
-    nome VARCHAR2(200) NOT NULL,
-    unidade VARCHAR2(20) NOT NULL,
-    classificacao VARCHAR2(100) NOT NULL,
-    ativo NUMBER(1) DEFAULT 1 CHECK (ativo IN (0, 1)),
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Estrutura atualizada conforme implementação atual
+CREATE TABLE KIG_PRODUTOS (
+    ID NUMBER(10) PRIMARY KEY,
+    CODIGO_BARRAS VARCHAR2(50),
+    NOME VARCHAR2(200) NOT NULL,
+    UNIDADE VARCHAR2(20) NOT NULL,
+    CLASSIFICACAO VARCHAR2(100) NOT NULL,
+    ATIVO NUMBER(1) DEFAULT 1 CHECK (ATIVO IN (0, 1)),
+    CRIADO_EM TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ATUALIZADO_EM TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- TABELA: ENTRADAS
+-- TABELA: KIG_ENTRADAS
 -- Armazena as receitas/entradas financeiras da família
-CREATE TABLE entradas (
-    id NUMBER(10) PRIMARY KEY,
-    usuario_registro_id NUMBER(10) NOT NULL,
-    data_hora_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_titular_id NUMBER(10) NOT NULL,
-    data_referencia DATE NOT NULL,
-    valor NUMBER(15,2) NOT NULL CHECK (valor > 0),
-    empresa_pagadora_id NUMBER(10) NOT NULL,
-    CONSTRAINT fk_entrada_usuario_registro FOREIGN KEY (usuario_registro_id) REFERENCES usuarios(id),
-    CONSTRAINT fk_entrada_usuario_titular FOREIGN KEY (usuario_titular_id) REFERENCES usuarios(id),
-    CONSTRAINT fk_entrada_empresa_pagadora FOREIGN KEY (empresa_pagadora_id) REFERENCES empresas(id)
+-- Estrutura conforme interface EntradaInput atual
+CREATE TABLE KIG_ENTRADAS (
+    ID NUMBER(10) PRIMARY KEY,
+    USUARIO_REGISTRO_ID NUMBER(10) NOT NULL,
+    DATA_HORA_REGISTRO TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    USUARIO_TITULAR_ID NUMBER(10) NOT NULL,
+    DATA_REFERENCIA DATE NOT NULL,
+    VALOR NUMBER(15,2) NOT NULL CHECK (VALOR > 0),
+    EMPRESA_PAGADORA_ID NUMBER(10) NOT NULL,
+    CONSTRAINT FK_KIG_ENTRADA_USUARIO_REGISTRO FOREIGN KEY (USUARIO_REGISTRO_ID) REFERENCES KIG_USUARIOS(ID),
+    CONSTRAINT FK_KIG_ENTRADA_USUARIO_TITULAR FOREIGN KEY (USUARIO_TITULAR_ID) REFERENCES KIG_USUARIOS(ID),
+    CONSTRAINT FK_KIG_ENTRADA_EMPRESA_PAGADORA FOREIGN KEY (EMPRESA_PAGADORA_ID) REFERENCES KIG_EMPRESAS(ID)
 );
 
--- TABELA: SAIDAS
--- NOVA ESTRUTURA: Unifica saídas à vista e parceladas em uma única tabela
--- Cada saída tem impacto financeiro no mês de vencimento (data_saida)
-CREATE TABLE saidas (
-    id NUMBER(10) PRIMARY KEY,
-    saida_pai_id NUMBER(10), -- Referência à saída pai (NULL para saídas normais e saídas_pai)
-    tipo_saida VARCHAR2(20) NOT NULL CHECK (tipo_saida IN ('normal', 'parcelada_pai', 'parcela')),
-    numero_parcela NUMBER(3) NOT NULL DEFAULT 1 CHECK (numero_parcela > 0),
-    total_parcelas NUMBER(3), -- Preenchido apenas para saídas parceladas (pai)
-    usuario_registro_id NUMBER(10) NOT NULL,
-    data_hora_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_saida DATE NOT NULL, -- Data de impacto financeiro (vencimento da parcela)
-    empresa_id NUMBER(10) NOT NULL,
-    tipo_pagamento VARCHAR2(10) NOT NULL CHECK (tipo_pagamento IN ('avista', 'parcelado')),
-    valor_total NUMBER(15,2) NOT NULL CHECK (valor_total > 0),
-    observacao VARCHAR2(500),
-    CONSTRAINT fk_saida_usuario_registro FOREIGN KEY (usuario_registro_id) REFERENCES usuarios(id),
-    CONSTRAINT fk_saida_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
-    CONSTRAINT fk_saida_pai FOREIGN KEY (saida_pai_id) REFERENCES saidas(id),
-    -- Constraints de integridade da nova estrutura
-    CONSTRAINT chk_saida_avista CHECK (
-        (tipo_pagamento = 'avista' AND tipo_saida = 'normal' AND saida_pai_id IS NULL AND numero_parcela = 1) OR
-        (tipo_pagamento = 'parcelado')
+-- TABELA: KIG_SAIDAS
+-- ESTRUTURA UNIFICADA: Saídas à vista e parceladas em uma única tabela
+-- Conforme interface Saida e SaidaInput atuais do sistema
+CREATE TABLE KIG_SAIDAS (
+    ID NUMBER(10) PRIMARY KEY,
+    SAIDA_PAI_ID NUMBER(10), -- Referência à saída pai (NULL para saídas normais e saídas_pai)
+    TIPO_SAIDA VARCHAR2(20) DEFAULT 'normal' CHECK (TIPO_SAIDA IN ('normal', 'parcelada_pai', 'parcela')),
+    NUMERO_PARCELA NUMBER(3) DEFAULT 1 CHECK (NUMERO_PARCELA > 0),
+    TOTAL_PARCELAS NUMBER(3), -- Preenchido apenas para saídas parceladas (pai)
+    USUARIO_REGISTRO_ID NUMBER(10) NOT NULL,
+    DATA_HORA_REGISTRO TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    DATA_SAIDA DATE NOT NULL, -- Data de impacto financeiro (vencimento da parcela)
+    EMPRESA_ID NUMBER(10) NOT NULL,
+    TIPO_PAGAMENTO VARCHAR2(10) NOT NULL CHECK (TIPO_PAGAMENTO IN ('avista', 'parcelado')),
+    VALOR_TOTAL NUMBER(15,2) NOT NULL CHECK (VALOR_TOTAL > 0),
+    OBSERVACAO VARCHAR2(500),
+    CONSTRAINT FK_KIG_SAIDA_USUARIO_REGISTRO FOREIGN KEY (USUARIO_REGISTRO_ID) REFERENCES KIG_USUARIOS(ID),
+    CONSTRAINT FK_KIG_SAIDA_EMPRESA FOREIGN KEY (EMPRESA_ID) REFERENCES KIG_EMPRESAS(ID),
+    CONSTRAINT FK_KIG_SAIDA_PAI FOREIGN KEY (SAIDA_PAI_ID) REFERENCES KIG_SAIDAS(ID),
+    -- Constraints de integridade da estrutura unificada
+    CONSTRAINT CHK_KIG_SAIDA_AVISTA CHECK (
+        (TIPO_PAGAMENTO = 'avista' AND TIPO_SAIDA = 'normal' AND SAIDA_PAI_ID IS NULL AND NUMERO_PARCELA = 1) OR
+        (TIPO_PAGAMENTO = 'parcelado')
     ),
-    CONSTRAINT chk_saida_parcelada_pai CHECK (
-        (tipo_saida = 'parcelada_pai' AND saida_pai_id IS NULL AND total_parcelas > 1) OR
-        (tipo_saida != 'parcelada_pai')
+    CONSTRAINT CHK_KIG_SAIDA_PARCELADA_PAI CHECK (
+        (TIPO_SAIDA = 'parcelada_pai' AND SAIDA_PAI_ID IS NULL AND TOTAL_PARCELAS > 1) OR
+        (TIPO_SAIDA != 'parcelada_pai')
     ),
-    CONSTRAINT chk_saida_parcela_filha CHECK (
-        (tipo_saida = 'parcela' AND saida_pai_id IS NOT NULL AND total_parcelas IS NULL) OR
-        (tipo_saida != 'parcela')
+    CONSTRAINT CHK_KIG_SAIDA_PARCELA_FILHA CHECK (
+        (TIPO_SAIDA = 'parcela' AND SAIDA_PAI_ID IS NOT NULL AND TOTAL_PARCELAS IS NULL) OR
+        (TIPO_SAIDA != 'parcela')
     ),
-    CONSTRAINT chk_numero_parcela_consistente CHECK (
-        (tipo_saida = 'normal' AND numero_parcela = 1) OR
-        (tipo_saida IN ('parcelada_pai', 'parcela') AND numero_parcela >= 1)
+    CONSTRAINT CHK_KIG_NUMERO_PARCELA_CONSISTENTE CHECK (
+        (TIPO_SAIDA = 'normal' AND NUMERO_PARCELA = 1) OR
+        (TIPO_SAIDA IN ('parcelada_pai', 'parcela') AND NUMERO_PARCELA >= 1)
     )
 );
 
--- TABELA: ITENS_SAIDA
+-- TABELA: KIG_ITENS_SAIDA
 -- Armazena os itens individuais de cada saída/despesa
-CREATE TABLE itens_saida (
-    id NUMBER(10) PRIMARY KEY,
-    saida_id NUMBER(10) NOT NULL,
-    produto_id NUMBER(10) NOT NULL,
-    nome_produto VARCHAR2(200) NOT NULL,
-    quantidade NUMBER(10,3) NOT NULL CHECK (quantidade > 0),
-    preco_unitario NUMBER(15,2) NOT NULL CHECK (preco_unitario > 0),
-    total NUMBER(15,2) NOT NULL CHECK (total > 0),
-    CONSTRAINT fk_item_saida FOREIGN KEY (saida_id) REFERENCES saidas(id) ON DELETE CASCADE,
-    CONSTRAINT fk_item_produto FOREIGN KEY (produto_id) REFERENCES produtos(id),
-    CONSTRAINT chk_total_item CHECK (total = quantidade * preco_unitario)
+-- Conforme interface ItemSaida atual
+CREATE TABLE KIG_ITENS_SAIDA (
+    ID NUMBER(10) PRIMARY KEY,
+    SAIDA_ID NUMBER(10) NOT NULL,
+    PRODUTO_ID NUMBER(10) NOT NULL,
+    NOME_PRODUTO VARCHAR2(200) NOT NULL,
+    QUANTIDADE NUMBER(10,3) NOT NULL CHECK (QUANTIDADE > 0),
+    PRECO_UNITARIO NUMBER(15,2) NOT NULL CHECK (PRECO_UNITARIO > 0),
+    TOTAL NUMBER(15,2) NOT NULL CHECK (TOTAL > 0),
+    CONSTRAINT FK_KIG_ITEM_SAIDA FOREIGN KEY (SAIDA_ID) REFERENCES KIG_SAIDAS(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_KIG_ITEM_PRODUTO FOREIGN KEY (PRODUTO_ID) REFERENCES KIG_PRODUTOS(ID),
+    CONSTRAINT CHK_KIG_TOTAL_ITEM CHECK (ABS(TOTAL - (QUANTIDADE * PRECO_UNITARIO)) < 0.01)
 );
 
--- TABELA: SAIDA_TITULARES
+-- TABELA: KIG_SAIDA_TITULARES
 -- Tabela de relacionamento many-to-many entre saídas e usuários titulares
-CREATE TABLE saida_titulares (
-    id NUMBER(10) PRIMARY KEY,
-    saida_id NUMBER(10) NOT NULL,
-    usuario_id NUMBER(10) NOT NULL,
-    CONSTRAINT fk_saida_titular_saida FOREIGN KEY (saida_id) REFERENCES saidas(id) ON DELETE CASCADE,
-    CONSTRAINT fk_saida_titular_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
-    CONSTRAINT uk_saida_usuario UNIQUE (saida_id, usuario_id)
+-- Conforme usuariosTitularesIds[] da interface atual
+CREATE TABLE KIG_SAIDA_TITULARES (
+    ID NUMBER(10) PRIMARY KEY,
+    SAIDA_ID NUMBER(10) NOT NULL,
+    USUARIO_ID NUMBER(10) NOT NULL,
+    CONSTRAINT FK_KIG_SAIDA_TITULAR_SAIDA FOREIGN KEY (SAIDA_ID) REFERENCES KIG_SAIDAS(ID) ON DELETE CASCADE,
+    CONSTRAINT FK_KIG_SAIDA_TITULAR_USUARIO FOREIGN KEY (USUARIO_ID) REFERENCES KIG_USUARIOS(ID),
+    CONSTRAINT UK_KIG_SAIDA_USUARIO UNIQUE (SAIDA_ID, USUARIO_ID)
 );
 
 -- ====================================================================
 -- 3. CRIAÇÃO DOS ÍNDICES PARA OTIMIZAÇÃO
 -- ====================================================================
 
--- Índices para tabela USUARIOS
-CREATE INDEX idx_usuarios_login ON usuarios(login);
-CREATE INDEX idx_usuarios_papel ON usuarios(papel);
-CREATE INDEX idx_usuarios_ativo ON usuarios(ativo);
+-- Índices para tabela KIG_USUARIOS
+CREATE INDEX IDX_KIG_USUARIOS_LOGIN ON KIG_USUARIOS(LOGIN);
+CREATE INDEX IDX_KIG_USUARIOS_PAPEL ON KIG_USUARIOS(PAPEL);
+CREATE INDEX IDX_KIG_USUARIOS_ATIVO ON KIG_USUARIOS(ATIVO);
 
--- Índices para tabela EMPRESAS
-CREATE INDEX idx_empresas_nome ON empresas(nome);
-CREATE INDEX idx_empresas_ativo ON empresas(ativo);
+-- Índices para tabela KIG_EMPRESAS
+CREATE INDEX IDX_KIG_EMPRESAS_NOME ON KIG_EMPRESAS(NOME);
+CREATE INDEX IDX_KIG_EMPRESAS_ATIVO ON KIG_EMPRESAS(ATIVO);
 
--- Índices para tabela PRODUTOS
-CREATE INDEX idx_produtos_codigo_barras ON produtos(codigo_barras);
-CREATE INDEX idx_produtos_nome ON produtos(nome);
-CREATE INDEX idx_produtos_classificacao ON produtos(classificacao);
-CREATE INDEX idx_produtos_ativo ON produtos(ativo);
+-- Índices para tabela KIG_PRODUTOS
+CREATE INDEX IDX_KIG_PRODUTOS_CODIGO_BARRAS ON KIG_PRODUTOS(CODIGO_BARRAS);
+CREATE INDEX IDX_KIG_PRODUTOS_NOME ON KIG_PRODUTOS(NOME);
+CREATE INDEX IDX_KIG_PRODUTOS_CLASSIFICACAO ON KIG_PRODUTOS(CLASSIFICACAO);
+CREATE INDEX IDX_KIG_PRODUTOS_ATIVO ON KIG_PRODUTOS(ATIVO);
 
--- Índices para tabela ENTRADAS
-CREATE INDEX idx_entradas_usuario_registro ON entradas(usuario_registro_id);
-CREATE INDEX idx_entradas_usuario_titular ON entradas(usuario_titular_id);
-CREATE INDEX idx_entradas_data_referencia ON entradas(data_referencia);
-CREATE INDEX idx_entradas_empresa_pagadora ON entradas(empresa_pagadora_id);
-CREATE INDEX idx_entradas_data_hora_registro ON entradas(data_hora_registro);
+-- Índices para tabela KIG_ENTRADAS
+CREATE INDEX IDX_KIG_ENTRADAS_USUARIO_REGISTRO ON KIG_ENTRADAS(USUARIO_REGISTRO_ID);
+CREATE INDEX IDX_KIG_ENTRADAS_USUARIO_TITULAR ON KIG_ENTRADAS(USUARIO_TITULAR_ID);
+CREATE INDEX IDX_KIG_ENTRADAS_DATA_REFERENCIA ON KIG_ENTRADAS(DATA_REFERENCIA);
+CREATE INDEX IDX_KIG_ENTRADAS_EMPRESA_PAGADORA ON KIG_ENTRADAS(EMPRESA_PAGADORA_ID);
+CREATE INDEX IDX_KIG_ENTRADAS_DATA_HORA_REGISTRO ON KIG_ENTRADAS(DATA_HORA_REGISTRO);
 
--- Índices para tabela SAIDAS (NOVA ESTRUTURA)
-CREATE INDEX idx_saidas_usuario_registro ON saidas(usuario_registro_id);
-CREATE INDEX idx_saidas_data_saida ON saidas(data_saida);
-CREATE INDEX idx_saidas_empresa ON saidas(empresa_id);
-CREATE INDEX idx_saidas_tipo_pagamento ON saidas(tipo_pagamento);
-CREATE INDEX idx_saidas_tipo_saida ON saidas(tipo_saida);
-CREATE INDEX idx_saidas_saida_pai ON saidas(saida_pai_id);
-CREATE INDEX idx_saidas_numero_parcela ON saidas(numero_parcela);
-CREATE INDEX idx_saidas_data_hora_registro ON saidas(data_hora_registro);
+-- Índices para tabela KIG_SAIDAS (ESTRUTURA UNIFICADA)
+CREATE INDEX IDX_KIG_SAIDAS_USUARIO_REGISTRO ON KIG_SAIDAS(USUARIO_REGISTRO_ID);
+CREATE INDEX IDX_KIG_SAIDAS_DATA_SAIDA ON KIG_SAIDAS(DATA_SAIDA);
+CREATE INDEX IDX_KIG_SAIDAS_EMPRESA ON KIG_SAIDAS(EMPRESA_ID);
+CREATE INDEX IDX_KIG_SAIDAS_TIPO_PAGAMENTO ON KIG_SAIDAS(TIPO_PAGAMENTO);
+CREATE INDEX IDX_KIG_SAIDAS_TIPO_SAIDA ON KIG_SAIDAS(TIPO_SAIDA);
+CREATE INDEX IDX_KIG_SAIDAS_SAIDA_PAI ON KIG_SAIDAS(SAIDA_PAI_ID);
+CREATE INDEX IDX_KIG_SAIDAS_NUMERO_PARCELA ON KIG_SAIDAS(NUMERO_PARCELA);
+CREATE INDEX IDX_KIG_SAIDAS_DATA_HORA_REGISTRO ON KIG_SAIDAS(DATA_HORA_REGISTRO);
 
--- Índices para tabela ITENS_SAIDA
-CREATE INDEX idx_itens_saida_saida ON itens_saida(saida_id);
-CREATE INDEX idx_itens_saida_produto ON itens_saida(produto_id);
+-- Índices para tabela KIG_ITENS_SAIDA
+CREATE INDEX IDX_KIG_ITENS_SAIDA_SAIDA ON KIG_ITENS_SAIDA(SAIDA_ID);
+CREATE INDEX IDX_KIG_ITENS_SAIDA_PRODUTO ON KIG_ITENS_SAIDA(PRODUTO_ID);
 
--- Índices para tabela SAIDA_TITULARES
-CREATE INDEX idx_saida_titulares_saida ON saida_titulares(saida_id);
-CREATE INDEX idx_saida_titulares_usuario ON saida_titulares(usuario_id);
+-- Índices para tabela KIG_SAIDA_TITULARES
+CREATE INDEX IDX_KIG_SAIDA_TITULARES_SAIDA ON KIG_SAIDA_TITULARES(SAIDA_ID);
+CREATE INDEX IDX_KIG_SAIDA_TITULARES_USUARIO ON KIG_SAIDA_TITULARES(USUARIO_ID);
 
 -- ====================================================================
 -- 4. CRIAÇÃO DOS TRIGGERS PARA IDs AUTOINCREMENTAIS
 -- ====================================================================
 
--- Trigger para tabela USUARIOS
-CREATE OR REPLACE TRIGGER trg_usuarios_id
-    BEFORE INSERT ON usuarios
+-- Trigger para tabela KIG_USUARIOS
+CREATE OR REPLACE TRIGGER TRG_KIG_USUARIOS_ID
+    BEFORE INSERT ON KIG_USUARIOS
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_usuarios.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_USUARIOS.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
 
--- Trigger para tabela EMPRESAS
-CREATE OR REPLACE TRIGGER trg_empresas_id
-    BEFORE INSERT ON empresas
+-- Trigger para tabela KIG_EMPRESAS
+CREATE OR REPLACE TRIGGER TRG_KIG_EMPRESAS_ID
+    BEFORE INSERT ON KIG_EMPRESAS
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_empresas.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_EMPRESAS.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
 
--- Trigger para tabela PRODUTOS
-CREATE OR REPLACE TRIGGER trg_produtos_id
-    BEFORE INSERT ON produtos
+-- Trigger para tabela KIG_PRODUTOS
+CREATE OR REPLACE TRIGGER TRG_KIG_PRODUTOS_ID
+    BEFORE INSERT ON KIG_PRODUTOS
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_produtos.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_PRODUTOS.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
 
--- Trigger para tabela ENTRADAS
-CREATE OR REPLACE TRIGGER trg_entradas_id
-    BEFORE INSERT ON entradas
+-- Trigger para tabela KIG_ENTRADAS
+CREATE OR REPLACE TRIGGER TRG_KIG_ENTRADAS_ID
+    BEFORE INSERT ON KIG_ENTRADAS
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_entradas.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_ENTRADAS.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
 
--- Trigger para tabela SAIDAS
-CREATE OR REPLACE TRIGGER trg_saidas_id
-    BEFORE INSERT ON saidas
+-- Trigger para tabela KIG_SAIDAS
+CREATE OR REPLACE TRIGGER TRG_KIG_SAIDAS_ID
+    BEFORE INSERT ON KIG_SAIDAS
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_saidas.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_SAIDAS.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
 
--- Trigger para tabela ITENS_SAIDA
-CREATE OR REPLACE TRIGGER trg_itens_saida_id
-    BEFORE INSERT ON itens_saida
+-- Trigger para tabela KIG_ITENS_SAIDA
+CREATE OR REPLACE TRIGGER TRG_KIG_ITENS_SAIDA_ID
+    BEFORE INSERT ON KIG_ITENS_SAIDA
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_itens_saida.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_ITENS_SAIDA.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
 
--- Trigger para tabela SAIDA_TITULARES
-CREATE OR REPLACE TRIGGER trg_saida_titulares_id
-    BEFORE INSERT ON saida_titulares
+-- Trigger para tabela KIG_SAIDA_TITULARES
+CREATE OR REPLACE TRIGGER TRG_KIG_SAIDA_TITULARES_ID
+    BEFORE INSERT ON KIG_SAIDA_TITULARES
     FOR EACH ROW
 BEGIN
-    IF :NEW.id IS NULL THEN
-        SELECT seq_saida_titulares.NEXTVAL INTO :NEW.id FROM dual;
+    IF :NEW.ID IS NULL THEN
+        SELECT KIG_SEQ_SAIDA_TITULARES.NEXTVAL INTO :NEW.ID FROM DUAL;
     END IF;
 END;
 /
@@ -312,131 +319,177 @@ END;
 -- 5. TRIGGERS PARA ATUALIZAÇÃO AUTOMÁTICA DE TIMESTAMPS
 -- ====================================================================
 
--- Trigger para atualizar campo atualizado_em na tabela USUARIOS
-CREATE OR REPLACE TRIGGER trg_usuarios_updated
-    BEFORE UPDATE ON usuarios
+-- Trigger para atualizar campo ATUALIZADO_EM na tabela KIG_USUARIOS
+CREATE OR REPLACE TRIGGER TRG_KIG_USUARIOS_UPDATED
+    BEFORE UPDATE ON KIG_USUARIOS
     FOR EACH ROW
 BEGIN
-    :NEW.atualizado_em := CURRENT_TIMESTAMP;
+    :NEW.ATUALIZADO_EM := CURRENT_TIMESTAMP;
 END;
 /
 
--- Trigger para atualizar campo atualizado_em na tabela EMPRESAS
-CREATE OR REPLACE TRIGGER trg_empresas_updated
-    BEFORE UPDATE ON empresas
+-- Trigger para atualizar campo ATUALIZADO_EM na tabela KIG_EMPRESAS
+CREATE OR REPLACE TRIGGER TRG_KIG_EMPRESAS_UPDATED
+    BEFORE UPDATE ON KIG_EMPRESAS
     FOR EACH ROW
 BEGIN
-    :NEW.atualizado_em := CURRENT_TIMESTAMP;
+    :NEW.ATUALIZADO_EM := CURRENT_TIMESTAMP;
 END;
 /
 
--- Trigger para atualizar campo atualizado_em na tabela PRODUTOS
-CREATE OR REPLACE TRIGGER trg_produtos_updated
-    BEFORE UPDATE ON produtos
+-- Trigger para atualizar campo ATUALIZADO_EM na tabela KIG_PRODUTOS
+CREATE OR REPLACE TRIGGER TRG_KIG_PRODUTOS_UPDATED
+    BEFORE UPDATE ON KIG_PRODUTOS
     FOR EACH ROW
 BEGIN
-    :NEW.atualizado_em := CURRENT_TIMESTAMP;
+    :NEW.ATUALIZADO_EM := CURRENT_TIMESTAMP;
 END;
 /
 
 -- ====================================================================
--- 6. TRIGGERS DE VALIDAÇÃO E INTEGRIDADE
+-- 6. TRIGGERS DE VALIDAÇÃO E INTEGRIDADE DE NEGÓCIO
 -- ====================================================================
 
 -- Trigger para validar se o valor total da saída corresponde à soma dos itens
-CREATE OR REPLACE TRIGGER trg_validar_total_saida
-    AFTER INSERT OR UPDATE OR DELETE ON itens_saida
+CREATE OR REPLACE TRIGGER TRG_KIG_VALIDAR_TOTAL_SAIDA
+    AFTER INSERT OR UPDATE OR DELETE ON KIG_ITENS_SAIDA
     FOR EACH ROW
 DECLARE
-    v_saida_id NUMBER(10);
-    v_total_calculado NUMBER(15,2);
-    v_total_saida NUMBER(15,2);
+    V_SAIDA_ID NUMBER(10);
+    V_TOTAL_CALCULADO NUMBER(15,2);
+    V_TOTAL_SAIDA NUMBER(15,2);
 BEGIN
     -- Determinar o ID da saída afetada
     IF INSERTING OR UPDATING THEN
-        v_saida_id := :NEW.saida_id;
+        V_SAIDA_ID := :NEW.SAIDA_ID;
     ELSIF DELETING THEN
-        v_saida_id := :OLD.saida_id;
+        V_SAIDA_ID := :OLD.SAIDA_ID;
     END IF;
     
     -- Calcular total dos itens
-    SELECT NVL(SUM(total), 0) INTO v_total_calculado
-    FROM itens_saida
-    WHERE saida_id = v_saida_id;
+    SELECT NVL(SUM(TOTAL), 0) INTO V_TOTAL_CALCULADO
+    FROM KIG_ITENS_SAIDA
+    WHERE SAIDA_ID = V_SAIDA_ID;
     
     -- Obter valor total da saída
-    SELECT valor_total INTO v_total_saida
-    FROM saidas
-    WHERE id = v_saida_id;
+    SELECT VALOR_TOTAL INTO V_TOTAL_SAIDA
+    FROM KIG_SAIDAS
+    WHERE ID = V_SAIDA_ID;
     
-    -- Validar se os totais são consistentes
-    IF ABS(v_total_calculado - v_total_saida) > 0.01 THEN
+    -- Validar se os totais são consistentes (tolerância de 1 centavo)
+    IF ABS(V_TOTAL_CALCULADO - V_TOTAL_SAIDA) > 0.01 THEN
         RAISE_APPLICATION_ERROR(-20001, 
-            'Total dos itens (' || v_total_calculado || 
-            ') não confere com o total da saída (' || v_total_saida || ')');
+            'Total dos itens (' || V_TOTAL_CALCULADO || 
+            ') não confere com o total da saída (' || V_TOTAL_SAIDA || ')');
     END IF;
 END;
 /
 
 -- Trigger para validação específica da estrutura de parcelas
-CREATE OR REPLACE TRIGGER trg_validar_estrutura_parcelas
-    BEFORE INSERT OR UPDATE ON saidas
+CREATE OR REPLACE TRIGGER TRG_KIG_VALIDAR_ESTRUTURA_PARCELAS
+    BEFORE INSERT OR UPDATE ON KIG_SAIDAS
     FOR EACH ROW
 DECLARE
-    v_saida_pai_tipo VARCHAR2(20);
-    v_saida_pai_total_parcelas NUMBER(3);
+    V_SAIDA_PAI_TIPO VARCHAR2(20);
+    V_SAIDA_PAI_TOTAL_PARCELAS NUMBER(3);
+    V_PARCELAS_EXISTENTES NUMBER(3);
 BEGIN
     -- Validações para parcelas filhas
-    IF :NEW.tipo_saida = 'parcela' THEN
+    IF :NEW.TIPO_SAIDA = 'parcela' THEN
         -- Verificar se a saída pai existe e é do tipo correto
-        SELECT tipo_saida, total_parcelas 
-        INTO v_saida_pai_tipo, v_saida_pai_total_parcelas
-        FROM saidas 
-        WHERE id = :NEW.saida_pai_id;
+        SELECT TIPO_SAIDA, TOTAL_PARCELAS 
+        INTO V_SAIDA_PAI_TIPO, V_SAIDA_PAI_TOTAL_PARCELAS
+        FROM KIG_SAIDAS 
+        WHERE ID = :NEW.SAIDA_PAI_ID;
         
         -- Saída pai deve ser do tipo 'parcelada_pai'
-        IF v_saida_pai_tipo != 'parcelada_pai' THEN
+        IF V_SAIDA_PAI_TIPO != 'parcelada_pai' THEN
             RAISE_APPLICATION_ERROR(-20002, 
                 'Parcela filha deve referenciar uma saída pai do tipo parcelada_pai');
         END IF;
         
         -- Número da parcela não pode exceder o total de parcelas
-        IF :NEW.numero_parcela > v_saida_pai_total_parcelas THEN
+        IF :NEW.NUMERO_PARCELA > V_SAIDA_PAI_TOTAL_PARCELAS THEN
             RAISE_APPLICATION_ERROR(-20003, 
-                'Número da parcela (' || :NEW.numero_parcela || 
-                ') não pode exceder o total de parcelas (' || v_saida_pai_total_parcelas || ')');
+                'Número da parcela (' || :NEW.NUMERO_PARCELA || 
+                ') não pode exceder o total de parcelas (' || V_SAIDA_PAI_TOTAL_PARCELAS || ')');
         END IF;
         
-        -- Herdar configurações da saída pai
-        SELECT empresa_id, tipo_pagamento, valor_total
-        INTO :NEW.empresa_id, :NEW.tipo_pagamento, :NEW.valor_total
-        FROM saidas
-        WHERE id = :NEW.saida_pai_id;
+        -- Verificar se já existe parcela com o mesmo número
+        SELECT COUNT(*) INTO V_PARCELAS_EXISTENTES
+        FROM KIG_SAIDAS
+        WHERE SAIDA_PAI_ID = :NEW.SAIDA_PAI_ID
+          AND NUMERO_PARCELA = :NEW.NUMERO_PARCELA
+          AND (:OLD.ID IS NULL OR ID != :OLD.ID);
+          
+        IF V_PARCELAS_EXISTENTES > 0 THEN
+            RAISE_APPLICATION_ERROR(-20004,
+                'Já existe uma parcela com o número ' || :NEW.NUMERO_PARCELA);
+        END IF;
+        
+        -- Herdar configurações da saída pai se não informadas
+        IF :NEW.EMPRESA_ID IS NULL OR :NEW.TIPO_PAGAMENTO IS NULL OR :NEW.VALOR_TOTAL IS NULL THEN
+            SELECT EMPRESA_ID, TIPO_PAGAMENTO, VALOR_TOTAL
+            INTO :NEW.EMPRESA_ID, :NEW.TIPO_PAGAMENTO, :NEW.VALOR_TOTAL
+            FROM KIG_SAIDAS
+            WHERE ID = :NEW.SAIDA_PAI_ID;
+        END IF;
     END IF;
     
     -- Validação para saídas parceladas pai
-    IF :NEW.tipo_saida = 'parcelada_pai' THEN
-        IF :NEW.total_parcelas IS NULL OR :NEW.total_parcelas < 2 THEN
-            RAISE_APPLICATION_ERROR(-20004, 
-                'Saída parcelada pai deve ter total_parcelas >= 2');
+    IF :NEW.TIPO_SAIDA = 'parcelada_pai' THEN
+        IF :NEW.TOTAL_PARCELAS IS NULL OR :NEW.TOTAL_PARCELAS < 2 THEN
+            RAISE_APPLICATION_ERROR(-20005, 
+                'Saída parcelada pai deve ter TOTAL_PARCELAS >= 2');
         END IF;
         
-        IF :NEW.numero_parcela != 1 THEN
-            RAISE_APPLICATION_ERROR(-20005, 
-                'Saída parcelada pai deve ter numero_parcela = 1');
+        IF :NEW.NUMERO_PARCELA != 1 THEN
+            RAISE_APPLICATION_ERROR(-20006, 
+                'Saída parcelada pai deve ter NUMERO_PARCELA = 1');
+        END IF;
+        
+        IF :NEW.TIPO_PAGAMENTO != 'parcelado' THEN
+            RAISE_APPLICATION_ERROR(-20007,
+                'Saída parcelada pai deve ter TIPO_PAGAMENTO = parcelado');
         END IF;
     END IF;
     
     -- Validação para saídas normais
-    IF :NEW.tipo_saida = 'normal' THEN
-        IF :NEW.saida_pai_id IS NOT NULL THEN
-            RAISE_APPLICATION_ERROR(-20006, 
-                'Saída normal não pode ter saida_pai_id');
+    IF :NEW.TIPO_SAIDA = 'normal' THEN
+        IF :NEW.SAIDA_PAI_ID IS NOT NULL THEN
+            RAISE_APPLICATION_ERROR(-20008, 
+                'Saída normal não pode ter SAIDA_PAI_ID');
         END IF;
         
-        IF :NEW.numero_parcela != 1 THEN
-            RAISE_APPLICATION_ERROR(-20007, 
-                'Saída normal deve ter numero_parcela = 1');
+        IF :NEW.NUMERO_PARCELA != 1 THEN
+            RAISE_APPLICATION_ERROR(-20009, 
+                'Saída normal deve ter NUMERO_PARCELA = 1');
+        END IF;
+        
+        IF :NEW.TOTAL_PARCELAS IS NOT NULL THEN
+            RAISE_APPLICATION_ERROR(-20010,
+                'Saída normal não pode ter TOTAL_PARCELAS');
+        END IF;
+    END IF;
+END;
+/
+
+-- Trigger para prevenir exclusão de saídas pai que tenham parcelas filhas
+CREATE OR REPLACE TRIGGER TRG_KIG_VALIDAR_EXCLUSAO_SAIDA_PAI
+    BEFORE DELETE ON KIG_SAIDAS
+    FOR EACH ROW
+DECLARE
+    V_PARCELAS_FILHAS NUMBER(3);
+BEGIN
+    -- Verificar se é uma saída pai que possui parcelas filhas
+    IF :OLD.TIPO_SAIDA = 'parcelada_pai' THEN
+        SELECT COUNT(*) INTO V_PARCELAS_FILHAS
+        FROM KIG_SAIDAS
+        WHERE SAIDA_PAI_ID = :OLD.ID;
+        
+        IF V_PARCELAS_FILHAS > 0 THEN
+            RAISE_APPLICATION_ERROR(-20011,
+                'Não é possível excluir saída parcelada que possui parcelas filhas');
         END IF;
     END IF;
 END;
@@ -446,308 +499,536 @@ END;
 -- 7. COMENTÁRIOS NAS TABELAS E COLUNAS
 -- ====================================================================
 
--- Comentários na tabela USUARIOS
-COMMENT ON TABLE usuarios IS 'Tabela de usuários do sistema familiar';
-COMMENT ON COLUMN usuarios.id IS 'Identificador único do usuário';
-COMMENT ON COLUMN usuarios.nome IS 'Nome completo do usuário';
-COMMENT ON COLUMN usuarios.login IS 'Login único para acesso ao sistema';
-COMMENT ON COLUMN usuarios.senha IS 'Senha criptografada do usuário';
-COMMENT ON COLUMN usuarios.papel IS 'Papel do usuário na família (pai, mae, filho, filha)';
-COMMENT ON COLUMN usuarios.ativo IS 'Indica se o usuário está ativo (1) ou inativo (0)';
+-- Comentários na tabela KIG_USUARIOS
+COMMENT ON TABLE KIG_USUARIOS IS 'Usuários do sistema familiar KIGI';
+COMMENT ON COLUMN KIG_USUARIOS.ID IS 'Identificador único do usuário';
+COMMENT ON COLUMN KIG_USUARIOS.NOME IS 'Nome completo do usuário';
+COMMENT ON COLUMN KIG_USUARIOS.LOGIN IS 'Login único para acesso ao sistema';
+COMMENT ON COLUMN KIG_USUARIOS.SENHA IS 'Senha criptografada do usuário';
+COMMENT ON COLUMN KIG_USUARIOS.PAPEL IS 'Papel do usuário na família (pai, mae, filho, filha)';
+COMMENT ON COLUMN KIG_USUARIOS.ATIVO IS 'Indica se o usuário está ativo (1) ou inativo (0)';
 
--- Comentários na tabela EMPRESAS
-COMMENT ON TABLE empresas IS 'Tabela de empresas onde são realizadas compras';
-COMMENT ON COLUMN empresas.id IS 'Identificador único da empresa';
-COMMENT ON COLUMN empresas.nome IS 'Nome da empresa';
-COMMENT ON COLUMN empresas.ativo IS 'Indica se a empresa está ativa (1) ou inativa (0)';
+-- Comentários na tabela KIG_EMPRESAS
+COMMENT ON TABLE KIG_EMPRESAS IS 'Empresas onde são realizadas compras no sistema KIGI';
+COMMENT ON COLUMN KIG_EMPRESAS.ID IS 'Identificador único da empresa';
+COMMENT ON COLUMN KIG_EMPRESAS.NOME IS 'Nome da empresa';
+COMMENT ON COLUMN KIG_EMPRESAS.ATIVO IS 'Indica se a empresa está ativa (1) ou inativa (0)';
 
--- Comentários na tabela PRODUTOS
-COMMENT ON TABLE produtos IS 'Catálogo de produtos da família';
-COMMENT ON COLUMN produtos.id IS 'Identificador único do produto';
-COMMENT ON COLUMN produtos.codigo_barras IS 'Código de barras do produto (opcional)';
-COMMENT ON COLUMN produtos.nome IS 'Nome do produto';
-COMMENT ON COLUMN produtos.unidade IS 'Unidade de medida (kg, un, lt, etc.)';
-COMMENT ON COLUMN produtos.classificacao IS 'Categoria/classificação do produto';
+-- Comentários na tabela KIG_PRODUTOS
+COMMENT ON TABLE KIG_PRODUTOS IS 'Catálogo de produtos da família no sistema KIGI';
+COMMENT ON COLUMN KIG_PRODUTOS.ID IS 'Identificador único do produto';
+COMMENT ON COLUMN KIG_PRODUTOS.CODIGO_BARRAS IS 'Código de barras do produto (opcional)';
+COMMENT ON COLUMN KIG_PRODUTOS.NOME IS 'Nome do produto';
+COMMENT ON COLUMN KIG_PRODUTOS.UNIDADE IS 'Unidade de medida (kg, un, lt, etc.)';
+COMMENT ON COLUMN KIG_PRODUTOS.CLASSIFICACAO IS 'Categoria/classificação do produto';
 
--- Comentários na tabela ENTRADAS
-COMMENT ON TABLE entradas IS 'Receitas e entradas financeiras da família';
-COMMENT ON COLUMN entradas.usuario_registro_id IS 'Usuário que registrou a entrada';
-COMMENT ON COLUMN entradas.usuario_titular_id IS 'Usuário titular da receita';
-COMMENT ON COLUMN entradas.data_referencia IS 'Data de referência da receita';
-COMMENT ON COLUMN entradas.valor IS 'Valor da entrada em reais';
-COMMENT ON COLUMN entradas.empresa_pagadora_id IS 'Empresa que efetuou o pagamento';
+-- Comentários na tabela KIG_ENTRADAS
+COMMENT ON TABLE KIG_ENTRADAS IS 'Receitas e entradas financeiras da família no sistema KIGI';
+COMMENT ON COLUMN KIG_ENTRADAS.USUARIO_REGISTRO_ID IS 'Usuário que registrou a entrada';
+COMMENT ON COLUMN KIG_ENTRADAS.USUARIO_TITULAR_ID IS 'Usuário titular da receita';
+COMMENT ON COLUMN KIG_ENTRADAS.DATA_REFERENCIA IS 'Data de referência da receita';
+COMMENT ON COLUMN KIG_ENTRADAS.VALOR IS 'Valor da entrada em reais';
+COMMENT ON COLUMN KIG_ENTRADAS.EMPRESA_PAGADORA_ID IS 'Empresa que efetuou o pagamento';
 
--- Comentários na tabela SAIDAS (NOVA ESTRUTURA)
-COMMENT ON TABLE saidas IS 'Despesas e saídas financeiras unificadas - à vista e parceladas';
-COMMENT ON COLUMN saidas.id IS 'Identificador único da saída';
-COMMENT ON COLUMN saidas.saida_pai_id IS 'Referência à saída pai (NULL para normais e parceladas_pai)';
-COMMENT ON COLUMN saidas.tipo_saida IS 'Tipo: normal (à vista), parcelada_pai (primeira parcela), parcela (parcelas subsequentes)';
-COMMENT ON COLUMN saidas.numero_parcela IS 'Número da parcela (1 para à vista, 1-N para parceladas)';
-COMMENT ON COLUMN saidas.total_parcelas IS 'Total de parcelas (apenas para parceladas_pai)';
-COMMENT ON COLUMN saidas.usuario_registro_id IS 'Usuário que registrou a saída';
-COMMENT ON COLUMN saidas.data_saida IS 'Data de impacto financeiro (vencimento da parcela)';
-COMMENT ON COLUMN saidas.empresa_id IS 'Empresa onde foi realizada a compra';
-COMMENT ON COLUMN saidas.tipo_pagamento IS 'Tipo de pagamento (avista, parcelado)';
-COMMENT ON COLUMN saidas.valor_total IS 'Valor da parcela (impacto financeiro no mês)';
-COMMENT ON COLUMN saidas.observacao IS 'Observações adicionais';
+-- Comentários na tabela KIG_SAIDAS (ESTRUTURA UNIFICADA)
+COMMENT ON TABLE KIG_SAIDAS IS 'Despesas e saídas financeiras unificadas - à vista e parceladas no sistema KIGI';
+COMMENT ON COLUMN KIG_SAIDAS.ID IS 'Identificador único da saída';
+COMMENT ON COLUMN KIG_SAIDAS.SAIDA_PAI_ID IS 'Referência à saída pai (NULL para normais e parceladas_pai)';
+COMMENT ON COLUMN KIG_SAIDAS.TIPO_SAIDA IS 'Tipo: normal (à vista), parcelada_pai (primeira parcela), parcela (parcelas subsequentes)';
+COMMENT ON COLUMN KIG_SAIDAS.NUMERO_PARCELA IS 'Número da parcela (1 para à vista, 1-N para parceladas)';
+COMMENT ON COLUMN KIG_SAIDAS.TOTAL_PARCELAS IS 'Total de parcelas (apenas para parceladas_pai)';
+COMMENT ON COLUMN KIG_SAIDAS.USUARIO_REGISTRO_ID IS 'Usuário que registrou a saída';
+COMMENT ON COLUMN KIG_SAIDAS.DATA_SAIDA IS 'Data de impacto financeiro (vencimento da parcela)';
+COMMENT ON COLUMN KIG_SAIDAS.EMPRESA_ID IS 'Empresa onde foi realizada a compra';
+COMMENT ON COLUMN KIG_SAIDAS.TIPO_PAGAMENTO IS 'Tipo de pagamento (avista, parcelado)';
+COMMENT ON COLUMN KIG_SAIDAS.VALOR_TOTAL IS 'Valor da parcela (impacto financeiro no mês)';
+COMMENT ON COLUMN KIG_SAIDAS.OBSERVACAO IS 'Observações adicionais';
 
--- Comentários na tabela ITENS_SAIDA
-COMMENT ON TABLE itens_saida IS 'Itens individuais de cada saída/despesa';
-COMMENT ON COLUMN itens_saida.saida_id IS 'Referência à saída principal';
-COMMENT ON COLUMN itens_saida.produto_id IS 'Referência ao produto';
-COMMENT ON COLUMN itens_saida.nome_produto IS 'Nome do produto no momento da compra';
-COMMENT ON COLUMN itens_saida.quantidade IS 'Quantidade comprada';
-COMMENT ON COLUMN itens_saida.preco_unitario IS 'Preço unitário no momento da compra';
-COMMENT ON COLUMN itens_saida.total IS 'Total do item (quantidade × preço unitário)';
+-- Comentários na tabela KIG_ITENS_SAIDA
+COMMENT ON TABLE KIG_ITENS_SAIDA IS 'Itens individuais de cada saída/despesa no sistema KIGI';
+COMMENT ON COLUMN KIG_ITENS_SAIDA.SAIDA_ID IS 'Referência à saída principal';
+COMMENT ON COLUMN KIG_ITENS_SAIDA.PRODUTO_ID IS 'Referência ao produto';
+COMMENT ON COLUMN KIG_ITENS_SAIDA.NOME_PRODUTO IS 'Nome do produto no momento da compra';
+COMMENT ON COLUMN KIG_ITENS_SAIDA.QUANTIDADE IS 'Quantidade comprada';
+COMMENT ON COLUMN KIG_ITENS_SAIDA.PRECO_UNITARIO IS 'Preço unitário no momento da compra';
+COMMENT ON COLUMN KIG_ITENS_SAIDA.TOTAL IS 'Total do item (quantidade × preço unitário)';
 
--- Comentários na tabela SAIDA_TITULARES
-COMMENT ON TABLE saida_titulares IS 'Relacionamento entre saídas e usuários titulares';
-COMMENT ON COLUMN saida_titulares.saida_id IS 'Referência à saída';
-COMMENT ON COLUMN saida_titulares.usuario_id IS 'Referência ao usuário titular';
+-- Comentários na tabela KIG_SAIDA_TITULARES
+COMMENT ON TABLE KIG_SAIDA_TITULARES IS 'Relacionamento entre saídas e usuários titulares no sistema KIGI';
+COMMENT ON COLUMN KIG_SAIDA_TITULARES.SAIDA_ID IS 'Referência à saída';
+COMMENT ON COLUMN KIG_SAIDA_TITULARES.USUARIO_ID IS 'Referência ao usuário titular';
 
 -- ====================================================================
 -- 8. VIEWS PARA RELATÓRIOS E CONSULTAS FREQUENTES
 -- ====================================================================
 
 -- View para saídas principais (apenas normais e parceladas_pai)
-CREATE OR REPLACE VIEW vw_saidas_principais AS
+-- Conforme uso atual no sistema para listagem de saídas
+CREATE OR REPLACE VIEW VW_KIG_SAIDAS_PRINCIPAIS AS
 SELECT 
-    s.*,
-    e.nome as empresa_nome,
-    u.nome as usuario_registro_nome
-FROM saidas s
-INNER JOIN empresas e ON s.empresa_id = e.id
-INNER JOIN usuarios u ON s.usuario_registro_id = u.id
-WHERE s.tipo_saida IN ('normal', 'parcelada_pai')
-ORDER BY s.data_saida DESC;
+    S.*,
+    E.NOME AS EMPRESA_NOME,
+    U.NOME AS USUARIO_REGISTRO_NOME,
+    CASE 
+        WHEN S.TIPO_SAIDA = 'parcelada_pai' THEN 'Parcelado (' || S.NUMERO_PARCELA || '/' || S.TOTAL_PARCELAS || ')'
+        ELSE 'À Vista'
+    END AS DESCRICAO_PAGAMENTO
+FROM KIG_SAIDAS S
+INNER JOIN KIG_EMPRESAS E ON S.EMPRESA_ID = E.ID
+INNER JOIN KIG_USUARIOS U ON S.USUARIO_REGISTRO_ID = U.ID
+WHERE S.TIPO_SAIDA IN ('normal', 'parcelada_pai')
+ORDER BY S.DATA_SAIDA DESC;
 
 -- View para resumo financeiro por usuário
-CREATE OR REPLACE VIEW vw_resumo_usuario AS
+-- Conforme necessidades de relatórios do sistema atual
+CREATE OR REPLACE VIEW VW_KIG_RESUMO_USUARIO AS
 SELECT 
-    u.id,
-    u.nome,
-    u.papel,
-    NVL(entradas.total_entradas, 0) as total_entradas,
-    NVL(saidas.total_saidas, 0) as total_saidas,
-    NVL(entradas.total_entradas, 0) - NVL(saidas.total_saidas, 0) as saldo
-FROM usuarios u
+    U.ID,
+    U.NOME,
+    U.PAPEL,
+    NVL(ENTRADAS.TOTAL_ENTRADAS, 0) AS TOTAL_ENTRADAS,
+    NVL(SAIDAS.TOTAL_SAIDAS, 0) AS TOTAL_SAIDAS,
+    NVL(ENTRADAS.TOTAL_ENTRADAS, 0) - NVL(SAIDAS.TOTAL_SAIDAS, 0) AS SALDO
+FROM KIG_USUARIOS U
 LEFT JOIN (
-    SELECT usuario_titular_id, SUM(valor) as total_entradas
-    FROM entradas 
-    WHERE EXTRACT(YEAR FROM data_referencia) = EXTRACT(YEAR FROM SYSDATE)
-    GROUP BY usuario_titular_id
-) entradas ON u.id = entradas.usuario_titular_id
+    SELECT USUARIO_TITULAR_ID, SUM(VALOR) AS TOTAL_ENTRADAS
+    FROM KIG_ENTRADAS 
+    WHERE EXTRACT(YEAR FROM DATA_REFERENCIA) = EXTRACT(YEAR FROM SYSDATE)
+    GROUP BY USUARIO_TITULAR_ID
+) ENTRADAS ON U.ID = ENTRADAS.USUARIO_TITULAR_ID
 LEFT JOIN (
-    SELECT st.usuario_id, SUM(s.valor_total) as total_saidas
-    FROM saidas s
-    INNER JOIN saida_titulares st ON s.id = st.saida_id
-    WHERE EXTRACT(YEAR FROM s.data_saida) = EXTRACT(YEAR FROM SYSDATE)
-    GROUP BY st.usuario_id
-) saidas ON u.id = saidas.usuario_id
-WHERE u.ativo = 1;
+    SELECT ST.USUARIO_ID, SUM(S.VALOR_TOTAL) AS TOTAL_SAIDAS
+    FROM KIG_SAIDAS S
+    INNER JOIN KIG_SAIDA_TITULARES ST ON S.ID = ST.SAIDA_ID
+    WHERE EXTRACT(YEAR FROM S.DATA_SAIDA) = EXTRACT(YEAR FROM SYSDATE)
+    GROUP BY ST.USUARIO_ID
+) SAIDAS ON U.ID = SAIDAS.USUARIO_ID
+WHERE U.ATIVO = 1;
 
 -- View para parcelas futuras (a vencer)
-CREATE OR REPLACE VIEW vw_parcelas_futuras AS
+-- Fundamental para controle de vencimentos no sistema atual
+CREATE OR REPLACE VIEW VW_KIG_PARCELAS_FUTURAS AS
 SELECT 
-    s.id,
-    s.saida_pai_id,
-    sp.data_saida as data_compra_original,
-    e.nome as empresa,
-    s.numero_parcela,
-    s.data_saida as data_vencimento,
-    s.valor_total as valor_parcela,
-    TRUNC(s.data_saida) - TRUNC(SYSDATE) as dias_para_vencimento,
-    u.nome as responsavel
-FROM saidas s
-INNER JOIN saidas sp ON s.saida_pai_id = sp.id -- Join com a saída pai
-INNER JOIN empresas e ON s.empresa_id = e.id
-INNER JOIN usuarios u ON s.usuario_registro_id = u.id
-WHERE s.tipo_saida = 'parcela'
-  AND s.data_saida > SYSDATE
-ORDER BY s.data_saida;
+    S.ID,
+    S.SAIDA_PAI_ID,
+    SP.DATA_SAIDA AS DATA_COMPRA_ORIGINAL,
+    E.NOME AS EMPRESA,
+    S.NUMERO_PARCELA,
+    S.DATA_SAIDA AS DATA_VENCIMENTO,
+    S.VALOR_TOTAL AS VALOR_PARCELA,
+    TRUNC(S.DATA_SAIDA) - TRUNC(SYSDATE) AS DIAS_PARA_VENCIMENTO,
+    U.NOME AS RESPONSAVEL,
+    SP.OBSERVACAO AS OBSERVACAO_ORIGINAL
+FROM KIG_SAIDAS S
+INNER JOIN KIG_SAIDAS SP ON S.SAIDA_PAI_ID = SP.ID -- Join com a saída pai
+INNER JOIN KIG_EMPRESAS E ON S.EMPRESA_ID = E.ID
+INNER JOIN KIG_USUARIOS U ON S.USUARIO_REGISTRO_ID = U.ID
+WHERE S.TIPO_SAIDA = 'parcela'
+  AND S.DATA_SAIDA > SYSDATE
+ORDER BY S.DATA_SAIDA;
 
 -- View para gastos por categoria
-CREATE OR REPLACE VIEW vw_gastos_categoria AS
+-- Para relatórios de classificação conforme sistema atual
+CREATE OR REPLACE VIEW VW_KIG_GASTOS_CATEGORIA AS
 SELECT 
-    p.classificacao,
-    COUNT(*) as total_compras,
-    SUM(i.quantidade) as quantidade_total,
-    SUM(i.total) as valor_total,
-    AVG(i.preco_unitario) as preco_medio
-FROM itens_saida i
-INNER JOIN produtos p ON i.produto_id = p.id
-INNER JOIN saidas s ON i.saida_id = s.id
-WHERE EXTRACT(YEAR FROM s.data_saida) = EXTRACT(YEAR FROM SYSDATE)
-GROUP BY p.classificacao
-ORDER BY valor_total DESC;
+    P.CLASSIFICACAO,
+    COUNT(*) AS TOTAL_COMPRAS,
+    SUM(I.QUANTIDADE) AS QUANTIDADE_TOTAL,
+    SUM(I.TOTAL) AS VALOR_TOTAL,
+    AVG(I.PRECO_UNITARIO) AS PRECO_MEDIO
+FROM KIG_ITENS_SAIDA I
+INNER JOIN KIG_PRODUTOS P ON I.PRODUTO_ID = P.ID
+INNER JOIN KIG_SAIDAS S ON I.SAIDA_ID = S.ID
+WHERE EXTRACT(YEAR FROM S.DATA_SAIDA) = EXTRACT(YEAR FROM SYSDATE)
+GROUP BY P.CLASSIFICACAO
+ORDER BY VALOR_TOTAL DESC;
+
+-- View para saídas com parcelas (usada no modal de detalhes)
+-- Conforme funcionalidade atual do modal de detalhes de saída
+CREATE OR REPLACE VIEW VW_KIG_SAIDAS_COM_PARCELAS AS
+SELECT 
+    SP.ID AS SAIDA_PAI_ID,
+    SP.OBSERVACAO,
+    SP.DATA_SAIDA AS DATA_COMPRA,
+    SP.TOTAL_PARCELAS,
+    E.NOME AS EMPRESA_NOME,
+    U.NOME AS USUARIO_NOME,
+    S.ID AS PARCELA_ID,
+    S.NUMERO_PARCELA,
+    S.DATA_SAIDA AS DATA_VENCIMENTO,
+    S.VALOR_TOTAL AS VALOR_PARCELA,
+    CASE 
+        WHEN S.DATA_SAIDA <= SYSDATE THEN 'Vencida'
+        WHEN S.DATA_SAIDA = TRUNC(SYSDATE) THEN 'Vence Hoje'
+        ELSE 'A Vencer'
+    END AS STATUS_PARCELA
+FROM KIG_SAIDAS SP
+INNER JOIN KIG_EMPRESAS E ON SP.EMPRESA_ID = E.ID
+INNER JOIN KIG_USUARIOS U ON SP.USUARIO_REGISTRO_ID = U.ID
+LEFT JOIN KIG_SAIDAS S ON SP.ID = S.SAIDA_PAI_ID
+WHERE SP.TIPO_SAIDA = 'parcelada_pai'
+ORDER BY SP.DATA_SAIDA DESC, S.NUMERO_PARCELA;
 
 -- ====================================================================
--- 9. DADOS INICIAIS (SEEDS)
--- ====================================================================
-
--- Inserir usuários iniciais
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('João Silva', 'joao', 'senha_hash_aqui', 'pai');
-
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('Maria Silva', 'maria', 'senha_hash_aqui', 'mae');
-
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('Pedro Silva', 'pedro', 'senha_hash_aqui', 'filho');
-
-INSERT INTO usuarios (nome, login, senha, papel) VALUES 
-('Ana Silva', 'ana', 'senha_hash_aqui', 'filha');
-
--- Inserir empresas iniciais
-INSERT INTO empresas (nome) VALUES ('Supermercado ABC');
-INSERT INTO empresas (nome) VALUES ('Farmácia Central');
-INSERT INTO empresas (nome) VALUES ('Posto Shell');
-INSERT INTO empresas (nome) VALUES ('Magazine Luiza');
-
--- Inserir produtos iniciais
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567890', 'Arroz Integral 5kg', 'kg', 'Alimentação');
-
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567891', 'Feijão Preto 1kg', 'kg', 'Alimentação');
-
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567892', 'Óleo de Soja 900ml', 'ml', 'Alimentação');
-
-INSERT INTO produtos (codigo_barras, nome, unidade, classificacao) VALUES 
-('7891234567893', 'Smartphone Samsung', 'un', 'Eletrônicos');
-
--- Inserir exemplos de entradas
-INSERT INTO entradas (usuario_registro_id, usuario_titular_id, data_referencia, valor, empresa_pagadora_id) 
-VALUES (1, 1, DATE '2024-01-01', 5000.00, 1);
-
-INSERT INTO entradas (usuario_registro_id, usuario_titular_id, data_referencia, valor, empresa_pagadora_id) 
-VALUES (1, 2, DATE '2024-01-01', 3000.00, 2);
-
--- Exemplos de saídas à vista
-INSERT INTO saidas (tipo_saida, numero_parcela, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total, observacao) 
-VALUES ('normal', 1, 1, DATE '2024-01-05', 1, 'avista', 250.00, 'Compras do mês');
-
--- Exemplo de saída parcelada - Primeira parcela (saída pai)
-INSERT INTO saidas (tipo_saida, numero_parcela, total_parcelas, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total, observacao) 
-VALUES ('parcelada_pai', 1, 3, 1, DATE '2024-01-15', 4, 'parcelado', 400.00, 'Smartphone parcelado em 3x');
-
--- Parcelas subsequentes da saída parcelada
-INSERT INTO saidas (saida_pai_id, tipo_saida, numero_parcela, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total) 
-VALUES (2, 'parcela', 2, 1, DATE '2024-02-15', 4, 'parcelado', 400.00);
-
-INSERT INTO saidas (saida_pai_id, tipo_saida, numero_parcela, usuario_registro_id, data_saida, empresa_id, tipo_pagamento, valor_total) 
-VALUES (2, 'parcela', 3, 1, DATE '2024-03-15', 4, 'parcelado', 400.00);
-
--- Inserir itens para as saídas
-INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
-VALUES (1, 1, 'Arroz Integral 5kg', 2, 25.00, 50.00);
-
-INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
-VALUES (1, 2, 'Feijão Preto 1kg', 3, 8.00, 24.00);
-
-INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
-VALUES (1, 3, 'Óleo de Soja 900ml', 4, 6.50, 26.00);
-
--- Itens para a saída parcelada (apenas na primeira parcela)
-INSERT INTO itens_saida (saida_id, produto_id, nome_produto, quantidade, preco_unitario, total) 
-VALUES (2, 4, 'Smartphone Samsung', 1, 1200.00, 1200.00);
-
--- Inserir titulares das saídas
-INSERT INTO saida_titulares (saida_id, usuario_id) VALUES (1, 1);
-INSERT INTO saida_titulares (saida_id, usuario_id) VALUES (1, 2);
-INSERT INTO saida_titulares (saida_id, usuario_id) VALUES (2, 1);
-
--- Commit das inserções iniciais
-COMMIT;
-
--- ====================================================================
--- 10. PROCEDURES PARA OPERAÇÕES ESPECÍFICAS
+-- 9. PROCEDURES PARA OPERAÇÕES ESPECÍFICAS DO SISTEMA
 -- ====================================================================
 
 -- Procedure para criar saída parcelada automaticamente
-CREATE OR REPLACE PROCEDURE sp_criar_saida_parcelada(
-    p_usuario_registro_id IN NUMBER,
-    p_empresa_id IN NUMBER,
-    p_valor_parcela IN NUMBER,
-    p_total_parcelas IN NUMBER,
-    p_data_primeira_parcela IN DATE,
-    p_observacao IN VARCHAR2 DEFAULT NULL,
-    p_saida_pai_id OUT NUMBER
+-- Conforme funcionalidade de criação de parcelas no sistema atual
+CREATE OR REPLACE PROCEDURE SP_KIG_CRIAR_SAIDA_PARCELADA(
+    P_USUARIO_REGISTRO_ID IN NUMBER,
+    P_EMPRESA_ID IN NUMBER,
+    P_VALOR_PARCELA IN NUMBER,
+    P_TOTAL_PARCELAS IN NUMBER,
+    P_DATA_PRIMEIRA_PARCELA IN DATE,
+    P_OBSERVACAO IN VARCHAR2 DEFAULT NULL,
+    P_USUARIOS_TITULARES IN VARCHAR2, -- IDs separados por vírgula
+    P_SAIDA_PAI_ID OUT NUMBER
 ) AS
-    v_data_parcela DATE;
+    V_DATA_PARCELA DATE;
+    V_USUARIO_ID NUMBER;
+    V_POS NUMBER;
+    V_USUARIOS_STR VARCHAR2(4000);
 BEGIN
     -- Inserir a saída pai (primeira parcela)
-    INSERT INTO saidas (
-        tipo_saida, numero_parcela, total_parcelas,
-        usuario_registro_id, data_saida, empresa_id,
-        tipo_pagamento, valor_total, observacao
+    INSERT INTO KIG_SAIDAS (
+        TIPO_SAIDA, NUMERO_PARCELA, TOTAL_PARCELAS,
+        USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID,
+        TIPO_PAGAMENTO, VALOR_TOTAL, OBSERVACAO
     ) VALUES (
-        'parcelada_pai', 1, p_total_parcelas,
-        p_usuario_registro_id, p_data_primeira_parcela, p_empresa_id,
-        'parcelado', p_valor_parcela, p_observacao
-    ) RETURNING id INTO p_saida_pai_id;
+        'parcelada_pai', 1, P_TOTAL_PARCELAS,
+        P_USUARIO_REGISTRO_ID, P_DATA_PRIMEIRA_PARCELA, P_EMPRESA_ID,
+        'parcelado', P_VALOR_PARCELA, P_OBSERVACAO
+    ) RETURNING ID INTO P_SAIDA_PAI_ID;
     
     -- Inserir as parcelas subsequentes
-    FOR i IN 2..p_total_parcelas LOOP
-        v_data_parcela := ADD_MONTHS(p_data_primeira_parcela, i-1);
+    FOR I IN 2..P_TOTAL_PARCELAS LOOP
+        V_DATA_PARCELA := ADD_MONTHS(P_DATA_PRIMEIRA_PARCELA, I-1);
         
-        INSERT INTO saidas (
-            saida_pai_id, tipo_saida, numero_parcela,
-            usuario_registro_id, data_saida, empresa_id,
-            tipo_pagamento, valor_total
+        INSERT INTO KIG_SAIDAS (
+            SAIDA_PAI_ID, TIPO_SAIDA, NUMERO_PARCELA,
+            USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID,
+            TIPO_PAGAMENTO, VALOR_TOTAL
         ) VALUES (
-            p_saida_pai_id, 'parcela', i,
-            p_usuario_registro_id, v_data_parcela, p_empresa_id,
-            'parcelado', p_valor_parcela
+            P_SAIDA_PAI_ID, 'parcela', I,
+            P_USUARIO_REGISTRO_ID, V_DATA_PARCELA, P_EMPRESA_ID,
+            'parcelado', P_VALOR_PARCELA
         );
+    END LOOP;
+    
+    -- Inserir usuários titulares para a saída pai
+    V_USUARIOS_STR := P_USUARIOS_TITULARES || ',';
+    WHILE LENGTH(V_USUARIOS_STR) > 0 LOOP
+        V_POS := INSTR(V_USUARIOS_STR, ',');
+        IF V_POS > 0 THEN
+            V_USUARIO_ID := TO_NUMBER(SUBSTR(V_USUARIOS_STR, 1, V_POS - 1));
+            INSERT INTO KIG_SAIDA_TITULARES (SAIDA_ID, USUARIO_ID) 
+            VALUES (P_SAIDA_PAI_ID, V_USUARIO_ID);
+            V_USUARIOS_STR := SUBSTR(V_USUARIOS_STR, V_POS + 1);
+        ELSE
+            EXIT;
+        END IF;
     END LOOP;
     
     COMMIT;
 END;
 /
 
+-- Procedure para adicionar nova parcela a uma saída parcelada existente
+-- Conforme funcionalidade do modal de detalhes atual
+CREATE OR REPLACE PROCEDURE SP_KIG_ADICIONAR_PARCELA(
+    P_SAIDA_PAI_ID IN NUMBER,
+    P_NOVA_PARCELA_ID OUT NUMBER
+) AS
+    V_ULTIMO_NUMERO NUMBER;
+    V_NOVA_DATA DATE;
+    V_USUARIO_REGISTRO_ID NUMBER;
+    V_EMPRESA_ID NUMBER;
+    V_VALOR_TOTAL NUMBER;
+BEGIN
+    -- Verificar se é uma saída parcelada válida
+    SELECT USUARIO_REGISTRO_ID, EMPRESA_ID, VALOR_TOTAL
+    INTO V_USUARIO_REGISTRO_ID, V_EMPRESA_ID, V_VALOR_TOTAL
+    FROM KIG_SAIDAS
+    WHERE ID = P_SAIDA_PAI_ID AND TIPO_SAIDA = 'parcelada_pai';
+    
+    -- Obter o último número de parcela
+    SELECT NVL(MAX(NUMERO_PARCELA), 0) INTO V_ULTIMO_NUMERO
+    FROM KIG_SAIDAS
+    WHERE SAIDA_PAI_ID = P_SAIDA_PAI_ID OR ID = P_SAIDA_PAI_ID;
+    
+    -- Calcular data da nova parcela (um mês após a última)
+    SELECT ADD_MONTHS(MAX(DATA_SAIDA), 1) INTO V_NOVA_DATA
+    FROM KIG_SAIDAS
+    WHERE SAIDA_PAI_ID = P_SAIDA_PAI_ID OR ID = P_SAIDA_PAI_ID;
+    
+    -- Inserir nova parcela
+    INSERT INTO KIG_SAIDAS (
+        SAIDA_PAI_ID, TIPO_SAIDA, NUMERO_PARCELA,
+        USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID,
+        TIPO_PAGAMENTO, VALOR_TOTAL
+    ) VALUES (
+        P_SAIDA_PAI_ID, 'parcela', V_ULTIMO_NUMERO + 1,
+        V_USUARIO_REGISTRO_ID, V_NOVA_DATA, V_EMPRESA_ID,
+        'parcelado', V_VALOR_TOTAL
+    ) RETURNING ID INTO P_NOVA_PARCELA_ID;
+    
+    -- Atualizar total de parcelas na saída pai
+    UPDATE KIG_SAIDAS 
+    SET TOTAL_PARCELAS = V_ULTIMO_NUMERO + 1
+    WHERE ID = P_SAIDA_PAI_ID;
+    
+    COMMIT;
+END;
+/
+
+-- Procedure para remover parcela (mantendo mínimo de 2)
+-- Conforme regra de negócio do sistema atual
+CREATE OR REPLACE PROCEDURE SP_KIG_REMOVER_PARCELA(
+    P_PARCELA_ID IN NUMBER
+) AS
+    V_SAIDA_PAI_ID NUMBER;
+    V_TOTAL_PARCELAS NUMBER;
+    V_NUMERO_PARCELA NUMBER;
+BEGIN
+    -- Obter dados da parcela
+    SELECT SAIDA_PAI_ID, NUMERO_PARCELA
+    INTO V_SAIDA_PAI_ID, V_NUMERO_PARCELA
+    FROM KIG_SAIDAS
+    WHERE ID = P_PARCELA_ID AND TIPO_SAIDA = 'parcela';
+    
+    -- Contar parcelas existentes
+    SELECT COUNT(*) INTO V_TOTAL_PARCELAS
+    FROM KIG_SAIDAS
+    WHERE SAIDA_PAI_ID = V_SAIDA_PAI_ID OR ID = V_SAIDA_PAI_ID;
+    
+    -- Verificar se pode remover (mínimo 2 parcelas)
+    IF V_TOTAL_PARCELAS <= 2 THEN
+        RAISE_APPLICATION_ERROR(-20012,
+            'Não é possível remover parcela. Mínimo de 2 parcelas necessário.');
+    END IF;
+    
+    -- Remover a parcela
+    DELETE FROM KIG_SAIDAS WHERE ID = P_PARCELA_ID;
+    
+    -- Atualizar total de parcelas na saída pai
+    UPDATE KIG_SAIDAS 
+    SET TOTAL_PARCELAS = V_TOTAL_PARCELAS - 1
+    WHERE ID = V_SAIDA_PAI_ID;
+    
+    COMMIT;
+END;
+/
+
 -- ====================================================================
--- FIM DOS SCRIPTS
+-- 10. DADOS INICIAIS (SEEDS) CONFORME MOCK ATUAL
+-- ====================================================================
+
+-- Inserir usuários iniciais conforme mockData atual
+INSERT INTO KIG_USUARIOS (NOME, LOGIN, SENHA, PAPEL) VALUES 
+('Administrador', 'admin', '$2a$10$hashedpassword', 'pai');
+
+INSERT INTO KIG_USUARIOS (NOME, LOGIN, SENHA, PAPEL) VALUES 
+('João Silva', 'joao', '$2a$10$hashedpassword', 'pai');
+
+INSERT INTO KIG_USUARIOS (NOME, LOGIN, SENHA, PAPEL) VALUES 
+('Maria Silva', 'maria', '$2a$10$hashedpassword', 'mae');
+
+INSERT INTO KIG_USUARIOS (NOME, LOGIN, SENHA, PAPEL) VALUES 
+('Pedro Silva', 'pedro', '$2a$10$hashedpassword', 'filho');
+
+INSERT INTO KIG_USUARIOS (NOME, LOGIN, SENHA, PAPEL) VALUES 
+('Ana Silva', 'ana', '$2a$10$hashedpassword', 'filha');
+
+-- Inserir empresas iniciais conforme mockData atual
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Supermercado ABC');
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Farmácia Central');
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Posto Shell');
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Magazine Luiza');
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Padaria do João');
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Açougue Premium');
+INSERT INTO KIG_EMPRESAS (NOME) VALUES ('Loja de Roupas Fashion');
+
+-- Inserir produtos iniciais conforme mockData atual
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567890', 'Arroz Integral 5kg', 'kg', 'Alimentação');
+
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567891', 'Feijão Preto 1kg', 'kg', 'Alimentação');
+
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567892', 'Óleo de Soja 900ml', 'ml', 'Alimentação');
+
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567893', 'Smartphone Samsung', 'un', 'Eletrônicos');
+
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567894', 'Leite Integral 1L', 'L', 'Alimentação');
+
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567895', 'Pão de Forma', 'un', 'Alimentação');
+
+INSERT INTO KIG_PRODUTOS (CODIGO_BARRAS, NOME, UNIDADE, CLASSIFICACAO) VALUES 
+('7891234567896', 'Detergente Líquido', 'un', 'Limpeza');
+
+-- Inserir exemplos de entradas conforme sistema atual
+INSERT INTO KIG_ENTRADAS (USUARIO_REGISTRO_ID, USUARIO_TITULAR_ID, DATA_REFERENCIA, VALOR, EMPRESA_PAGADORA_ID) 
+VALUES (1, 1, DATE '2024-01-01', 5000.00, 1);
+
+INSERT INTO KIG_ENTRADAS (USUARIO_REGISTRO_ID, USUARIO_TITULAR_ID, DATA_REFERENCIA, VALOR, EMPRESA_PAGADORA_ID) 
+VALUES (1, 2, DATE '2024-01-01', 3000.00, 2);
+
+INSERT INTO KIG_ENTRADAS (USUARIO_REGISTRO_ID, USUARIO_TITULAR_ID, DATA_REFERENCIA, VALOR, EMPRESA_PAGADORA_ID) 
+VALUES (2, 2, DATE '2024-01-15', 2500.00, 3);
+
+-- Exemplos de saídas à vista conforme sistema atual
+INSERT INTO KIG_SAIDAS (TIPO_SAIDA, NUMERO_PARCELA, USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID, TIPO_PAGAMENTO, VALOR_TOTAL, OBSERVACAO) 
+VALUES ('normal', 1, 1, DATE '2024-01-05', 1, 'avista', 250.00, 'Compras do mês');
+
+INSERT INTO KIG_SAIDAS (TIPO_SAIDA, NUMERO_PARCELA, USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID, TIPO_PAGAMENTO, VALOR_TOTAL, OBSERVACAO) 
+VALUES ('normal', 1, 2, DATE '2024-01-10', 5, 'avista', 45.00, 'Pães e leite');
+
+-- Exemplo de saída parcelada - Primeira parcela (saída pai)
+INSERT INTO KIG_SAIDAS (TIPO_SAIDA, NUMERO_PARCELA, TOTAL_PARCELAS, USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID, TIPO_PAGAMENTO, VALOR_TOTAL, OBSERVACAO) 
+VALUES ('parcelada_pai', 1, 3, 1, DATE '2024-01-15', 4, 'parcelado', 400.00, 'Smartphone parcelado em 3x');
+
+-- Parcelas subsequentes da saída parcelada
+INSERT INTO KIG_SAIDAS (SAIDA_PAI_ID, TIPO_SAIDA, NUMERO_PARCELA, USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID, TIPO_PAGAMENTO, VALOR_TOTAL) 
+VALUES (3, 'parcela', 2, 1, DATE '2024-02-15', 4, 'parcelado', 400.00);
+
+INSERT INTO KIG_SAIDAS (SAIDA_PAI_ID, TIPO_SAIDA, NUMERO_PARCELA, USUARIO_REGISTRO_ID, DATA_SAIDA, EMPRESA_ID, TIPO_PAGAMENTO, VALOR_TOTAL) 
+VALUES (3, 'parcela', 3, 1, DATE '2024-03-15', 4, 'parcelado', 400.00);
+
+-- Inserir itens para as saídas conforme estrutura atual
+INSERT INTO KIG_ITENS_SAIDA (SAIDA_ID, PRODUTO_ID, NOME_PRODUTO, QUANTIDADE, PRECO_UNITARIO, TOTAL) 
+VALUES (1, 1, 'Arroz Integral 5kg', 2, 25.00, 50.00);
+
+INSERT INTO KIG_ITENS_SAIDA (SAIDA_ID, PRODUTO_ID, NOME_PRODUTO, QUANTIDADE, PRECO_UNITARIO, TOTAL) 
+VALUES (1, 2, 'Feijão Preto 1kg', 3, 8.00, 24.00);
+
+INSERT INTO KIG_ITENS_SAIDA (SAIDA_ID, PRODUTO_ID, NOME_PRODUTO, QUANTIDADE, PRECO_UNITARIO, TOTAL) 
+VALUES (1, 3, 'Óleo de Soja 900ml', 4, 6.50, 26.00);
+
+INSERT INTO KIG_ITENS_SAIDA (SAIDA_ID, PRODUTO_ID, NOME_PRODUTO, QUANTIDADE, PRECO_UNITARIO, TOTAL) 
+VALUES (2, 5, 'Leite Integral 1L', 2, 4.50, 9.00);
+
+INSERT INTO KIG_ITENS_SAIDA (SAIDA_ID, PRODUTO_ID, NOME_PRODUTO, QUANTIDADE, PRECO_UNITARIO, TOTAL) 
+VALUES (2, 6, 'Pão de Forma', 3, 6.00, 18.00);
+
+-- Itens para a saída parcelada (apenas na primeira parcela)
+INSERT INTO KIG_ITENS_SAIDA (SAIDA_ID, PRODUTO_ID, NOME_PRODUTO, QUANTIDADE, PRECO_UNITARIO, TOTAL) 
+VALUES (3, 4, 'Smartphone Samsung', 1, 1200.00, 1200.00);
+
+-- Inserir titulares das saídas conforme sistema atual
+INSERT INTO KIG_SAIDA_TITULARES (SAIDA_ID, USUARIO_ID) VALUES (1, 1);
+INSERT INTO KIG_SAIDA_TITULARES (SAIDA_ID, USUARIO_ID) VALUES (1, 2);
+INSERT INTO KIG_SAIDA_TITULARES (SAIDA_ID, USUARIO_ID) VALUES (2, 2);
+INSERT INTO KIG_SAIDA_TITULARES (SAIDA_ID, USUARIO_ID) VALUES (3, 1);
+
+-- Commit das inserções iniciais
+COMMIT;
+
+-- ====================================================================
+-- 11. FUNÇÕES AUXILIARES PARA RELATÓRIOS
+-- ====================================================================
+
+-- Função para calcular saldo familiar atual
+CREATE OR REPLACE FUNCTION FN_KIG_SALDO_FAMILIAR RETURN NUMBER AS
+    V_TOTAL_ENTRADAS NUMBER(15,2);
+    V_TOTAL_SAIDAS NUMBER(15,2);
+BEGIN
+    SELECT NVL(SUM(VALOR), 0) INTO V_TOTAL_ENTRADAS
+    FROM KIG_ENTRADAS;
+    
+    SELECT NVL(SUM(VALOR_TOTAL), 0) INTO V_TOTAL_SAIDAS
+    FROM KIG_SAIDAS;
+    
+    RETURN V_TOTAL_ENTRADAS - V_TOTAL_SAIDAS;
+END;
+/
+
+-- Função para calcular total de parcelas pendentes
+CREATE OR REPLACE FUNCTION FN_KIG_PARCELAS_PENDENTES RETURN NUMBER AS
+    V_TOTAL_PENDENTE NUMBER(15,2);
+BEGIN
+    SELECT NVL(SUM(VALOR_TOTAL), 0) INTO V_TOTAL_PENDENTE
+    FROM KIG_SAIDAS
+    WHERE TIPO_SAIDA = 'parcela'
+      AND DATA_SAIDA > SYSDATE;
+    
+    RETURN V_TOTAL_PENDENTE;
+END;
+/
+
+-- ====================================================================
+-- 12. GRANTS E PERMISSÕES (OPCIONAL - CONFORME AMBIENTE)
+-- ====================================================================
+
+-- Exemplo de grants para usuário da aplicação (ajustar conforme necessário)
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_USUARIOS TO KIGI_APP_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_EMPRESAS TO KIGI_APP_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_PRODUTOS TO KIGI_APP_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_ENTRADAS TO KIGI_APP_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_SAIDAS TO KIGI_APP_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_ITENS_SAIDA TO KIGI_APP_USER;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON KIG_SAIDA_TITULARES TO KIGI_APP_USER;
+
+-- GRANT EXECUTE ON SP_KIG_CRIAR_SAIDA_PARCELADA TO KIGI_APP_USER;
+-- GRANT EXECUTE ON SP_KIG_ADICIONAR_PARCELA TO KIGI_APP_USER;
+-- GRANT EXECUTE ON SP_KIG_REMOVER_PARCELA TO KIGI_APP_USER;
+-- GRANT EXECUTE ON FN_KIG_SALDO_FAMILIAR TO KIGI_APP_USER;
+-- GRANT EXECUTE ON FN_KIG_PARCELAS_PENDENTES TO KIGI_APP_USER;
+
+-- ====================================================================
+-- FIM DOS SCRIPTS - SISTEMA KIGI ATUALIZADO
 -- ====================================================================
 
 /*
-OBSERVAÇÕES IMPORTANTES DA NOVA ESTRUTURA:
+RESUMO DAS ATUALIZAÇÕES REALIZADAS:
 
-1. MUDANÇAS PRINCIPAIS:
-   - Remoção da tabela PARCELAS
-   - Unificação de saídas à vista e parceladas na tabela SAIDAS
-   - Novos campos: saida_pai_id, tipo_saida, numero_parcela, total_parcelas
-   - Constraints específicas para validar a integridade da nova estrutura
+1. PREFIXO KIG_:
+   - Todos os objetos de banco agora usam prefixo "KIG_"
+   - Sequences, tabelas, índices, triggers, constraints, views, procedures
 
-2. TIPOS DE SAÍDA:
-   - 'normal': Saídas à vista (numero_parcela = 1, saida_pai_id = NULL)
-   - 'parcelada_pai': Primeira parcela de uma compra parcelada
-   - 'parcela': Parcelas subsequentes (referenciam saida_pai_id)
+2. ESTRUTURA ATUALIZADA CONFORME SISTEMA ATUAL:
+   - Campos e tipos de dados alinhados com interfaces TypeScript
+   - Constraints de validação atualizadas
+   - Relacionamentos conforme uso real no sistema
 
-3. IMPACTO FINANCEIRO:
-   - Todas as saídas têm impacto financeiro no mês da data_saida
-   - Parcelas filhas geram débito no mês de vencimento
-   - Rastreabilidade total via saida_pai_id
+3. FUNCIONALIDADES ESPECÍFICAS IMPLEMENTADAS:
+   - Modal de detalhes de saída com parcelas
+   - Adição/remoção de parcelas com validações
+   - Estrutura unificada de saídas conforme sistema atual
 
-4. INTEGRIDADE DOS DADOS:
-   - Triggers de validação específicos para a nova estrutura
-   - Constraints garantem consistência entre tipos de saída
-   - Procedure para facilitar criação de saídas parceladas
+4. VALIDAÇÕES E INTEGRIDADE:
+   - Triggers específicos para estrutura de parcelas
+   - Validações de negócio conforme regras do sistema
+   - Prevenção de inconsistências de dados
 
-5. PERFORMANCE:
-   - Índices otimizados para a nova estrutura
-   - Views específicas para consultas frequentes
-   - Separação clara entre saídas principais e parcelas
+5. VIEWS E RELATÓRIOS:
+   - Views específicas para funcionalidades atuais
+   - Suporte a relatórios conforme necessidades do sistema
+   - Otimização para consultas frequentes
 
-6. COMPATIBILIDADE:
-   - Scripts de migração serão necessários para dados existentes
-   - Views mantêm compatibilidade com consultas antigas
-   - Estrutura flexível para futuras expansões
+6. PROCEDURES E FUNÇÕES:
+   - Operações complexas automatizadas
+   - Suporte às funcionalidades do modal de parcelas
+   - Cálculos financeiros automatizados
 
-Para utilizar:
-1. Execute os scripts em ordem
-2. Use a procedure sp_criar_saida_parcelada para saídas parceladas
-3. Consulte vw_saidas_principais para listagens
-4. Use vw_parcelas_futuras para controle de vencimentos
+7. DADOS INICIAIS:
+   - Seeds conforme mockData atual
+   - Exemplos representativos do uso real
+   - Dados para testes e demonstração
+
+COMPATIBILIDADE:
+- Oracle Database 11G e superiores
+- Estrutura preparada para migração de dados existentes
+- Performance otimizada com índices apropriados
+- Flexibilidade para futuras expansões
+
+OBSERVAÇÕES IMPORTANTES:
+- Executar scripts em ordem sequencial
+- Ajustar grants conforme ambiente de produção
+- Testar procedures antes do uso em produção
+- Monitorar performance das views em grandes volumes
 */

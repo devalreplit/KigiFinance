@@ -1,8 +1,9 @@
+
 # KIGI Frontend - Sistema Financeiro Familiar
 
 ## Overview
 
-KIGI é um sistema financeiro familiar desenvolvido em React + TypeScript, focado no controle de entradas, saídas e parcelamentos. O sistema permite múltiplos usuários familiares (pai, mãe, filhos) gerenciarem suas finanças de forma consolidada, com integração a um webservice externo para persistência de dados.
+KIGI é um sistema financeiro familiar desenvolvido em React + TypeScript, focado no controle de entradas, saídas e parcelamentos. O sistema permite múltiplos usuários familiares (pai, mãe, filhos) gerenciarem suas finanças de forma consolidada, com capacidade de integração a webservice externo para persistência de dados.
 
 ## System Architecture
 
@@ -14,123 +15,213 @@ KIGI é um sistema financeiro familiar desenvolvido em React + TypeScript, focad
 - **HTTP Client**: Axios para comunicação com API
 - **Build Tool**: Vite
 - **Icons**: Lucide React
+- **Barcode Scanning**: @zxing/library para leitura de códigos de barras
 
 ### Database Architecture
 - **Database**: Oracle 11G (production target)
-- **Schema**: Complete relational design with 8 main tables
-- **Data Integrity**: Foreign keys, constraints, and validation triggers
-- **Performance**: Optimized indexes and sequences for auto-increment IDs
+- **Schema**: Complete relational design with 7 main tables
+- **Data Integrity**: Foreign keys, constraints, e triggers de validação
+- **Performance**: Índices otimizados e sequences para IDs autoincrementais
 - **Scripts**: Full DDL scripts available in `database_oracle_scripts.sql`
 
 ### Design System
-- **Theme**: Green-based color scheme with CSS variables
-- **Components**: shadcn/ui design system with custom adaptations
-- **Responsive**: Mobile-first approach with sidebar navigation
-- **Language**: Complete Portuguese interface
+- **Theme**: Green-based color scheme com CSS variables
+- **Components**: shadcn/ui design system com adaptações customizadas
+- **Responsive**: Mobile-first approach com sidebar navigation
+- **Language**: Interface completa em português
+- **Notifications**: Sistema de toast notifications
 
 ## Key Components
 
 ### Authentication System
-- Token-based authentication with localStorage persistence
-- Protected route wrapper for authenticated access
-- Auto-logout on token expiration
-- Mock authentication service for development
+- Autenticação baseada em token com persistência em localStorage
+- Wrapper de rotas protegidas para acesso autenticado
+- Auto-logout em caso de expiração do token
+- Serviço de autenticação mock para desenvolvimento
 
 ### API Integration
-- Configurable mock/real API switching via environment variables
-- Axios interceptors for automatic token injection
-- Centralized error handling
-- Service layer abstraction for all API operations
+- Comutação configurável entre mock/API real via variáveis de ambiente
+- Interceptors do Axios para injeção automática de token
+- Tratamento centralizado de erros
+- Camada de abstração de serviços para todas as operações de API
 
 ### Data Management
-- Mock data persistence using localStorage
-- Real-time data synchronization
-- Type-safe interfaces for all data entities
-- CRUD operations for all main entities
+- Persistência de dados mock usando localStorage
+- Sincronização de dados em tempo real
+- Interfaces type-safe para todas as entidades de dados
+- Operações CRUD completas para todas as entidades principais
 
 ### User Interface
-- Mobile-responsive sidebar navigation
-- Card-based layout design
-- Form validation and error handling
-- Loading states and skeleton screens
-- Toast notifications for user feedback
+- Navegação sidebar responsiva para mobile
+- Layout baseado em cards
+- Validação de formulários e tratamento de erros
+- Estados de loading e skeleton screens
+- Notificações toast para feedback do usuário
+- Scanner de código de barras integrado
+
+## Core Features
+
+### Gestão de Usuários
+- CRUD completo de usuários familiares
+- Papéis definidos: pai, mãe, filho, filha
+- Sistema de ativação/desativação
+- Modal dedicado para gestão
+
+### Gestão de Empresas
+- Cadastro e manutenção de empresas/estabelecimentos
+- Sistema de ativação/desativação
+- Modal dedicado para gestão
+
+### Gestão de Produtos
+- Catálogo completo de produtos
+- Suporte a código de barras
+- Classificação por categorias
+- Unidades de medida configuráveis
+- Scanner de código de barras integrado
+
+### Sistema de Entradas (Receitas)
+- Registro de receitas familiares
+- Associação a usuário titular e empresa pagadora
+- Data de referência configurável
+- Modal dedicado para gestão
+
+### Sistema de Saídas (Despesas)
+- **Estrutura Unificada**: Saídas normais e parceladas em uma única tabela
+- **Tipos de Saída**:
+  - `normal`: Pagamentos à vista
+  - `parcelada_pai`: Primeira parcela de um parcelamento
+  - `parcela`: Parcelas subsequentes
+- **Funcionalidades**:
+  - Criação de saídas à vista ou parceladas
+  - Gestão completa de parcelas (adicionar/remover)
+  - Múltiplos itens por saída
+  - Múltiplos titulares por saída
+  - Tipos de pagamento: à vista, parcelado
+  - Modal detalhado com modo de edição
+  - Validações de integridade de dados
+
+### Relatórios e Dashboard
+- Dashboard com métricas financeiras
+- Visualizações em gráficos (Recharts)
+- Relatórios financeiros detalhados
+- Análises de gastos por categoria
 
 ## Data Flow
 
 ### Authentication Flow
-1. User enters credentials on login page
-2. AuthService validates against API/mock service
-3. Token stored in localStorage
-4. User redirected to dashboard
-5. Protected routes check authentication status
+1. Usuário insere credenciais na página de login
+2. AuthService valida contra API/serviço mock
+3. Token armazenado no localStorage
+4. Usuário redirecionado para dashboard
+5. Rotas protegidas verificam status de autenticação
 
 ### CRUD Operations
-1. User action triggers service call
-2. Loading state activated
-3. API/mock service processes request
-4. Success/error handling with toast notifications
-5. Data refresh and UI update
+1. Ação do usuário dispara chamada de serviço
+2. Estado de loading ativado
+3. API/serviço mock processa requisição
+4. Tratamento de sucesso/erro com notificações toast
+5. Atualização de dados e interface
 
 ### Mock Data Persistence
-- localStorage used for development data persistence
-- Initial seed data loaded on first run
-- All CRUD operations update localStorage
-- Data survives browser refresh
+- localStorage usado para persistência de dados em desenvolvimento
+- Dados iniciais carregados na primeira execução
+- Todas as operações CRUD atualizam localStorage
+- Dados sobrevivem ao refresh do browser
 
-## External Dependencies
+## Environment Configuration
 
 ### API Integration
-- **Base URL**: Configurable via `VITE_API_URL` environment variable
-- **Mock Mode**: Toggle via `VITE_USE_MOCK` environment variable
-- **Authentication**: Bearer token in Authorization header
-- **Timeout**: 10 second request timeout
+- **Base URL**: Configurável via `VITE_API_URL` (.env)
+- **Mock Mode**: Toggle via `VITE_USE_MOCK` (.env)
+- **Authentication**: Bearer token no header Authorization
+- **Timeout**: 10 segundos para requisições
 
-### Core Libraries
-- React ecosystem (react, react-dom)
-- TypeScript for type safety
-- TailwindCSS for styling
-- Radix UI primitives for accessibility
-- Axios for HTTP requests
-- Wouter for routing
-- Recharts for data visualization
+### Core Dependencies
+```json
+{
+  "react": "^18.2.0",
+  "typescript": "^5.2.2",
+  "tailwindcss": "^3.3.6",
+  "axios": "^1.6.0",
+  "wouter": "^2.12.1",
+  "recharts": "^2.15.3",
+  "@zxing/library": "^0.21.3"
+}
+```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── layout/           # Sidebar e navegação mobile
+│   ├── modals/           # Modais para CRUD de entidades
+│   ├── ui/               # Componentes base do shadcn/ui
+│   └── barcode-scanner.tsx
+├── context/
+│   └── AuthContext.tsx   # Contexto de autenticação
+├── hooks/
+│   ├── use-toast.ts      # Hook para notificações
+│   └── useApi.ts         # Hook para operações de API
+├── lib/
+│   ├── utils.ts          # Utilitários gerais
+│   └── toast-utils.ts    # Utilitários para toasts
+├── pages/                # Páginas principais da aplicação
+├── service/              # Camada de serviços (API/Mock)
+└── main.tsx             # Entry point da aplicação
+```
 
 ## Deployment Strategy
 
 ### Development
-- Vite dev server on port 5000
-- Hot reload enabled
-- Mock data mode by default
-- All hosts allowed for Replit compatibility
+- Vite dev server na porta 5000
+- Hot reload habilitado
+- Modo mock data por padrão
+- Configurado para Replit (host 0.0.0.0)
 
 ### Production Build
-- Static asset generation via `npm run build`
-- Assets optimized and minified
-- Environment variables injected at build time
-- Served from `/dist` directory
+- Geração de assets estáticos via `npm run build`
+- Assets otimizados e minificados
+- Variáveis de ambiente injetadas em build time
+- Servido do diretório `/dist`
 
 ### Replit Configuration
-- Node.js 20 runtime
-- Automatic deployment to autoscale
-- Port forwarding from 5000 to 80
-- Hidden files and directories configured
+- Runtime Node.js 20
+- Auto-deploy configurado
+- Port forwarding da porta 5000
+- Arquivos ocultos configurados (.env, node_modules)
+
+## Current Status
+
+✅ **Implementado e Funcionando**:
+- Sistema de autenticação completo
+- CRUD de todas as entidades (usuários, empresas, produtos, entradas, saídas)
+- Sistema unificado de saídas com parcelamentos
+- Modal detalhado de saídas com edição de parcelas
+- Scanner de código de barras
+- Persistência mock via localStorage
+- Interface responsiva completa
+- Sistema de notificações toast
+- Validações de formulário
+- Tratamento de erros
+- Scripts completos de banco Oracle 11G
+
+🔧 **Configuração Atual**:
+- Modo mock ativo (`VITE_USE_MOCK=true`)
+- Porta 5000 configurada e funcional
+- Build sem erros
+- Todos os componentes UI funcionais
+- Documentação atualizada
+
+## Development Notes
+
+- Sistema completamente funcional em modo mock
+- Pronto para integração com webservice externo
+- Banco de dados Oracle 11G com schema completo
+- Interface otimizada para dispositivos móveis
+- Código TypeScript com tipagem completa
+- Comentários em português em todo o código
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-
-## Recent Changes
-
-- June 28, 2025: Successfully completed migration from Replit Agent to standard Replit environment
-- June 28, 2025: Fixed missing UI component exports in alert-dialog and autocomplete components
-- June 28, 2025: Resolved all build errors and dependency issues
-- June 28, 2025: Verified application runs successfully on Vite development server without errors
-- June 28, 2025: Confirmed authentication system and mock data persistence working properly
-- January 22, 2025: Removed installments management page - integrated into expense details modal
-- January 22, 2025: Removed price unit from products management - kept only in expense registration
-- January 22, 2025: Created comprehensive Oracle 11G database scripts with complete schema design
-
-## Changelog
-
-Changelog:
-- January 22, 2025: Project migration completed - all systems operational
-- June 21, 2025: Initial setup
